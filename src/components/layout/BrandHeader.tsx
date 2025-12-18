@@ -22,18 +22,21 @@ export default function BrandHeader({
 }: BrandHeaderProps) {
   return (
     <header className={cn(
+      "rounded-3xl",
+      // no background
+      "bg-transparent",
       // Full-width gradient background - spans entire content area width
       "relative bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 text-white",
       className
     )}>
 
       {/* Background Overlay with Pattern */}
-      <div className="absolute inset-0 bg-black/10">
+      <div className="absolute inset-0 ">
         <div className="absolute inset-0 bg-grid-pattern opacity-10" />
       </div>
 
       {/* Main Content Container */}
-      <div className="relative px-4 md:px-8 py-12 md:py-16">
+      <div className="relative px-4 md:px-8 py-12 md:py-16 ">
 
         {/* Centered Content Wrapper */}
         <div className="max-w-4xl mx-auto text-center">

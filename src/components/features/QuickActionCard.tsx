@@ -1,3 +1,4 @@
+import React from "react";
 import { motion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,7 +11,7 @@ interface QuickActionCardProps {
   className?: string;
 }
 
-export const QuickActionCard = ({
+export const QuickActionCard = React.memo(({
   icon: Icon,
   title,
   description,
@@ -40,4 +41,6 @@ export const QuickActionCard = ({
       </div>
     </motion.div>
   );
-};
+});
+
+QuickActionCard.displayName = "QuickActionCard";

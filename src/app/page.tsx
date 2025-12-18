@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Plus, RefreshCw, Download, Settings, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useActivityLogger } from "@/hooks/useActivityLogger";
@@ -8,6 +8,10 @@ import { toast } from "sonner";
 import { Navigation } from "@/components/navigation";
 import { QuickActionCard, JobCard, DownloadAppSection } from "@/components/features";
 import BrandHeader from "@/components/layout/BrandHeader";
+
+// Disable SSR to prevent hydration issues with browser APIs
+export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 // TypeScript Interfaces
 interface CrawlJob {
@@ -160,6 +164,19 @@ export default function Home() {
   const [newUrl, setNewUrl] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
+  // Memoized expensive computations
+  const runningJobsCount = useMemo(() =>
+    jobs.filter((j) => j.status === "running").length,
+    [jobs]
+  );
+
+  const stats = useMemo(() => ({
+    totalJobs: jobs.length,
+    runningJobs: runningJobsCount,
+    completedJobs: jobs.filter((j) => j.status === "completed").length,
+    errorJobs: jobs.filter((j) => j.status === "error").length,
+  }), [jobs, runningJobsCount]);
+
   // Effects
   useEffect(() => {
     const savedJobs = loadJobsFromStorage();
@@ -171,11 +188,11 @@ export default function Home() {
     if (isLoading) return;
 
     logActivity("page_load", {
-      job_count: jobs.length,
-      running_jobs: jobs.filter((j) => j.status === "running").length,
+      job_count: stats.totalJobs,
+      running_jobs: stats.runningJobs,
       auto_download_enabled: autoDownloadEnabled,
     });
-  }, [jobs.length, autoDownloadEnabled, logActivity, isLoading]);
+  }, [stats.totalJobs, stats.runningJobs, autoDownloadEnabled, logActivity, isLoading]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -663,7 +680,7 @@ export default function Home() {
       {/* Main Content Area - Right side */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Main Content - Scrollable area including header */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto rounded-3xl">
           {/* Brand Header - Now scrolls with content */}
           <BrandHeader
             icon={Search}

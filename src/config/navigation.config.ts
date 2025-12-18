@@ -57,8 +57,8 @@ export const navigationItems: NavigationItemConfig[] = [
   {
     name: "RAG Query",
     href: "/rag",
-    icon: Database,
-    description: "Vector search interface",
+    icon: MessageCircle,
+    description: "AI-powered semantic search",
     gradient: "from-indigo-500 via-violet-500 to-indigo-600",
   },
   {

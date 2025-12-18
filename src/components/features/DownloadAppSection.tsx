@@ -1,10 +1,10 @@
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Smartphone, QrCode, Scan, Download } from "lucide-react";
 import { useActivityLogger } from "@/hooks/useActivityLogger";
 import { toast } from "sonner";
-import { useEffect } from "react";
 
-export const DownloadAppSection = () => {
+export const DownloadAppSection = React.memo(() => {
   const { logActivity } = useActivityLogger();
 
   useEffect(() => {
@@ -161,4 +161,6 @@ export const DownloadAppSection = () => {
       </div>
     </motion.div>
   );
-};
+});
+
+DownloadAppSection.displayName = "DownloadAppSection";

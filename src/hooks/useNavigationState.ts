@@ -20,6 +20,9 @@ export function useNavigationState(): UseNavigationStateReturn {
 
   // Detect mobile screen size and handle responsive behavior
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+
     const handleResize = () => {
       const newIsMobile = window.innerWidth < 1024;
       setIsMobile(newIsMobile);
@@ -37,6 +40,9 @@ export function useNavigationState(): UseNavigationStateReturn {
 
   // Handle escape key to close mobile sidebar
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+
     const handleEsc = (event: KeyboardEvent) => {
       if (event.key === "Escape" && isMobile) {
         setSidebarOpen(false);
