@@ -4,6 +4,14 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 First, run the development server:
 
+For analyzing bundle size:
+
+```bash
+/d/web-rag-backup (main)
+
+start .next/analyze/client.html
+```
+
 ```bash
 npm run dev
 # or

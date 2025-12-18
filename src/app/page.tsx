@@ -5,10 +5,9 @@ import { Plus, RefreshCw, Download, Settings, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useActivityLogger } from "@/hooks/useActivityLogger";
 import { toast } from "sonner";
-import { QuickActionCard } from "@/components/QuickActionCard";
-import { JobCard } from "@/components/JobCard";
-import { DownloadAppSection } from "@/components/DownloadAppSection";
-import BrandHeader from "@/components/BrandHeader";
+import { Navigation } from "@/components/navigation";
+import { QuickActionCard, JobCard, DownloadAppSection } from "@/components/features";
+import BrandHeader from "@/components/layout/BrandHeader";
 
 // TypeScript Interfaces
 interface CrawlJob {
@@ -44,6 +43,12 @@ interface PDFFile {
 // Main Component
 export default function Home() {
   const { logActivity, logError } = useActivityLogger();
+  const [isNavigationVisible, setIsNavigationVisible] = useState(true);
+
+  // Navigation toggle function
+  const toggleNavigation = useCallback(() => {
+    setIsNavigationVisible(prev => !prev);
+  }, []);
 
   // Default jobs for first-time users
   const getDefaultJobs = useCallback((): CrawlJob[] => [
@@ -648,17 +653,26 @@ export default function Home() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 overflow-x-hidden">
-      {/* Brand Header - Fixed at top */}
-      <BrandHeader
-        icon={Search}
-        title="RAG Platform"
-        subtitle="Web Search & AI"
-        statusText="AI Agent Online & Ready"
+    <div className="flex h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 overflow-x-hidden">
+      {/* Navigation Sidebar - Left side */}
+      <Navigation
+        isVisible={isNavigationVisible}
+        onToggle={toggleNavigation}
       />
 
-      {/* Main Content - Let root layout handle scrolling */}
-      <main className="container mx-auto px-4 py-8">
+      {/* Main Content Area - Right side */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Main Content - Scrollable area including header */}
+        <main className="flex-1 overflow-y-auto">
+          {/* Brand Header - Now scrolls with content */}
+          <BrandHeader
+            icon={Search}
+            title="RAG Controller"
+            subtitle="Web Search & AI"
+            statusText="AI Agent Online & Ready"
+          />
+
+          <div className="container mx-auto px-4 py-8">
           {/* Page Header */}
           <section className="mb-8">
             <div className="border-t border-border pt-8">
@@ -823,10 +837,11 @@ export default function Home() {
           <section className="mb-12">
             <DownloadAppSection />
           </section>
+          </div>
         </main>
 
-        {/* Footer */}
-        <footer className="border-t border-border py-6 px-4">
+        {/* Footer - Now inside scrollable area */}
+        <footer className="border-t border-border py-3 px-4">
           <div className="container mx-auto text-center text-sm text-muted-foreground">
             <p>
               RAG Platform © {new Date().getFullYear()} - Intelligent Document
@@ -835,5 +850,6 @@ export default function Home() {
           </div>
         </footer>
       </div>
-    );
-  }
+    </div>
+  );
+}

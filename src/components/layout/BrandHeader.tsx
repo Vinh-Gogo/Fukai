@@ -4,12 +4,12 @@ import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BrandHeaderProps {
-  icon: LucideIcon;
-  title: string;
-  subtitle: string;
-  statusText: string;
-  showStatusIndicator?: boolean;
-  className?: string;
+  icon: LucideIcon;           // Icon component (Search, etc.)
+  title: string;              // Main title ("RAG Platform")
+  subtitle: string;           // Subtitle ("Web Search & AI")
+  statusText: string;         // Status text ("AI Agent Online & Ready")
+  showStatusIndicator?: boolean; // Show/hide status indicator (default: true)
+  className?: string;         // Additional CSS classes
 }
 
 export default function BrandHeader({
@@ -22,33 +22,45 @@ export default function BrandHeader({
 }: BrandHeaderProps) {
   return (
     <header className={cn(
+      // Full-width gradient background - spans entire content area width
       "relative bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 text-white",
       className
     )}>
+
+      {/* Background Overlay with Pattern */}
       <div className="absolute inset-0 bg-black/10">
         <div className="absolute inset-0 bg-grid-pattern opacity-10" />
       </div>
 
+      {/* Main Content Container */}
       <div className="relative px-4 md:px-8 py-12 md:py-16">
+
+        {/* Centered Content Wrapper */}
         <div className="max-w-4xl mx-auto text-center">
+
+          {/* Icon Container - Large Hero Icon */}
           <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-white/10 backdrop-blur-sm rounded-2xl mb-6 md:mb-8 shadow-2xl">
             <Icon className="w-8 h-8 md:w-10 md:h-10 text-white" />
           </div>
 
+          {/* Main Title */}
           <h1 className="text-3xl md:text-5xl font-bold mb-3 md:mb-4 tracking-tight">
             <span className="block text-white drop-shadow-lg">
               {title}
             </span>
           </h1>
 
+          {/* Subtitle */}
           <p className="text-lg md:text-xl font-medium text-blue-100 mb-2 md:mb-3 drop-shadow-sm">
             {subtitle}
           </p>
 
+          {/* Description Text */}
           <p className="text-base md:text-lg text-blue-200 max-w-2xl mx-auto leading-relaxed px-4">
             AI-powered semantic search across your document knowledge base
           </p>
 
+          {/* Status Indicator */}
           {showStatusIndicator && (
             <div className="inline-flex items-center gap-2 md:gap-3 mt-6 md:mt-8 px-4 md:px-6 py-2 md:py-3 bg-white/15 backdrop-blur-sm rounded-full border border-white/20 shadow-lg">
               <div className="w-2 h-2 md:w-3 md:h-3 bg-green-400 rounded-full animate-pulse"></div>
@@ -60,6 +72,7 @@ export default function BrandHeader({
         </div>
       </div>
 
+      {/* Bottom Wave Separator */}
       <div className="absolute bottom-0 left-0 right-0">
         <svg
           viewBox="0 0 1200 120"
