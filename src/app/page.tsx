@@ -10,30 +10,18 @@ import BrandHeader from "@/components/layout/BrandHeader";
 import { Search } from "lucide-react";
 
 // Custom hooks
-import { useCrawlJobs } from "@/hooks/useCrawlJobs";
-import { useCrawlSettings } from "@/hooks/useCrawlSettings";
-import { useCrawlOperations } from "@/hooks/useCrawlOperations";
-import { useCrawlStats } from "@/hooks/useCrawlStats";
-import { useActivityLogger } from "@/hooks/useActivityLogger";
+import { useCrawlJobs, useCrawlSettings, useCrawlOperations, useCrawlStats, useActivityLogger } from "@/hooks";
 
 // Components
 import { CrawlJobForm, CrawlSettingsPanel, CrawlJobList, CrawlQuickActions } from "@/components/crawl";
 import { DownloadAppSection } from "@/components/features";
-import { StorageService, createPDFFile } from "@/lib/crawlService";
+import { NavigationSkeleton } from "@/components/navigation";
+import { StorageService, createPDFFile } from "@/lib/crawl";
 
 // Dynamically import Navigation to prevent SSR issues
 const Navigation = dynamicImport(() => import('@/components/navigation').then(mod => ({ default: mod.Navigation })), {
   ssr: false,
-  loading: () => (
-    <div className="w-64 bg-gray-100 animate-pulse">
-      <div className="h-16 bg-gray-200 mb-4"></div>
-      <div className="space-y-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-10 bg-gray-200 rounded"></div>
-        ))}
-      </div>
-    </div>
-  )
+  loading: () => <NavigationSkeleton />
 });
 
 // Main Component

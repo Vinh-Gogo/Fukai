@@ -1,9 +1,8 @@
 import React, { useCallback } from "react";
 import { Menu, X } from "lucide-react";
-import { useThemeStyles } from "@/hooks/useThemeStyles";
+import { useThemeStyles, useMouseTracking } from "@/hooks";
 import { MobileOverlay } from "../ui/MobileOverlay";
 import { CollapseToggle } from "../ui/CollapseToggle";
-import { useMouseTracking } from "@/hooks/useMouseTracking";
 
 interface NavigationControlsProps {
   isVisible: boolean;
@@ -25,7 +24,7 @@ export const NavigationControls = React.memo(({
   toggleSidebar,
 }: NavigationControlsProps) => {
   const mousePosition = useMouseTracking();
-  const { mounted, theme, getToggleButtonStyles, getCollapseButtonStyles, getCollapseButtonFilter } = useThemeStyles();
+  const { mounted, getToggleButtonStyles } = useThemeStyles();
 
   const closeMobileSidebar = useCallback(() => {
     if (isMobile) {
@@ -59,9 +58,6 @@ export const NavigationControls = React.memo(({
       {!isMobile && mounted && (
         <CollapseToggle
           collapsed={collapsed}
-          position={collapsed ? 76 : 262}
-          styles={getCollapseButtonStyles()}
-          filter={getCollapseButtonFilter()}
           onClick={toggleSidebar}
         />
       )}

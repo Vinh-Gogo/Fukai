@@ -1,6 +1,6 @@
 import React from 'react';
 import { Activity, Clock, User, Hash, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-import { ActivityItem } from '@/hooks/useActivityData';
+import { ActivityItem } from '@/types/activity';
 
 interface ActivityFeedProps {
   activities: ActivityItem[];

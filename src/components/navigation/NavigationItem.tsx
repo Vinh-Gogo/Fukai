@@ -173,32 +173,34 @@ export const NavigationItem = React.memo(({
   );
 });
 
-// Add keyframes for animations
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes pulse {
-    0% {
-      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+// Add keyframes for animations - only on client side
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+      }
     }
-    70% {
-      box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
-    }
-    100% {
-      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-    }
-  }
 
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(10px) translateX(0);
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px) translateX(0);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) translateX(0);
+      }
     }
-    to {
-      opacity: 1;
-      transform: translateY(0) translateX(0);
-    }
-  }
-`;
-document.head.appendChild(style);
+  `;
+  document.head.appendChild(style);
+}
 
 NavigationItem.displayName = "NavigationItem";

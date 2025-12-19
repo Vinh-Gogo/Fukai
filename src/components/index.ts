@@ -15,5 +15,23 @@ export * from './features';
 // Status Components
 export * from './status';
 
+// PDF Components
+export * from './pdf';
+
+// Archive Components
+export * from './archive';
+
+// Activity Components
+export * from './activity';
+
+// Crawl Components
+export * from './crawl';
+
+// RAG Components
+export * from './rag';
+
+// Upload Components
+export * from './uploads';
+
 // Forms Components (commented out - empty for now)
 // export * from './forms';

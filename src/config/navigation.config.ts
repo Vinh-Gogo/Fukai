@@ -49,7 +49,7 @@ export const navigationItems: NavigationItemConfig[] = [
   },
   {
     name: "Activity Dashboard",
-    href: "/activity-dashboard",
+    href: "/activity_dashboard",
     icon: BarChart3,
     description: "Monitor user activity",
     gradient: "from-emerald-500 via-teal-500 to-emerald-600",

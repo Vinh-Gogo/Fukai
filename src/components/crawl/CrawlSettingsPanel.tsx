@@ -1,5 +1,5 @@
 import React from 'react';
-import { useActivityLogger } from '@/hooks/useActivityLogger';
+import { useActivityLogger } from '@/hooks';
 
 interface CrawlSettingsPanelProps {
   autoDownloadEnabled: boolean;

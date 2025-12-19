@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Smartphone, QrCode, Scan, Download } from "lucide-react";
-import { useActivityLogger } from "@/hooks/useActivityLogger";
+import { useActivityLogger } from "@/hooks";
 import { toast } from "sonner";
 
 export const DownloadAppSection = React.memo(() => {

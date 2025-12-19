@@ -1,6 +1,6 @@
 import React from 'react';
 import { JobCard } from '@/components/features';
-import { CrawlJob } from '@/lib/crawlService';
+import { CrawlJob } from '@/lib/crawl';
 
 interface CrawlJobListProps {
   jobs: CrawlJob[];

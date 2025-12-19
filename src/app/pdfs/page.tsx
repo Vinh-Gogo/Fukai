@@ -9,16 +9,14 @@ import { RefreshCw, Search, X, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FileUploadZone } from "@/components/uploads/FileUploadZone";
 import { UploadProgressBar } from "@/components/uploads/UploadProgressBar";
-import { useFileUpload } from "@/hooks/useFileUpload";
-import { useDownloadedPDFs } from "@/hooks/useDownloadedPDFs";
-import { useVirtualizedList } from "@/hooks/useVirtualizedList";
-import { TableRow } from "./components";
-import { PDFFile } from "./components/types";
+import { useFileUpload, useDownloadedPDFs, useVirtualizedList } from "@/hooks";
+import { TableRow } from "@/components/pdf";
+import { PDFFile } from "@/components/pdf/types";
 import { Navigation } from "@/components/navigation";
 import BrandHeader from "@/components/layout/BrandHeader";
 
 // Dynamically import PDFViewer with SSR disabled to prevent document access errors
-const PDFViewer = dynamic(() => import('./components/PDFViewer').then(mod => mod.PDFViewer), {
+const PDFViewer = dynamic(() => import('@/components/pdf/PDFViewer').then(mod => mod.PDFViewer), {
   ssr: false,
   loading: () => (
     <div className="h-full flex items-center justify-center bg-gray-100">

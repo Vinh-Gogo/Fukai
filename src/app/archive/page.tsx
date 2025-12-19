@@ -6,20 +6,12 @@ export const runtime = 'edge';
 import React, { useState, useCallback } from "react";
 import dynamic from 'next/dynamic';
 import BrandHeader from "@/components/layout/BrandHeader";
+import { NavigationSkeleton } from "@/components/navigation";
 
 // Dynamically import Navigation to prevent SSR issues
 const Navigation = dynamic(() => import('@/components/navigation').then(mod => ({ default: mod.Navigation })), {
   ssr: false,
-  loading: () => (
-    <div className="w-64 bg-gray-100 animate-pulse">
-      <div className="h-16 bg-gray-200 mb-4"></div>
-      <div className="space-y-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-10 bg-gray-200 rounded"></div>
-        ))}
-      </div>
-    </div>
-  )
+  loading: () => <NavigationSkeleton />
 });
 
 import {
@@ -38,9 +30,9 @@ import {
   Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useFileManager } from "@/hooks/useFileManager";
-import { FileGrid, FileList, StorageStats } from "./components";
-import { ArchiveFile, CategoryInfo } from "@/lib/archiveUtils";
+import { useFileManager } from "@/hooks";
+import { FileGrid, FileList, StorageStats } from "@/components/archive";
+import { ArchiveFile, CategoryInfo } from "@/lib/archive";
 
 // Mock archived files data - in a real app, this would come from a database
 const MOCK_ARCHIVE_FILES: ArchiveFile[] = [

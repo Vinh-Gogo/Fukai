@@ -1,6 +1,6 @@
 import React from 'react';
 import { Bot, FileText, Lightbulb, Search, Target } from 'lucide-react';
-import { QUICK_PROMPTS } from '@/lib/chatService';
+import { QUICK_PROMPTS } from '@/lib/chat';
 
 interface WelcomeScreenProps {
   onQuickPromptSelect: (promptId: string, enhancedQuery: string) => void;

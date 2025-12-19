@@ -9,30 +9,19 @@ import BrandHeader from "@/components/layout/BrandHeader";
 import { Bot } from "lucide-react";
 
 // Custom hooks
-import { useChatMessages } from "@/hooks/useChatMessages";
-import { useChatInput } from "@/hooks/useChatInput";
-import { useAIResponses } from "@/hooks/useAIResponses";
-import { useChatScroll } from "@/hooks/useChatScroll";
+import { useChatMessages, useChatInput, useAIResponses, useChatScroll } from "@/hooks";
 
 // Components
 import { ChatMessages, ChatInput, WelcomeScreen, TypingIndicator } from "@/components/rag";
+import { NavigationSkeleton } from "@/components/navigation";
 
 // Services
-import { createErrorMessage } from "@/lib/chatService";
+import { createErrorMessage } from "@/lib/chat";
 
 // Dynamically import Navigation to prevent SSR issues
 const Navigation = dynamic(() => import('@/components/navigation').then(mod => ({ default: mod.Navigation })), {
   ssr: false,
-  loading: () => (
-    <div className="w-64 bg-gray-100 animate-pulse">
-      <div className="h-16 bg-gray-200 mb-4"></div>
-      <div className="space-y-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-10 bg-gray-200 rounded"></div>
-        ))}
-      </div>
-    </div>
-  )
+  loading: () => <NavigationSkeleton />
 });
 
 export default function RAGPage() {

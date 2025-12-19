@@ -8,7 +8,7 @@ import { BrandHeaderMini } from "./BrandHeaderMini";
 import { NavigationSection } from "./NavigationSection";
 import { NavigationControls } from "./NavigationControls";
 import { AIAgentStatus } from "../ui";
-import { useNavigationState } from "@/hooks/useNavigationState";
+import { useNavigationState } from "@/hooks";
 import { navigationItems, toolItems } from "@/config/navigation.config";
 
 export function Navigation({ isVisible = true, onToggle }: { isVisible?: boolean; onToggle?: () => void }) {

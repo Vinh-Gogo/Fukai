@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { validateUrl } from '@/lib/crawlService';
+import { validateUrl } from '@/lib/crawl';
 
 interface CrawlJobFormProps {
   onAddJob: (url: string) => void;

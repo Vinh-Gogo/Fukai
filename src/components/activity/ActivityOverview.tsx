@@ -1,6 +1,6 @@
 import React from 'react';
 import { Activity, TrendingUp, Clock, Target, BarChart3, Users } from 'lucide-react';
-import { ActivityStats } from '@/hooks/useActivityData';
+import { ActivityStats } from '@/types/activity';
 
 interface ActivityOverviewProps {
   stats: ActivityStats;

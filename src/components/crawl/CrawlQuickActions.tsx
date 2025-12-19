@@ -1,8 +1,8 @@
 import React from 'react';
 import { RefreshCw, Download, Settings } from 'lucide-react';
 import { QuickActionCard } from '@/components/features';
-import { useActivityLogger } from '@/hooks/useActivityLogger';
-import { CrawlJob } from '@/lib/crawlService';
+import { useActivityLogger } from '@/hooks';
+import { CrawlJob } from '@/lib/crawl';
 
 interface CrawlQuickActionsProps {
   jobs: CrawlJob[];

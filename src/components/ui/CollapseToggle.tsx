@@ -1,120 +1,321 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect, useCallback, useId, useSyncExternalStore } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { LogIn, LogOut } from "lucide-react";
+
+// ============================================================================
+// Types
+// ============================================================================
 
 interface CollapseToggleProps {
   collapsed: boolean;
-  position: number;
-  styles: React.CSSProperties;
-  filter: string;
   onClick: () => void;
 }
 
-export const CollapseToggle = React.memo(({
-  collapsed,
-  position,
-  styles,
-  filter,
-  onClick
-}: CollapseToggleProps) => {
-  return (
-    <button
-      onClick={onClick}
-      className="fixed top-4 z-[100] transition-all duration-300 hover:scale-110 flex items-center justify-center"
-      aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
-      title={collapsed ? "Expand Navigation" : "Collapse Navigation"}
-      style={{
-        left: position,
-        width: '60px',
-        height: '60px',
-        ...styles,
-        background: 'transparent',
-        border: 'none',
-        boxShadow: 'none',
-        backdropFilter: 'none',
-        padding: 0,
-        margin: 0,
-      }}
-    >
-      <motion.div
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.7, 1, 0.8],
-        }}
-        transition={{
-          duration: 1.8,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "easeInOut"
-        }}
-        className="relative w-20 h-20"
-      >
-        {/* Brown poop SVG - identical shape to � emoji */}
-        <svg viewBox="0 0 100 100" className="w-full h-full">
-          <defs>
-            <radialGradient id="brown-poop-gradient" cx="50%" cy="50%" r="60%">
-              <stop offset="0%" stopColor="#8B4513" stopOpacity="1" />
-              <stop offset="30%" stopColor="#A0522D" stopOpacity="0.95" />
-              <stop offset="60%" stopColor="#CD853F" stopOpacity="0.85" />
-              <stop offset="85%" stopColor="#D2691E" stopOpacity="0.7" />
-              <stop offset="100%" stopColor="#654321" stopOpacity="0" />
-            </radialGradient>
-            <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-          </defs>
-          
-          {/* 💩 emoji shape path - recreated exactly */}
-          <path
-            d="M30,80 Q35,70 40,75 Q45,85 50,80 Q55,75 60,80 Q65,90 70,85 Q75,80 80,85 Q85,95 90,90 Q95,85 100,90 L95,60 Q90,55 85,60 Q80,50 75,55 Q70,45 65,50 Q60,40 55,45 Q50,35 45,40 Q40,30 35,35 Q30,25 25,30 L20,60 Q15,65 10,60 Q5,55 0,60 Z"
-            fill="url(#brown-poop-gradient)"
-            filter="url(#glow-filter)"
-            className="transition-all duration-300"
-            style={{
-              transform: collapsed ? 'scale(0.8)' : 'scale(1)',
-              filter: collapsed
-                ? 'drop-shadow(0 0 5px rgba(139, 69, 19, 0.3))'
-                : 'drop-shadow(0 0 15px rgba(160, 82, 45, 0.8)) brightness(1.1)',
-            }}
-          />
-        </svg>
-        
-        {/* Intense glow effect */}
-        <div
-          className="absolute inset-0 rounded-full blur-xl"
-          style={{
-            background: collapsed
-              ? 'radial-gradient(circle, rgba(139, 69, 19, 0.2) 0%, transparent 70%)'
-              : 'radial-gradient(circle, rgba(160, 82, 45, 0.7) 0%, transparent 70%)',
-            animation: collapsed
-              ? 'pulse 5s infinite'
-              : 'pulse 1s infinite'
-          }}
-        />
+interface ContextMenuState {
+  isOpen: boolean;
+  position: { x: number; y: number };
+}
 
-        {/* Extra glow for intensity */}
-        <div
-          className="absolute inset-0 rounded-full blur-2xl"
-          style={{
-            background: 'radial-gradient(circle, rgba(210, 180, 140, 0.3) 0%, transparent 80%)',
-            animation: 'pulse 1.5s infinite alternate'
-          }}
-        />
+// ============================================================================
+// Custom Hook: useRandomPosition
+// ============================================================================
+
+// Generate random position only once on client
+const generateRandomPosition = () => ({
+  top: Math.random() * 70 + 10, // 10% to 80%
+  left: Math.random() * 70 + 10,
+});
+
+const useRandomPosition = () => {
+  // Lazy initialization - only runs on first render
+  const [position] = useState(() => 
+    typeof window !== 'undefined' ? generateRandomPosition() : { top: 50, left: 50 }
+  );
+  
+  // Track if we're on client
+  const [isMounted, setIsMounted] = useState(typeof window !== 'undefined');
+
+  // For SSR: set mounted after hydration via subscription pattern
+  useEffect(() => {
+    if (!isMounted) {
+      // Use requestAnimationFrame to avoid synchronous setState
+      const id = requestAnimationFrame(() => setIsMounted(true));
+      return () => cancelAnimationFrame(id);
+    }
+  }, [isMounted]);
+
+  return { position, isMounted };
+};
+
+// ============================================================================
+// Custom Hook: useAuth (using useSyncExternalStore for localStorage)
+// ============================================================================
+
+const STORAGE_KEY = 'isLoggedIn';
+
+const subscribe = (callback: () => void) => {
+  window.addEventListener('storage', callback);
+  return () => window.removeEventListener('storage', callback);
+};
+
+const getSnapshot = () => {
+  return localStorage.getItem(STORAGE_KEY) === 'true';
+};
+
+const getServerSnapshot = () => false;
+
+const useAuth = () => {
+  const isLoggedIn = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  const login = useCallback(() => {
+    localStorage.setItem(STORAGE_KEY, 'true');
+    window.dispatchEvent(new Event('storage'));
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.setItem(STORAGE_KEY, 'false');
+    window.dispatchEvent(new Event('storage'));
+  }, []);
+
+  return { isLoggedIn, login, logout };
+};
+
+// ============================================================================
+// Custom Hook: useContextMenu
+// ============================================================================
+
+const useContextMenu = () => {
+  const [state, setState] = useState<ContextMenuState>({
+    isOpen: false,
+    position: { x: 0, y: 0 },
+  });
+
+  const open = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setState({ isOpen: true, position: { x: e.clientX, y: e.clientY } });
+  }, []);
+
+  const close = useCallback(() => {
+    setState(prev => ({ ...prev, isOpen: false }));
+  }, []);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!state.isOpen) return;
+    
+    const handler = () => close();
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [state.isOpen, close]);
+
+  return { ...state, open, close };
+};
+
+// ============================================================================
+// Sub-component: FlySVG
+// ============================================================================
+
+interface FlySVGProps {
+  uniqueId: string;
+}
+
+const FlySVG = React.memo(({ uniqueId }: FlySVGProps) => {
+  const bodyGradientId = `fly-body-${uniqueId}`;
+  const wingGradientId = `fly-wing-${uniqueId}`;
+
+  return (
+    <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-lg">
+      <defs>
+        <radialGradient id={bodyGradientId} cx="50%" cy="40%" r="50%">
+          <stop offset="0%" stopColor="#4a4a4a" />
+          <stop offset="100%" stopColor="#1a1a1a" />
+        </radialGradient>
+        <radialGradient id={wingGradientId} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="rgba(200, 220, 255, 0.6)" />
+          <stop offset="100%" stopColor="rgba(150, 180, 220, 0.3)" />
+        </radialGradient>
+      </defs>
+
+      {/* Wings */}
+      <motion.ellipse
+        cx="30" cy="45" rx="22" ry="12"
+        fill={`url(#${wingGradientId})`}
+        stroke="rgba(100, 130, 180, 0.5)"
+        strokeWidth="0.5"
+        style={{ transformOrigin: '45px 50px' }}
+        animate={{ rotate: [-15, 15, -15] }}
+        transition={{ duration: 0.05, repeat: Infinity }}
+      />
+      <motion.ellipse
+        cx="70" cy="45" rx="22" ry="12"
+        fill={`url(#${wingGradientId})`}
+        stroke="rgba(100, 130, 180, 0.5)"
+        strokeWidth="0.5"
+        style={{ transformOrigin: '55px 50px' }}
+        animate={{ rotate: [15, -15, 15] }}
+        transition={{ duration: 0.05, repeat: Infinity }}
+      />
+
+      {/* Body */}
+      <ellipse cx="50" cy="55" rx="12" ry="15" fill={`url(#${bodyGradientId})`} />
+      <ellipse cx="50" cy="72" rx="10" ry="12" fill={`url(#${bodyGradientId})`} />
+
+      {/* Head */}
+      <circle cx="50" cy="38" r="10" fill={`url(#${bodyGradientId})`} />
+
+      {/* Eyes */}
+      <ellipse cx="44" cy="35" rx="5" ry="6" fill="#8B0000" />
+      <ellipse cx="43" cy="34" rx="2" ry="2.5" fill="#ff4444" opacity="0.6" />
+      <ellipse cx="56" cy="35" rx="5" ry="6" fill="#8B0000" />
+      <ellipse cx="57" cy="34" rx="2" ry="2.5" fill="#ff4444" opacity="0.6" />
+
+      {/* Legs */}
+      <g stroke="#1a1a1a" strokeWidth="1.5" fill="none">
+        <path d="M42,58 Q35,62 28,68" />
+        <path d="M40,65 Q32,70 25,78" />
+        <path d="M42,72 Q35,78 30,88" />
+        <path d="M58,58 Q65,62 72,68" />
+        <path d="M60,65 Q68,70 75,78" />
+        <path d="M58,72 Q65,78 70,88" />
+      </g>
+
+      {/* Antennae */}
+      <g stroke="#1a1a1a" strokeWidth="1" fill="none">
+        <path d="M46,30 Q44,24 40,20" />
+        <path d="M54,30 Q56,24 60,20" />
+      </g>
+    </svg>
+  );
+});
+
+FlySVG.displayName = "FlySVG";
+
+// ============================================================================
+// Sub-component: AuthContextMenu
+// ============================================================================
+
+interface AuthContextMenuProps {
+  isOpen: boolean;
+  position: { x: number; y: number };
+  isLoggedIn: boolean;
+  onLogin: () => void;
+  onLogout: () => void;
+}
+
+const AuthContextMenu = React.memo(({
+  isOpen,
+  position,
+  isLoggedIn,
+  onLogin,
+  onLogout,
+}: AuthContextMenuProps) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ duration: 0.15 }}
+        className="fixed z-[200] bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden min-w-[160px]"
+        style={{ left: position.x, top: position.y }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="py-1">
+          <div className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+            {isLoggedIn ? '🟢 Đã đăng nhập' : '🔴 Chưa đăng nhập'}
+          </div>
+
+          {isLoggedIn ? (
+            <button
+              onClick={onLogout}
+              className="w-full flex items-center gap-3 px-4 py-3 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="font-medium">Đăng xuất</span>
+            </button>
+          ) : (
+            <button
+              onClick={onLogin}
+              className="w-full flex items-center gap-3 px-4 py-3 text-left text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+            >
+              <LogIn className="w-4 h-4" />
+              <span className="font-medium">Đăng nhập</span>
+            </button>
+          )}
+        </div>
       </motion.div>
-    </button>
+    )}
+  </AnimatePresence>
+));
+
+AuthContextMenu.displayName = "AuthContextMenu";
+
+// ============================================================================
+// Main Component: CollapseToggle
+// ============================================================================
+
+export const CollapseToggle = React.memo(({ collapsed, onClick }: CollapseToggleProps) => {
+  const uniqueId = useId();
+  const { position, isMounted } = useRandomPosition();
+  const { isLoggedIn, login, logout } = useAuth();
+  const contextMenu = useContextMenu();
+
+  const handleLogin = useCallback(() => {
+    login();
+    contextMenu.close();
+    alert('🪰 Đăng nhập thành công!');
+  }, [login, contextMenu]);
+
+  const handleLogout = useCallback(() => {
+    logout();
+    contextMenu.close();
+    alert('🪰 Đăng xuất thành công!');
+  }, [logout, contextMenu]);
+
+  if (!isMounted) return null;
+
+  return (
+    <>
+      <button
+        onClick={onClick}
+        onContextMenu={contextMenu.open}
+        className="fixed z-[100] transition-all duration-300 hover:scale-125 flex items-center justify-center cursor-pointer"
+        aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
+        title="🪰 Click: Toggle Navigation | Right-click: Login/Logout"
+        style={{
+          top: `${position.top}%`,
+          left: `${position.left}%`,
+          width: '50px',
+          height: '50px',
+          background: 'transparent',
+          border: 'none',
+          transform: 'translate(-50%, -50%)',
+        }}
+      >
+        <motion.div
+          animate={{
+            rotate: [0, 5, -5, 3, -3, 0],
+            x: [0, 2, -2, 1, -1, 0],
+            y: [0, -2, 2, -1, 1, 0],
+          }}
+          transition={{ duration: 0.3, repeat: Infinity, ease: "linear" }}
+          className="relative w-12 h-12"
+        >
+          <FlySVG uniqueId={uniqueId} />
+          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-2 rounded-full bg-black/20 blur-sm" />
+        </motion.div>
+      </button>
+
+      <AuthContextMenu
+        isOpen={contextMenu.isOpen}
+        position={contextMenu.position}
+        isLoggedIn={isLoggedIn}
+        onLogin={handleLogin}
+        onLogout={handleLogout}
+      />
+    </>
   );
 });
 
 CollapseToggle.displayName = "CollapseToggle";
-
-// Add pulse animation
-if (typeof document !== 'undefined') {
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes pulse {
-      0%, 100% { opacity: 0.7; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.1); }
-    }
-  `;
-  document.head.appendChild(style);
-}

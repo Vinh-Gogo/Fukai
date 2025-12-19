@@ -1,6 +1,6 @@
 import React from 'react';
 import { User, Bot } from 'lucide-react';
-import { ChatMessage } from '@/lib/chatService';
+import { ChatMessage } from '@/lib/chat';
 import {
   getMessageContainerClasses,
   getAvatarClasses,
@@ -12,7 +12,7 @@ import {
   hasMessageSources,
   getConfidenceColor,
   getConfidenceTextColor
-} from '@/lib/messageService';
+} from '@/lib/chat/messageService';
 
 interface ChatMessagesProps {
   messages: ChatMessage[];

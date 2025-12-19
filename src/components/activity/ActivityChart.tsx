@@ -1,6 +1,6 @@
 import React from 'react';
 import { TrendingUp, PieChart, BarChart3 } from 'lucide-react';
-import { ActivityItem } from '@/hooks/useActivityData';
+import { ActivityItem } from '@/types/activity';
 
 interface ActivityChartProps {
   activities: ActivityItem[];
