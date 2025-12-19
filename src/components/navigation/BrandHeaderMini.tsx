@@ -25,8 +25,8 @@ export function BrandHeaderMini({ isCollapsed }: BrandHeaderMiniProps) {
         `}
       </style>
       
-      <div className={`mt-2 ${!isCollapsed ? 'p-3 w-full' : 'h-14 w-14 p-1'} border-gray-200 bg-white flex items-center rounded-xl shadow-md transition-all duration-500 ease-in-out`}>
-        <div className={`flex ${isCollapsed ? 'gap-0 h-12 w-12' : 'gap-4'}`}>
+      <div className={`mt-2 ${!isCollapsed ? 'p-3 w-full' : 'h-16 w-16 p-1'} border-gray-200 bg-white flex items-center rounded-xl shadow-md transition-all duration-500 ease-in-out`}>
+        <div className={`pl-2 flex items-center ${isCollapsed ? 'gap-0 h-16 w-16' : 'gap-4'}`}>
           {/* Enhanced Icon with Color Spread & Shadow - Fixed Size */}
           <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-600 rounded-xl flex items-center justify-center relative group flex-shrink-0">
             {/* Color Spread Effect */}

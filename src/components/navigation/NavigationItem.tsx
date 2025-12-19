@@ -41,8 +41,8 @@ export const NavigationItem = React.memo(({
         "group relative flex items-center font-medium text-white transition-all duration-300 ease-out",
         "rounded-xl overflow-hidden",
         collapsed
-          ? "w-12 h-12 justify-center"
-          : "gap-3 px-3 py-2.5 min-w-0"
+          ? "w-16 h-16 justify-center"
+          : "gap-2 px-3 py-2.5 pl-5"
       )}
       title={collapsed ? name : undefined}
       style={{

@@ -12,7 +12,7 @@ import { UploadProgressBar } from "@/components/uploads/UploadProgressBar";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useDownloadedPDFs } from "@/hooks/useDownloadedPDFs";
 import { useVirtualizedList } from "@/hooks/useVirtualizedList";
-import { PageContent, TableRow } from "./components";
+import { TableRow } from "./components";
 import { PDFFile } from "./components/types";
 import { Navigation } from "@/components/navigation";
 import BrandHeader from "@/components/layout/BrandHeader";

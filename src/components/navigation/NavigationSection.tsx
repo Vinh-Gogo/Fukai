@@ -17,15 +17,15 @@ export const NavigationSection = React.memo(({
 }: NavigationSectionProps) => {
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0">
-      <div className={cn("space-y-1", collapsed ? "py-1 px-1" : "p-1")}>
+      <div className={cn("space-y-2", collapsed ? "py-1 px-1" : "p-1")}>
         {/* Part 1: Main Functions */}
         <div className="space-y-2">
           {!collapsed && (
-            <div className="text-xs font-semibold text-white uppercase tracking-wider mb-2">
+            <div className="text-sm font-semibold text-white uppercase tracking-wider mb-2">
               Main Functions
             </div>
           )}
-          <div className="space-y-1">
+          <div className="space-y-2">
             {navigationItems.map((item) => (
               <NavigationItem
                 key={item.name}
@@ -42,11 +42,11 @@ export const NavigationSection = React.memo(({
         {/* Part 2: System Tools */}
         <div className="space-y-2">
           {!collapsed && (
-            <div className="text-sm font-bold text-white uppercase tracking-wider mb-2">
+            <div className="text-s font-bold text-white uppercase tracking-wider mb-2">
               System Tools
             </div>
           )}
-          <div className="space-y-1">
+          <div className="space-y-2">
             {toolItems.map((item) => (
               <ToolItem
                 key={item.name}

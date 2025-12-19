@@ -1,63 +1,120 @@
-import React, { memo, useState, useCallback, useEffect, useRef } from 'react';
-import { X, Minus, Plus, ChevronLeft, ChevronRight, Info, RefreshCw, AlertCircle, FileText } from 'lucide-react';
+import React, { memo, useState, useCallback, useEffect, useLayoutEffect, useRef, Component, ErrorInfo } from 'react';
+import { X, Minus, Plus, ChevronLeft, ChevronRight, Info, RefreshCw, AlertCircle, FileText, Search, X as CloseIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PDFViewerProps } from './types';
+import { usePDFLoader } from '@/hooks/usePDFLoader';
+import { usePDFRenderer } from '@/hooks/usePDFRenderer';
+import { preloadAdjacentPages, getDevicePixelRatio } from '@/lib/pdfUtils';
+
+/**
+ * Error Boundary for PDF Viewer
+ */
+class PDFViewerErrorBoundary extends Component<
+  { children: React.ReactNode; onRetry?: () => void },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: React.ReactNode; onRetry?: () => void }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('PDF Viewer Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="h-full flex items-center justify-center bg-gray-100 p-8">
+          <div className="text-center max-w-md mx-auto">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-900 mb-2">PDF Viewer Error</h3>
+            <p className="text-gray-600 mb-4">
+              Something went wrong while rendering the PDF. This might be due to a corrupted file or browser compatibility issue.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => {
+                  this.setState({ hasError: false, error: undefined });
+                  this.props.onRetry?.();
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Retry
+              </button>
+              <button
+                onClick={() => this.props.children}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+              >
+                Reload Viewer
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 /**
  * PDF Viewer with actual PDF content rendering using pdf.js
  */
 export const PDFViewer = memo(({ file, onClose }: PDFViewerProps) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [pdfDoc, setPdfDoc] = useState<any>(null);
   const [visiblePages, setVisiblePages] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(file.pages);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Array<{page: number, text: string, index: number}>>([]);
+  const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [zoomPresets, setZoomPresets] = useState([0.5, 0.75, 1, 1.25, 1.5, 2, 3]);
+  const [pageLoadingStates, setPageLoadingStates] = useState<Map<number, boolean>>(new Map());
 
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRefs = useRef<Map<number, HTMLCanvasElement>>(new Map());
-  const renderTasksRef = useRef<Map<number, any>>(new Map()); // Store render tasks for cancellation
-  const thumbnailTasksRef = useRef<Map<number, any>>(new Map()); // Store thumbnail render tasks
+  const lastCalculatedPdfRef = useRef<string>('');
+  const [shouldCalculatePages, setShouldCalculatePages] = useState(false);
 
-  // Initialize pdf.js
+  // Use the existing PDF hooks
+  const {
+    pdfDoc,
+    isLoading,
+    error,
+    metadata,
+    isValid,
+    loadPDF,
+    unloadPDF,
+    retry
+  } = usePDFLoader();
+
+  const {
+    renderPage: renderPDFPage,
+    cancelAllRenders,
+    cleanup: cleanupRenderer,
+    calculateScale
+  } = usePDFRenderer();
+
+  const totalPages = metadata?.numPages || file.pages;
+
+  // Load PDF when file changes
   useEffect(() => {
-    // Only run on client side
-    if (typeof window === 'undefined') return;
-
-    const loadPDF = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        // Import pdf.js dynamically
-        const pdfjs = await import('pdfjs-dist');
-        // Set worker path to local file for reliability
-        pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
-
-        // Load the PDF document
-        const loadingTask = pdfjs.getDocument(file.sourceUrl);
-        const pdf = await loadingTask.promise;
-
-        setPdfDoc(pdf);
-        setTotalPages(pdf.numPages);
-      } catch (err) {
-        console.error('Error loading PDF:', err);
-        setError('Failed to load PDF document. Please try again later.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadPDF();
+    if (file.sourceUrl) {
+      loadPDF(file.sourceUrl);
+    }
 
     return () => {
-      if (pdfDoc) {
-        pdfDoc.destroy();
-      }
+      unloadPDF();
+      cancelAllRenders();
     };
-  }, [file.sourceUrl]);
+  }, [file.sourceUrl, loadPDF, unloadPDF, cancelAllRenders]);
 
   // Calculate visible pages for virtualization
   const calculateVisiblePages = useCallback(() => {
@@ -85,72 +142,43 @@ export const PDFViewer = memo(({ file, onClose }: PDFViewerProps) => {
     setCurrentPage(Math.max(1, Math.min(totalPages, firstVisiblePage)));
   }, [pdfDoc, totalPages, zoomLevel]);
 
-  // Render PDF pages
-  const renderPage = useCallback(async (pageNumber: number) => {
-    if (!pdfDoc || !canvasRefs.current.has(pageNumber)) return;
-
-    try {
-      // Cancel any existing render task for this page
-      const existingTask = renderTasksRef.current.get(pageNumber);
-      if (existingTask && !existingTask.cancelled) {
-        existingTask.cancel();
-      }
-
-      const canvas = canvasRefs.current.get(pageNumber);
-      if (!canvas) return;
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      const page = await pdfDoc.getPage(pageNumber);
-
-      // Set canvas dimensions with zoom factor
-      const scale = zoomLevel * 1.5; // Adjust scale factor as needed
-      const viewport = page.getViewport({ scale });
-
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-
-      // Clear canvas before rendering
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Create render task and store it
-      const renderTask = page.render({
-        canvasContext: ctx,
-        viewport: viewport
-      });
-
-      renderTasksRef.current.set(pageNumber, renderTask);
-
-      // Wait for render to complete
-      await renderTask.promise;
-
-      // Clean up completed task
-      renderTasksRef.current.delete(pageNumber);
-
-    } catch (err) {
-      // Clean up failed task
-      renderTasksRef.current.delete(pageNumber);
-
-      // Only log errors that aren't due to cancellation
-      if (!(err instanceof Error) || !err.message.includes('cancelled')) {
-        console.error(`Error rendering page ${pageNumber}:`, err);
-      }
-    }
-  }, [pdfDoc, zoomLevel]);
-
   // Render visible pages when they change
   useEffect(() => {
     if (!pdfDoc) return;
 
-    visiblePages.forEach(page => {
-      renderPage(page);
-    });
-  }, [visiblePages, pdfDoc, zoomLevel, renderPage]);
+    const devicePixelRatio = getDevicePixelRatio();
 
-  // Handle scroll events
+    visiblePages.forEach(async (pageNumber) => {
+      const canvas = canvasRefs.current.get(pageNumber);
+      if (!canvas) return;
+
+      // Set loading state
+      setPageLoadingStates(prev => new Map(prev.set(pageNumber, true)));
+
+      try {
+        const scale = calculateScale(canvas.clientWidth, 600, zoomLevel) * devicePixelRatio;
+        await renderPDFPage(pageNumber, canvas, pdfDoc, scale);
+      } catch (error) {
+        console.error(`Failed to render page ${pageNumber}:`, error);
+      } finally {
+        // Clear loading state
+        setPageLoadingStates(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(pageNumber);
+          return newMap;
+        });
+      }
+    });
+  }, [visiblePages, pdfDoc, zoomLevel, renderPDFPage, calculateScale]);
+
+  // Handle scroll events with debouncing
   const handleScroll = useCallback(() => {
-    calculateVisiblePages();
+    // Debounce scroll calculations
+    const timeoutId = setTimeout(() => {
+      calculateVisiblePages();
+    }, 16); // ~60fps
+
+    return () => clearTimeout(timeoutId);
   }, [calculateVisiblePages]);
 
   // Navigate to specific page
@@ -165,23 +193,15 @@ export const PDFViewer = memo(({ file, onClose }: PDFViewerProps) => {
   // Handle zoom changes
   const handleZoomChange = useCallback((newZoom: number) => {
     setZoomLevel(newZoom);
-    // Re-render all visible pages with new zoom level
-    visiblePages.forEach(page => {
-      renderPage(page);
-    });
-  }, [visiblePages, renderPage]);
+    // Cancel all current renders and re-render visible pages
+    cancelAllRenders();
+  }, [cancelAllRenders]);
 
-  // Render thumbnail for a page
+  // Render thumbnail for a page (simplified version)
   const renderThumbnail = useCallback(async (pageNumber: number, canvas: HTMLCanvasElement) => {
     if (!pdfDoc) return;
 
     try {
-      // Cancel any existing thumbnail render task for this page
-      const existingTask = thumbnailTasksRef.current.get(pageNumber);
-      if (existingTask && !existingTask.cancelled) {
-        existingTask.cancel();
-      }
-
       const page = await pdfDoc.getPage(pageNumber);
       const scale = 0.3;
       const viewport = page.getViewport({ scale });
@@ -195,24 +215,16 @@ export const PDFViewer = memo(({ file, onClose }: PDFViewerProps) => {
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Create render task and store it
+      // Create render task
       const renderTask = page.render({
         canvasContext: ctx,
         viewport: viewport
       });
 
-      thumbnailTasksRef.current.set(pageNumber, renderTask);
-
       // Wait for render to complete
       await renderTask.promise;
 
-      // Clean up completed task
-      thumbnailTasksRef.current.delete(pageNumber);
-
     } catch (err) {
-      // Clean up failed task
-      thumbnailTasksRef.current.delete(pageNumber);
-
       // Only log errors that aren't due to cancellation
       if (!(err instanceof Error) || !err.message.includes('cancelled')) {
         console.error(`Error rendering thumbnail for page ${pageNumber}:`, err);
@@ -220,18 +232,138 @@ export const PDFViewer = memo(({ file, onClose }: PDFViewerProps) => {
     }
   }, [pdfDoc]);
 
+  // Extract text from a PDF page
+  const extractPageText = useCallback(async (pageNumber: number): Promise<string> => {
+    if (!pdfDoc) return '';
+
+    try {
+      const page = await pdfDoc.getPage(pageNumber);
+      const textContent = await page.getTextContent();
+      return textContent.items
+        .map((item) => item.str)
+        .join(' ')
+        .toLowerCase();
+    } catch (error) {
+      console.error(`Error extracting text from page ${pageNumber}:`, error);
+      return '';
+    }
+  }, [pdfDoc]);
+
+  // Perform text search across all pages
+  const performSearch = useCallback(async (query: string) => {
+    if (!query.trim() || !pdfDoc) {
+      setSearchResults([]);
+      setCurrentSearchIndex(-1);
+      return;
+    }
+
+    setIsSearching(true);
+    const results: Array<{page: number, text: string, index: number}> = [];
+    const searchTerm = query.toLowerCase().trim();
+
+    try {
+      // Search through all pages
+      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+        const pageText = await extractPageText(pageNum);
+        const index = pageText.indexOf(searchTerm);
+
+        if (index !== -1) {
+          // Extract context around the match
+          const start = Math.max(0, index - 50);
+          const end = Math.min(pageText.length, index + searchTerm.length + 50);
+          const context = pageText.substring(start, end);
+
+          results.push({
+            page: pageNum,
+            text: context,
+            index: results.length
+          });
+        }
+      }
+
+      setSearchResults(results);
+      setCurrentSearchIndex(results.length > 0 ? 0 : -1);
+
+      // Navigate to first result
+      if (results.length > 0) {
+        goToPage(results[0].page);
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchResults([]);
+      setCurrentSearchIndex(-1);
+    } finally {
+      setIsSearching(false);
+    }
+  }, [pdfDoc, totalPages, extractPageText, goToPage]);
+
+  // Navigate to next/previous search result
+  const navigateSearchResult = useCallback((direction: 'next' | 'prev') => {
+    if (searchResults.length === 0) return;
+
+    let newIndex;
+    if (direction === 'next') {
+      newIndex = currentSearchIndex < searchResults.length - 1 ? currentSearchIndex + 1 : 0;
+    } else {
+      newIndex = currentSearchIndex > 0 ? currentSearchIndex - 1 : searchResults.length - 1;
+    }
+
+    setCurrentSearchIndex(newIndex);
+    goToPage(searchResults[newIndex].page);
+  }, [searchResults, currentSearchIndex, goToPage]);
+
+  // Handle search input changes
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    // Debounce search
+    const timeoutId = setTimeout(() => {
+      performSearch(query);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [performSearch]);
+
+  // Clear search
+  const clearSearch = useCallback(() => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setCurrentSearchIndex(-1);
+    setShowSearch(false);
+  }, []);
+
   // Setup scroll listener
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    container.addEventListener('scroll', handleScroll);
-    calculateVisiblePages();
+    const handleScrollEvent = () => handleScroll();
+    container.addEventListener('scroll', handleScrollEvent);
 
     return () => {
-      container.removeEventListener('scroll', handleScroll);
+      container.removeEventListener('scroll', handleScrollEvent);
     };
-  }, [handleScroll, calculateVisiblePages]);
+  }, [handleScroll]);
+
+  // Calculate visible pages when PDF loads or dependencies change
+  useLayoutEffect(() => {
+    if (pdfDoc && file.sourceUrl !== lastCalculatedPdfRef.current) {
+      lastCalculatedPdfRef.current = file.sourceUrl;
+      // Defer calculation to avoid setState in effect - using requestAnimationFrame
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      requestAnimationFrame(() => {
+        calculateVisiblePages();
+      });
+    }
+  }, [pdfDoc, file.sourceUrl, calculateVisiblePages]);
+
+  // Preload adjacent pages for better performance
+  useEffect(() => {
+    if (pdfDoc && currentPage > 0) {
+      preloadAdjacentPages(pdfDoc, currentPage, 2);
+    }
+  }, [pdfDoc, currentPage]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -294,7 +426,23 @@ export const PDFViewer = memo(({ file, onClose }: PDFViewerProps) => {
   }
 
   return (
-    <div className="h-full flex flex-col bg-white rounded-xl overflow-hidden shadow-xl">
+    <PDFViewerErrorBoundary onRetry={() => {
+      // Reset component state and retry loading
+      setVisiblePages([]);
+      setCurrentPage(1);
+      setZoomLevel(1);
+      setSearchQuery('');
+      setSearchResults([]);
+      setCurrentSearchIndex(-1);
+      setIsSearching(false);
+      setShowSearch(false);
+      setPageLoadingStates(new Map());
+      // Reload PDF
+      if (file.sourceUrl) {
+        loadPDF(file.sourceUrl);
+      }
+    }}>
+      <div className="h-full flex flex-col bg-white rounded-xl overflow-hidden shadow-xl">
       {/* Header with controls */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -318,6 +466,20 @@ export const PDFViewer = memo(({ file, onClose }: PDFViewerProps) => {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          {/* Search Toggle */}
+          <button
+            onClick={() => setShowSearch(!showSearch)}
+            className={cn(
+              "p-2 rounded-lg transition-colors",
+              showSearch
+                ? "bg-white/30 text-white"
+                : "text-white/80 hover:bg-white/20"
+            )}
+            aria-label="Toggle search"
+          >
+            <Search className="w-4 h-4" />
+          </button>
+
           <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
             <button
               onClick={() => handleZoomChange(Math.max(0.5, zoomLevel - 0.1))}
@@ -326,7 +488,18 @@ export const PDFViewer = memo(({ file, onClose }: PDFViewerProps) => {
             >
               <Minus className="w-4 h-4" />
             </button>
-            <span className="text-sm font-medium">{Math.round(zoomLevel * 100)}%</span>
+            <select
+              value={zoomLevel}
+              onChange={(e) => handleZoomChange(parseFloat(e.target.value))}
+              className="bg-transparent text-white text-sm font-medium border-none outline-none cursor-pointer min-w-16"
+              aria-label="Zoom level"
+            >
+              {zoomPresets.map(preset => (
+                <option key={preset} value={preset} className="text-black">
+                  {Math.round(preset * 100)}%
+                </option>
+              ))}
+            </select>
             <button
               onClick={() => handleZoomChange(Math.min(3, zoomLevel + 0.1))}
               className="p-1 hover:bg-white/30 rounded"
@@ -340,10 +513,101 @@ export const PDFViewer = memo(({ file, onClose }: PDFViewerProps) => {
             className="px-3 py-1 bg-white/20 rounded hover:bg-white/30 transition-colors"
             aria-label="Reset zoom"
           >
-            100%
+            Fit Width
           </button>
         </div>
       </div>
+
+      {/* Search Panel */}
+      {showSearch && (
+        <div className="bg-white border-b border-gray-200 p-4">
+          <div className="flex items-center gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search in PDF..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isSearching}
+              />
+              {isSearching && (
+                <RefreshCw className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 animate-spin" />
+              )}
+            </div>
+
+            {searchResults.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">
+                  {currentSearchIndex + 1} of {searchResults.length}
+                </span>
+                <button
+                  onClick={() => navigateSearchResult('prev')}
+                  disabled={searchResults.length <= 1}
+                  className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50"
+                  aria-label="Previous search result"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => navigateSearchResult('next')}
+                  disabled={searchResults.length <= 1}
+                  className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50"
+                  aria-label="Next search result"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            <button
+              onClick={clearSearch}
+              className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+              aria-label="Close search"
+            >
+              <CloseIcon className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Search Results */}
+          {searchResults.length > 0 && (
+            <div className="mt-4 max-h-32 overflow-y-auto">
+              <div className="text-sm text-gray-600 mb-2">
+                Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+              </div>
+              <div className="space-y-1">
+                {searchResults.slice(0, 5).map((result, index) => (
+                  <button
+                    key={result.index}
+                    onClick={() => {
+                      setCurrentSearchIndex(result.index);
+                      goToPage(result.page);
+                    }}
+                    className={cn(
+                      "w-full text-left p-2 rounded hover:bg-gray-50 transition-colors",
+                      currentSearchIndex === result.index && "bg-blue-50 border border-blue-200"
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Page {result.page}</span>
+                      <span className="text-xs text-gray-500">#{result.index + 1}</span>
+                    </div>
+                    <div className="text-xs text-gray-600 truncate mt-1">
+                      {result.text}
+                    </div>
+                  </button>
+                ))}
+                {searchResults.length > 5 && (
+                  <div className="text-xs text-gray-500 text-center py-1">
+                    ... and {searchResults.length - 5} more results
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Page navigation bar */}
       <div className="bg-gray-50 border-y border-gray-200 p-2 flex items-center justify-between">
@@ -416,17 +680,21 @@ export const PDFViewer = memo(({ file, onClose }: PDFViewerProps) => {
                     </span>
                   </div>
                   <div
-                    className="flex items-center justify-center"
+                    className="flex items-center justify-center relative"
                     style={{ height: `calc(100% - 40px)` }}
                   >
+                    {pageLoadingStates.get(page) && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10">
+                        <div className="flex items-center gap-2 bg-white rounded-lg px-4 py-2 shadow-lg">
+                          <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
+                          <span className="text-sm text-gray-600">Loading page...</span>
+                        </div>
+                      </div>
+                    )}
                     <canvas
                       ref={(el) => {
                         if (el) {
                           canvasRefs.current.set(page, el);
-                          // Render page if PDF is loaded
-                          if (pdfDoc) {
-                            renderPage(page);
-                          }
                         }
                       }}
                       className="max-w-full max-h-full"
@@ -487,6 +755,7 @@ export const PDFViewer = memo(({ file, onClose }: PDFViewerProps) => {
         <kbd className="px-2 py-0.5 bg-gray-200 rounded font-mono text-xs">-</kbd> Zoom out
       </div>
     </div>
+    </PDFViewerErrorBoundary>
   );
 });
 

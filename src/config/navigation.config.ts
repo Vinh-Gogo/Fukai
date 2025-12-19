@@ -27,14 +27,14 @@ export interface ToolItemConfig {
 
 export const navigationItems: NavigationItemConfig[] = [
   {
-    name: "Crawl Control",
+    name: "Crawl Data",
     href: "/",
     icon: Search,
     description: "Web scraping dashboard",
     gradient: "from-blue-500 via-cyan-500 to-blue-600",
   },
   {
-    name: "PDF Processing",
+    name: "Data Process",
     href: "/pdfs",
     icon: FileText,
     description: "PDF to Markdown pipeline",

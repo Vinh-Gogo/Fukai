@@ -48,7 +48,7 @@ export function Navigation({ isVisible = true, onToggle }: { isVisible?: boolean
               ? "w-72 translate-x-0"
               : "-translate-x-full"
             : "",
-          !isMobile && collapsed ? "w-16" : "w-60",
+          !isMobile && collapsed ? "w-22" : "w-66",
           "block"
         )}
         // Áp dụng cùng gradient như BrandHeader
@@ -66,7 +66,7 @@ export function Navigation({ isVisible = true, onToggle }: { isVisible?: boolean
         {/* Content with relative positioning */}
         <div className="relative flex flex-col h-full text-white">
           {/* 1. Brand Header Mini */}
-          <div className="flex-shrink-0 p-4">
+          <div className="flex-shrink-0 p-3">
             <BrandHeaderMini isCollapsed={collapsed} />
           </div>
 
