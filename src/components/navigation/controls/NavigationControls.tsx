@@ -1,8 +1,8 @@
 import React, { useCallback } from "react";
 import { Menu, X } from "lucide-react";
 import { useThemeStyles, useMouseTracking } from "@/hooks";
-import { MobileOverlay } from "../ui/MobileOverlay";
-import { CollapseToggle } from "../ui/CollapseToggle";
+import { MobileOverlay } from "@/components/ui/MobileOverlay";
+import { CollapseToggle } from "@/components/ui/CollapseToggle";
 
 interface NavigationControlsProps {
   isVisible: boolean;

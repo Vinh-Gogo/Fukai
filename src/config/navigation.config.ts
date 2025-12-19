@@ -7,6 +7,7 @@ import {
   History,
   Archive,
   BarChart3,
+  Palette,
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
@@ -82,5 +83,11 @@ export const toolItems: ToolItemConfig[] = [
     href: "/settings",
     icon: Settings,
     gradient: "from-blue-500 via-blue-400 to-blue-600",
+  },
+  {
+    name: "Background Bar",
+    href: "#background-bar",
+    icon: Palette,
+    gradient: "from-purple-500 via-pink-500 to-purple-600",
   },
 ];

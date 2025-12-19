@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Config files that need CommonJS:
+    "jest.config.js",
+    "jest.setup.js",
+    // Third-party minified libraries:
+    "public/pdf.worker.min.js",
   ]),
 ]);
 

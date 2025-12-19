@@ -33,6 +33,14 @@ src/
 │   ├── ui/                # UI hooks
 │   └── utils/             # Utility hooks
 ├── lib/                   # Services and utilities
+│   ├── core/              # 🆕 Core architecture utilities
+│   │   ├── ErrorBoundary.tsx    # Error boundary system
+│   │   ├── APIClient.ts         # Unified API client
+│   │   ├── StateManager.ts      # Enhanced state management
+│   │   ├── Security.ts          # Security utilities
+│   │   ├── Performance.ts       # Performance optimization
+│   │   ├── Config.ts            # Configuration management
+│   │   └── index.ts             # Barrel export
 │   ├── archive/           # Archive utilities
 │   ├── chat/              # Chat service
 │   ├── crawl/             # Crawl service + API client

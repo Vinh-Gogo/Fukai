@@ -15,7 +15,8 @@ export const useChatScroll = (dependencies: unknown[] = []): UseChatScrollResult
   // Auto-scroll when dependencies change
   useEffect(() => {
     scrollToBottom();
-  }, dependencies);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scrollToBottom, ...dependencies]);
 
   return {
     messagesEndRef,

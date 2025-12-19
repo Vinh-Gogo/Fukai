@@ -350,7 +350,7 @@ export const PDFViewer = memo(({ file, onClose }: PDFViewerProps) => {
     if (pdfDoc && file.sourceUrl !== lastCalculatedPdfRef.current) {
       lastCalculatedPdfRef.current = file.sourceUrl;
       // Defer calculation to avoid setState in effect - using requestAnimationFrame
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+       
       requestAnimationFrame(() => {
         calculateVisiblePages();
       });
@@ -744,7 +744,7 @@ export const PDFViewer = memo(({ file, onClose }: PDFViewerProps) => {
         </div>
       </div>
 
-      {/* Keyboard shortcuts hint */}
+      {/* Keyboard shortcuts hint
       <div className="bg-gray-50 border-t border-gray-200 p-2 text-center text-xs text-gray-500">
         <span className="hidden sm:inline">Keyboard shortcuts: </span>
         <kbd className="px-2 py-0.5 bg-gray-200 rounded font-mono text-xs">←</kbd> Previous page •
@@ -752,7 +752,7 @@ export const PDFViewer = memo(({ file, onClose }: PDFViewerProps) => {
         <kbd className="px-2 py-0.5 bg-gray-200 rounded font-mono text-xs">Ctrl</kbd> +
         <kbd className="px-2 py-0.5 bg-gray-200 rounded font-mono text-xs">+</kbd> Zoom in •
         <kbd className="px-2 py-0.5 bg-gray-200 rounded font-mono text-xs">-</kbd> Zoom out
-      </div>
+      </div> */}
     </div>
     </PDFViewerErrorBoundary>
   );

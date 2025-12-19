@@ -116,8 +116,11 @@ export const useCrawlJobs = (): UseCrawlJobsResult => {
   // Load from localStorage only on client side after mount
   useEffect(() => {
     const loaded = loadJobsFromStorage();
-    setJobs(loaded);
-    setIsLoading(false);
+    // Defer state update to avoid cascading renders
+    setTimeout(() => {
+      setJobs(loaded);
+      setIsLoading(false);
+    }, 0);
   }, []);
 
   // Save jobs whenever they change (skip initial load)

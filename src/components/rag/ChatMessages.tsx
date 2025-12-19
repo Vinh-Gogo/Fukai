@@ -28,11 +28,13 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({ messages }) => {
         >
           {/* Avatar */}
           <div className={getAvatarClasses(message.role)}>
-            {message.role === 'user' ? (
-              <User className="w-5 h-5 text-white" />
-            ) : (
-              <Bot className="w-5 h-5 text-white" />
-            )}
+            <div className="w-5 h-5 flex items-center justify-center">
+              {message.role === 'user' ? (
+                <User className="w-full h-full text-white" />
+              ) : (
+                <Bot className="w-full h-full text-white" />
+              )}
+            </div>
           </div>
 
           {/* Message Bubble */}

@@ -10,29 +10,29 @@ export const QUICK_PROMPTS: QuickPrompt[] = [
     id: 'summary',
     label: 'Summarize',
     icon: () => null, // Will be imported where needed
-    query: 'Provide a comprehensive summary of the key points',
-    description: 'Get a concise overview'
+    query: 'Provide a comprehensive summary of the key points from this page content. Include main topics, important findings, and actionable insights.',
+    description: 'Get a concise overview of page content'
   },
   {
     id: 'explain',
     label: 'Explain',
     icon: () => null,
-    query: 'Explain this concept in simple terms',
-    description: 'Break down complex ideas'
+    query: 'Explain this concept in simple terms based on the page content. Break down complex ideas into easy-to-understand explanations with examples.',
+    description: 'Break down complex ideas from the page'
   },
   {
     id: 'find',
     label: 'Find Info',
     icon: () => null,
-    query: 'Find relevant information about',
-    description: 'Search for specific details'
+    query: 'Find relevant information about this topic within the page content. Extract specific details, facts, and data points related to the query.',
+    description: 'Search for specific details in page content'
   },
   {
     id: 'analyze',
     label: 'Analyze',
     icon: () => null,
-    query: 'Analyze and provide insights on',
-    description: 'Deep analysis & insights'
+    query: 'Analyze and provide insights on this topic using the page content. Include trends, patterns, relationships, and deeper implications.',
+    description: 'Deep analysis & insights from page content'
   }
 ];
 

@@ -6,7 +6,7 @@ export const runtime = 'edge';
 import React, { useState } from "react";
 import dynamic from 'next/dynamic';
 import BrandHeader from "@/components/layout/BrandHeader";
-import { Activity, BarChart3, TrendingUp, Users, Clock, Filter } from "lucide-react";
+import { Activity } from "lucide-react";
 
 // Components
 import { ActivityOverview } from "@/components/activity/ActivityOverview";

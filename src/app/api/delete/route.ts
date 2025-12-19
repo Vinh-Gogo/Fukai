@@ -28,7 +28,7 @@ export async function DELETE(request: NextRequest) {
     try {
       // Delete the file
       await unlink(filepath);
-    } catch (fileError) {
+    } catch {
       // File might not exist, which is fine
       console.log('File not found or already deleted:', filepath);
     }

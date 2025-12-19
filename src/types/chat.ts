@@ -12,6 +12,14 @@ export interface ChatMessage {
   sources?: string[];
 }
 
+export interface ConversationSession {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface QuickPrompt {
   id: string;
   label: string;

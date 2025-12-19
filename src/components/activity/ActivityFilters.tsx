@@ -1,6 +1,5 @@
 import React from 'react';
 import { Search, Filter, Calendar, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface ActivityFiltersProps {
   filters: {

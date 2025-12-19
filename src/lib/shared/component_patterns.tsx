@@ -9,7 +9,7 @@ import { BaseComponentProps, InteractiveComponentProps, AnimationVariants, Trans
 export function withLoading<P extends BaseComponentProps>(
   Component: React.ComponentType<P>
 ) {
-  const WithLoadingComponent = forwardRef<any, P & { loading?: boolean; loadingText?: string }>(
+  const WithLoadingComponent = forwardRef<HTMLElement, P & { loading?: boolean; loadingText?: string }>(
     ({ loading = false, loadingText = 'Loading...', ...props }, ref) => {
       if (loading) {
         return (
@@ -70,7 +70,7 @@ export function withErrorBoundary<P extends BaseComponentProps>(
     }
   }
 
-  (WithErrorBoundary as any).displayName = createDisplayName('WithErrorBoundary', Component.displayName || Component.name);
+  (WithErrorBoundary as unknown as React.ComponentType).displayName = createDisplayName('WithErrorBoundary', Component.displayName || Component.name);
   return WithErrorBoundary;
 }
 
@@ -99,7 +99,7 @@ export function withAnimation<P extends BaseComponentProps>(
   Component: React.ComponentType<P>,
   animationVariant: keyof typeof AnimationVariants = 'fadeIn'
 ) {
-  const WithAnimationComponent = forwardRef<any, P>((props, ref) => {
+  const WithAnimationComponent = forwardRef<HTMLElement, P>((props, ref) => {
     const animation = AnimationVariants[animationVariant];
 
     return (

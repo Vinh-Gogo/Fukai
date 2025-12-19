@@ -46,8 +46,8 @@ const formatActivityDetails = (activity: ActivityItem): string => {
       return `Duration: ${details.duration_ms}ms`;
     default:
       return Object.entries(details)
-        .filter(([key, value]) => value !== null && value !== undefined)
-        .map(([key, value]) => `${key}: ${value}`)
+        .filter(([, value]) => value !== null && value !== undefined)
+        .map(([key]) => `${key}: ${details[key]}`)
         .join(', ');
   }
 };

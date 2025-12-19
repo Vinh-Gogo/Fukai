@@ -29,7 +29,7 @@ const PDFViewer = dynamic(() => import('@/components/pdf/PDFViewer').then(mod =>
 });
 
 export default function PDFProcessing() {
-  const { addDownloadedPDF, isPDFDownloaded } = useDownloadedPDFs();
+  const { addDownloadedPDF } = useDownloadedPDFs();
   const { uploads, uploadFiles, cancelUpload } = useFileUpload();
   const [files, setFiles] = useState<PDFFile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -182,7 +182,7 @@ export default function PDFProcessing() {
     }));
 
     setFiles(prev => [...newPDFFiles, ...prev]);
-  }, []);
+  }, [uploadFiles]);
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 overflow-x-hidden">

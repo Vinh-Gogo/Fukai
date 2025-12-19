@@ -89,6 +89,13 @@ const Component = dynamic(
 - @types/react
 - @types/node
 
+### Development Dependencies (Testing)
+- @testing-library/jest-dom
+- @testing-library/react
+- @testing-library/user-event
+- jest
+- jest-environment-jsdom
+
 ## File Conventions
 
 ### Page Files

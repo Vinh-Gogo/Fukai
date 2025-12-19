@@ -4,3 +4,4 @@ export { ChatInput } from './ChatInput';
 export { QuickPrompts } from './QuickPrompts';
 export { WelcomeScreen } from './WelcomeScreen';
 export { TypingIndicator } from './TypingIndicator';
+export { ConversationHistoryPanel } from './ConversationHistoryPanel';

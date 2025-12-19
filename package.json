@@ -13,6 +13,8 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.26",
+    "glob": "^13.0.0",
+    "inflight": "^1.0.6",
     "lodash": "^4.17.21",
     "lucide-react": "^0.561.0",
     "next": "16.0.10",
@@ -22,17 +24,23 @@
     "react-chartjs-2": "^5.3.1",
     "react-dom": "19.2.1",
     "react-window": "^2.2.3",
+    "snowfall": "^2.1.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^16.0.10",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
