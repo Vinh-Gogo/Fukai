@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback, useId, useSyncExternalStore } from "react";
+import React, { useState, useEffect, useCallback, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LogIn, LogOut } from "lucide-react";
+import { useAuthStore } from "@/stores/auth";
 
 // ============================================================================
 // Types
@@ -48,37 +49,34 @@ const useRandomPosition = () => {
 };
 
 // ============================================================================
-// Custom Hook: useAuth (using useSyncExternalStore for localStorage)
+// Auth hook using Zustand store
 // ============================================================================
 
-const STORAGE_KEY = 'isLoggedIn';
-
-const subscribe = (callback: () => void) => {
-  window.addEventListener('storage', callback);
-  return () => window.removeEventListener('storage', callback);
-};
-
-const getSnapshot = () => {
-  return localStorage.getItem(STORAGE_KEY) === 'true';
-};
-
-const getServerSnapshot = () => false;
-
 const useAuth = () => {
-  const isLoggedIn = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const isLoggedIn = useAuthStore((state) => state.isAuthenticated)
+  const { login: storeLogin, logout: storeLogout } = useAuthStore((state) => ({
+    login: state.login,
+    logout: state.logout
+  }))
 
+  // Wrap Zustand login to work with the component's expectations
   const login = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, 'true');
-    window.dispatchEvent(new Event('storage'));
-  }, []);
+    // For demo purposes, create a mock user and token
+    storeLogin({
+      id: 'demo-user',
+      email: 'demo@example.com',
+      full_name: 'Demo User',
+      is_active: true,
+      created_at: new Date().toISOString()
+    }, 'demo-token')
+  }, [storeLogin])
 
   const logout = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, 'false');
-    window.dispatchEvent(new Event('storage'));
-  }, []);
+    storeLogout()
+  }, [storeLogout])
 
-  return { isLoggedIn, login, logout };
-};
+  return { isLoggedIn, login, logout }
+}
 
 // ============================================================================
 // Custom Hook: useContextMenu

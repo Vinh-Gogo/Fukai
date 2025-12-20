@@ -43,6 +43,8 @@ interface JobCardProps {
   onStart: (id: string) => void;
   onStop: (id: string) => void;
   onReRun: (id: string) => void;
+  onDelete: (id: string) => void;
+  onEdit: (id: string) => void;
   onAddToProcessing: (urls: string[]) => void;
   onDownloadSingle: (url: string) => void;
 }
@@ -53,6 +55,8 @@ export const JobCard = React.memo(({
   onStart,
   onStop,
   onReRun,
+  onDelete,
+  onEdit,
   onAddToProcessing,
   onDownloadSingle,
 }: JobCardProps) => {
@@ -115,6 +119,8 @@ export const JobCard = React.memo(({
           onStart={onStart}
           onStop={onStop}
           onReRun={onReRun}
+          onDelete={onDelete}
+          onEdit={onEdit}
           jobId={job.id}
         />
       </div>

@@ -113,26 +113,7 @@ Route (app)
 - Refactored CollapseToggle into modular component
 - Added fly animation with auth context menu
 
-### Phase 5: Backend Integration 🚧
-- Connect to real APIs
-- Implement actual crawling
-- Add RAG functionality
-
-### Phase 2: Feature Development ✅
-- Crawl dashboard functionality
-- PDF viewer implementation
-- Archive management
-- RAG chat interface
-- Activity dashboard
-
-### Phase 3: Refactoring ✅ (Current)
-- Consolidated duplicate code
-- Organized hooks by feature
-- Centralized type definitions
-- Standardized import patterns
-- Created shared components (NavigationSkeleton)
-
-### Phase 4: Backend Integration 🚧
+### Phase 6: Backend Integration 🚧
 - Connect to real APIs
 - Implement actual crawling
 - Add RAG functionality

@@ -7,7 +7,7 @@ interface UseCrawlOperationsResult {
   startCrawl: (jobId: string, job: CrawlJob) => Promise<void>;
   stopCrawl: (jobId: string) => void;
   downloadSinglePDF: (pdfUrl: string) => Promise<void>;
-  downloadAllPDFs: (pdfUrls: string[]) => Promise<void>;
+  downloadAllPDFs: (pdfUrls: string[]) => Promise<DownloadAPIResponse>;
   handleAutoDownload: (jobId: string, pdfUrls: string[]) => Promise<void>;
 }
 
@@ -33,7 +33,7 @@ interface DownloadAPIResponse {
 const crawlAPI = {
   async getPages(url: string): Promise<CrawlAPIResponse> {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/crawl/pages?url=${encodeURIComponent(url)}`
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawl/pages?url=${encodeURIComponent(url)}`
     );
 
     if (!response.ok) {
@@ -45,7 +45,7 @@ const crawlAPI = {
 
   async getArticles(pageUrls: string[]): Promise<CrawlAPIResponse> {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/crawl/articles`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawl/articles`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -62,7 +62,7 @@ const crawlAPI = {
 
   async getPDFLinks(articleUrls: string[]): Promise<CrawlAPIResponse> {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/crawl/pdf-links`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawl/pdf-links`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -79,7 +79,7 @@ const crawlAPI = {
 
   async checkExistingPDFs(): Promise<{ existing_files: string[] }> {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/pdfs/existing`
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/files/existing`
     );
 
     if (!response.ok) {
@@ -91,7 +91,7 @@ const crawlAPI = {
 
   async downloadPDFs(pdfUrls: string[]): Promise<DownloadAPIResponse> {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/download-pdfs`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/files/download-pdfs`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -282,7 +282,7 @@ export const useCrawlOperations = (
     }
   }, [logActivity, logError]);
 
-  const downloadAllPDFs = useCallback(async (pdfUrls: string[]) => {
+  const downloadAllPDFs = useCallback(async (pdfUrls: string[]): Promise<DownloadAPIResponse> => {
     if (!pdfUrls?.length) {
       throw new Error("No PDFs found to download");
     }
@@ -304,6 +304,7 @@ export const useCrawlOperations = (
           output_dir: data.output_dir,
         });
         // Could add toast notification here
+        return data;
       } else {
         throw new Error(data.message || "Bulk download failed");
       }

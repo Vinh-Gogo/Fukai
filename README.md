@@ -1,5 +1,8 @@
 # Web RAG Application
 
+## 🎥 Demo Video
+[Watch the Demo](Demo.mp4)
+
 A comprehensive Retrieval-Augmented Generation (RAG) application for processing, indexing, and searching PDF documents from the Biwase website. Features web crawling, PDF text extraction, semantic search, and an intuitive web interface.
 
 ## 🌟 Features
@@ -14,6 +17,27 @@ A comprehensive Retrieval-Augmented Generation (RAG) application for processing,
 
 ## 🏗️ Architecture
 
+### Project Structure
+```
+search_rag/
+├── backend/                    # FastAPI backend application
+├── src/                        # Next.js frontend source code
+│   ├── app/                    # Next.js App Router pages
+│   ├── components/             # React components
+│   ├── hooks/                  # Custom React hooks
+│   ├── lib/                    # Utility functions
+│   ├── stores/                 # State management (Zustand)
+│   ├── types/                  # TypeScript type definitions
+│   └── config/                 # Frontend configuration
+├── public/                     # Static assets
+├── package.json                # Frontend dependencies and scripts
+├── next.config.ts              # Next.js configuration
+├── tsconfig.json               # TypeScript configuration
+├── eslint.config.mjs           # ESLint configuration
+└── [other config files]
+```
+
+### Service Architecture
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Next.js UI    │    │   FastAPI       │    │   QDrant        │
@@ -145,8 +169,8 @@ A comprehensive Retrieval-Augmented Generation (RAG) application for processing,
 docker-compose -f docker/docker-compose.yml up -d
 
 # Or manually
-cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000
-cd .. && npm run build && npm start
+cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+cd ../frontend && npm run build && npm start
 ```
 
 ## 📚 API Documentation
@@ -193,7 +217,20 @@ python -m pytest --cov=app --cov-report=html
 
 ### Frontend Tests
 
+The frontend includes a comprehensive Jest + React Testing Library setup with TypeScript support.
+
+#### Test Configuration
+
+- **Framework**: Jest with jsdom environment
+- **Testing Library**: React Testing Library + Testing Library Jest DOM
+- **TypeScript**: Full type safety with custom Jest type declarations (`src/jest.d.ts`)
+- **Module Mocking**: Configured for `@/` path aliases and external dependencies
+
+#### Running Tests
+
 ```bash
+cd frontend
+
 # Using pnpm
 pnpm test
 
@@ -202,7 +239,72 @@ npm test
 
 # Or yarn
 yarn test
+
+# Run specific test file
+npm test -- src/hooks/crawl/useCrawlJobForm.test.ts
+
+# Run with coverage
+npm test -- --coverage
+
+# Watch mode for development
+npm run test:watch
 ```
+
+#### Test File Patterns
+
+- **Unit Tests**: `*.test.ts`, `*.test.tsx`
+- **Integration Tests**: `*.spec.ts`, `*.spec.tsx`
+- **Location**: `src/**/__tests__/` or alongside source files
+- **Example**: `src/hooks/crawl/useCrawlJobForm.test.ts`
+
+#### Testing Best Practices
+
+1. **Component Testing**:
+   - Use `render` from React Testing Library
+   - Query elements by accessibility attributes
+   - Test user interactions with `fireEvent` or `userEvent`
+   - Assert on rendered content and behavior
+
+2. **Hook Testing**:
+   - Use `renderHook` for custom hooks
+   - Test hook state and side effects
+   - Mock external dependencies appropriately
+
+3. **Mocking Strategy**:
+   - Mock external APIs and services
+   - Use `jest.mock()` for module mocking
+   - Provide consistent mock implementations
+
+#### Jest Configuration Details
+
+The project uses a custom Jest configuration (`jest.config.js`) with Next.js integration:
+
+```javascript
+{
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+  testEnvironment: 'jest-environment-jsdom',
+  // ... additional configuration
+}
+```
+
+#### TypeScript Support
+
+Jest globals are properly typed through `src/jest.d.ts`:
+
+```typescript
+declare global {
+  const jest: typeof jestType;
+  const describe: jestType.Describe;
+  const it: jestType.It;
+  const expect: jestType.Expect;
+  // ... other globals
+}
+```
+
+This ensures full TypeScript intellisense and type checking in test files.
 
 ### Integration Tests
 

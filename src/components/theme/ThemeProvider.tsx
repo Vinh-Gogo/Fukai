@@ -2,7 +2,8 @@
 
 'use client';
 
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { createContext, useContext } from 'react';
+import { memo, useOptimizedMemo, useOptimizedEffect } from '@/lib/performance';
 import { useTheme } from '@/hooks/theme/useTheme';
 import type { ThemeContextValue } from '@/types/search';
 
@@ -23,21 +24,21 @@ interface ThemeProviderProps {
   defaultTheme?: 'light' | 'dark' | 'auto';
 }
 
-export function ThemeProvider({
+export const ThemeProvider = memo<ThemeProviderProps>(({
   children,
   defaultTheme = 'auto'
-}: ThemeProviderProps) {
+}) => {
   const themeHook = useTheme();
 
-  // Override default theme if specified
-  useEffect(() => {
+  // Override default theme if specified - optimized with useOptimizedEffect
+  useOptimizedEffect(() => {
     if (defaultTheme !== 'auto' && themeHook.theme.mode === 'auto') {
       themeHook.setTheme({ mode: defaultTheme });
     }
-  }, [defaultTheme, themeHook]);
+  }, [defaultTheme, themeHook.theme.mode, themeHook.setTheme]);
 
-  // Provide theme context value
-  const contextValue: ThemeContextValue = {
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useOptimizedMemo<ThemeContextValue>(() => ({
     theme: themeHook.theme,
     setTheme: themeHook.setTheme,
     toggleMode: themeHook.toggleMode,
@@ -45,13 +46,23 @@ export function ThemeProvider({
     isLight: themeHook.isLight,
     isAuto: themeHook.isAuto,
     isSystemDark: themeHook.isSystemDark
-  };
+  }), [
+    themeHook.theme,
+    themeHook.setTheme,
+    themeHook.toggleMode,
+    themeHook.isDark,
+    themeHook.isLight,
+    themeHook.isAuto,
+    themeHook.isSystemDark
+  ], 'theme-context-value');
 
   return (
     <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );
-}
+});
+
+ThemeProvider.displayName = 'ThemeProvider';
 
 export default ThemeProvider;

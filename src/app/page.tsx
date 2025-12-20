@@ -2,7 +2,6 @@
 
 // Disable SSR to prevent hydration issues with browser APIs
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 
 import React, { useState, useCallback, useEffect } from "react";
 import dynamicImport from 'next/dynamic';
@@ -76,11 +75,65 @@ export default function Home() {
     crawlSettings.updateSettings({ autoDownloadEnabled: enabled });
   }, [crawlSettings]);
 
-  const handleAddToProcessing = useCallback((pdfUrls: string[]) => {
-    const pdfFiles = pdfUrls.map((url, index) => createPDFFile(url, index));
-    StorageService.savePendingPDFs(pdfFiles);
-    // TODO: Add toast notification
-  }, []);
+  const handleAddToProcessing = useCallback(async (pdfUrls: string[]) => {
+    if (!pdfUrls || pdfUrls.length === 0) {
+      alert('No PDFs found to add to processing');
+      return;
+    }
+
+    try {
+      // Download PDFs using the existing download API
+      const data = await crawlOperations.downloadAllPDFs(pdfUrls);
+
+      if (data.success) {
+        // Navigate to PDFs page to show the downloaded files
+        window.location.href = '/pdfs';
+      } else {
+        alert(`Failed to download PDFs: ${data.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error adding PDFs to processing:', error);
+      alert(`Failed to add PDFs to processing: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }, [crawlOperations]);
+
+  const handleDeleteJob = useCallback((jobId: string) => {
+    if (window.confirm('Are you sure you want to delete this crawl job?')) {
+      crawlJobs.removeJob(jobId);
+    }
+  }, [crawlJobs]);
+
+  const handleEditJob = useCallback((jobId: string) => {
+    const job = crawlJobs.getJob(jobId);
+    if (!job) return;
+
+    const newUrl = window.prompt('Edit job URL:', job.url);
+    if (newUrl && newUrl.trim() !== job.url) {
+      try {
+        if (!newUrl.trim()) throw new Error("URL cannot be empty");
+        const trimmedUrl = newUrl.trim();
+        if (!isValidUrl(trimmedUrl)) throw new Error("Please enter a valid URL");
+
+        // Check for duplicate URLs
+        const existingJob = crawlJobs.jobs.find(j => j.id !== jobId && j.url === trimmedUrl);
+        if (existingJob) throw new Error("A job with this URL already exists");
+
+        crawlJobs.updateJob(jobId, { url: trimmedUrl });
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Failed to update job');
+      }
+    }
+  }, [crawlJobs]);
+
+  // Validate URL format (duplicate from hook for use here)
+  const isValidUrl = (url: string): boolean => {
+    try {
+      const urlObj = new URL(url);
+      return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
 
   // Loading state
   if (crawlJobs.isLoading) {
@@ -147,6 +200,8 @@ export default function Home() {
               onStart={handleStartCrawl}
               onStop={crawlOperations.stopCrawl}
               onReRun={handleStartCrawl}
+              onDelete={handleDeleteJob}
+              onEdit={handleEditJob}
               onAddToProcessing={handleAddToProcessing}
               onDownloadSingle={crawlOperations.downloadSinglePDF}
             />

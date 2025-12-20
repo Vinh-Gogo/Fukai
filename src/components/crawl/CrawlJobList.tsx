@@ -8,6 +8,8 @@ interface CrawlJobListProps {
   onStart: (jobId: string) => void;
   onStop: (jobId: string) => void;
   onReRun: (jobId: string) => void;
+  onDelete: (jobId: string) => void;
+  onEdit: (jobId: string) => void;
   onAddToProcessing: (pdfUrls: string[]) => void;
   onDownloadSingle: (pdfUrl: string) => void;
 }
@@ -18,6 +20,8 @@ export const CrawlJobList: React.FC<CrawlJobListProps> = ({
   onStart,
   onStop,
   onReRun,
+  onDelete,
+  onEdit,
   onAddToProcessing,
   onDownloadSingle,
 }) => {
@@ -61,6 +65,8 @@ export const CrawlJobList: React.FC<CrawlJobListProps> = ({
             onStart={onStart}
             onStop={onStop}
             onReRun={onReRun}
+            onDelete={onDelete}
+            onEdit={onEdit}
             onAddToProcessing={onAddToProcessing}
             onDownloadSingle={onDownloadSingle}
           />

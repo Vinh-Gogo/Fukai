@@ -17,6 +17,15 @@ const eslintConfig = defineConfig([
     "jest.setup.js",
     // Third-party minified libraries:
     "public/pdf.worker.min.js",
+    // Python virtual environment (contains third-party JS files):
+    ".venv/**",
+    // Backend directory (Python files):
+    "backend/**",
+    // Other project directories:
+    "docker/**",
+    "docs/**",
+    "scripts/**",
+    "memory_bank/**",
   ]),
 ]);
 

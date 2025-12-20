@@ -1,189 +1,533 @@
-import { LucideIcon } from 'lucide-react';
-import { ReactNode } from 'react';
+import React from 'react'
+
+// ============================================================================
+// COMMON PROP INTERFACES
+// ============================================================================
 
 /**
- * Base component props interface for consistent component patterns
+ * Standard size variants used across components
  */
-export interface BaseComponentProps {
+export type ComponentSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+
+/**
+ * Standard variant types for components
+ */
+export type ComponentVariant =
+  | 'primary'
+  | 'secondary'
+  | 'outline'
+  | 'ghost'
+  | 'destructive'
+  | 'success'
+  | 'warning'
+  | 'info'
+
+/**
+ * Common spacing values
+ */
+export type Spacing = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
+
+/**
+ * Common shadow/elevation values
+ */
+export type Shadow = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
+
+/**
+ * Common border radius values
+ */
+export type BorderRadius = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full'
+
+/**
+ * Common loading states
+ */
+export interface LoadingStateProps {
+  loading?: boolean
+  disabled?: boolean
+}
+
+/**
+ * Common error state props
+ */
+export interface ErrorStateProps {
+  error?: string
+  helperText?: string
+  hasError?: boolean
+}
+
+/**
+ * Common accessibility props
+ */
+export interface AccessibilityProps {
+  'aria-label'?: string
+  'aria-describedby'?: string
+  'aria-invalid'?: boolean
+  role?: string
+}
+
+/**
+ * Base component props that all UI components should extend
+ */
+export interface BaseComponentProps extends
+  LoadingStateProps,
+  Partial<AccessibilityProps> {
+
   /** Additional CSS classes */
-  className?: string;
-  /** Additional inline styles */
-  style?: React.CSSProperties;
-  /** Test ID for testing purposes */
-  'data-testid'?: string;
+  className?: string
+
+  /** Component ID */
+  id?: string
+
+  /** Test ID for testing */
+  'data-testid'?: string
 }
 
-/**
- * Interactive component props interface
- */
-export interface InteractiveComponentProps extends BaseComponentProps {
-  /** Click handler */
-  onClick?: () => void;
-  /** Disabled state */
-  disabled?: boolean;
-  /** Loading state */
-  loading?: boolean;
-  /** Tab index for accessibility */
-  tabIndex?: number;
-  /** ARIA label for screen readers */
-  'aria-label'?: string;
-}
+// ============================================================================
+// BUTTON COMPONENT PROPS
+// ============================================================================
 
-/**
- * Card component props interface
- */
-export interface CardComponentProps extends InteractiveComponentProps {
-  /** Card title */
-  title?: string;
-  /** Card description */
-  description?: string;
-  /** Card icon */
-  icon?: LucideIcon;
-  /** Card variant */
-  variant?: 'default' | 'primary' | 'secondary' | 'outline';
-  /** Card size */
-  size?: 'sm' | 'md' | 'lg';
-}
+export interface ButtonProps extends
+  BaseComponentProps,
+  Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof BaseComponentProps> {
 
-/**
- * Status component props interface
- */
-export interface StatusComponentProps extends BaseComponentProps {
-  /** Status value */
-  status: 'idle' | 'loading' | 'success' | 'error' | 'warning';
-  /** Status text */
-  text?: string;
-  /** Show icon */
-  showIcon?: boolean;
-  /** Size variant */
-  size?: 'sm' | 'md' | 'lg';
-}
-
-/**
- * Navigation item props interface
- */
-export interface NavigationItemProps extends InteractiveComponentProps {
-  /** Navigation item name */
-  name: string;
-  /** Navigation href */
-  href: string;
-  /** Navigation icon */
-  icon: LucideIcon;
-  /** Navigation description */
-  description: string;
-  /** Collapsed state for sidebar */
-  collapsed?: boolean;
-  /** Animation delay for staggered animations */
-  delay?: number;
-  /** Active state */
-  active?: boolean;
-}
-
-/**
- * Form input props interface
- */
-export interface InputComponentProps extends InteractiveComponentProps {
-  /** Input label */
-  label?: string;
-  /** Input placeholder */
-  placeholder?: string;
-  /** Input value */
-  value?: string;
-  /** Input name */
-  name?: string;
-  /** Input type */
-  type?: 'text' | 'email' | 'password' | 'number' | 'url' | 'search';
-  /** Required field */
-  required?: boolean;
-  /** Error message */
-  error?: string;
-  /** Helper text */
-  helperText?: string;
-  /** Left icon */
-  leftIcon?: LucideIcon;
-  /** Right icon */
-  rightIcon?: LucideIcon;
-}
-
-/**
- * Button component props interface
- */
-export interface ButtonComponentProps extends InteractiveComponentProps {
   /** Button variant */
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
+  variant?: ComponentVariant
+
   /** Button size */
-  size?: 'sm' | 'md' | 'lg';
+  size?: ComponentSize
+
+  /** Whether button takes full width */
+  fullWidth?: boolean
+
   /** Button content */
-  children: ReactNode;
+  children: React.ReactNode
+
   /** Left icon */
-  leftIcon?: LucideIcon;
+  leftIcon?: React.ReactNode
+
   /** Right icon */
-  rightIcon?: LucideIcon;
-  /** Full width */
-  fullWidth?: boolean;
+  rightIcon?: React.ReactNode
+
+  /** Button type */
+  type?: 'button' | 'submit' | 'reset'
 }
 
-/**
- * Modal/Dialog props interface
- */
-export interface ModalComponentProps extends BaseComponentProps {
-  /** Modal is open */
-  isOpen: boolean;
-  /** Close handler */
-  onClose: () => void;
+// ============================================================================
+// CARD COMPONENT PROPS
+// ============================================================================
+
+export interface CardProps extends BaseComponentProps {
+  /** Card padding */
+  padding?: Spacing
+
+  /** Card shadow/elevation */
+  shadow?: Shadow
+
+  /** Whether to show border */
+  border?: boolean
+
+  /** Border radius */
+  rounded?: boolean | BorderRadius
+
+  /** Card content */
+  children: React.ReactNode
+
+  /** Whether card is interactive/hoverable */
+  interactive?: boolean
+}
+
+export interface CardSectionProps extends BaseComponentProps {
+  children: React.ReactNode
+}
+
+export type CardHeaderProps = CardSectionProps
+export type CardContentProps = CardSectionProps
+export type CardFooterProps = CardSectionProps
+
+export interface CardTitleProps extends BaseComponentProps {
+  children: React.ReactNode
+  /** Title level for semantic HTML */
+  level?: 1 | 2 | 3 | 4 | 5 | 6
+}
+
+export interface CardDescriptionProps extends BaseComponentProps {
+  children: React.ReactNode
+}
+
+// ============================================================================
+// INPUT COMPONENT PROPS
+// ============================================================================
+
+export interface InputProps extends
+  BaseComponentProps,
+  ErrorStateProps,
+  Omit<React.InputHTMLAttributes<HTMLInputElement>, keyof BaseComponentProps | keyof ErrorStateProps | 'size'> {
+
+  /** Input type */
+  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search'
+
+  /** Input size */
+  size?: ComponentSize
+
+  /** Left icon/element */
+  leftAddon?: React.ReactNode
+
+  /** Right icon/element */
+  rightAddon?: React.ReactNode
+
+  /** Whether input is clearable */
+  clearable?: boolean
+}
+
+export interface TextareaProps extends
+  BaseComponentProps,
+  ErrorStateProps,
+  Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, keyof BaseComponentProps | keyof ErrorStateProps> {
+
+  /** Textarea size */
+  size?: ComponentSize
+
+  /** Number of visible rows */
+  rows?: number
+
+  /** Whether textarea is resizable */
+  resizable?: boolean
+
+  /** Auto-resize based on content */
+  autoResize?: boolean
+}
+
+// ============================================================================
+// FORM COMPONENT PROPS
+// ============================================================================
+
+export interface FormFieldProps extends BaseComponentProps {
+  /** Field label */
+  label?: string
+
+  /** Field description */
+  description?: string
+
+  /** Whether field is required */
+  required?: boolean
+
+  /** Field layout direction */
+  layout?: 'vertical' | 'horizontal'
+
+  /** Label width (for horizontal layout) */
+  labelWidth?: string | number
+}
+
+export interface FormProps extends BaseComponentProps {
+  /** Form submission handler */
+  onSubmit?: (data: Record<string, unknown>) => void | Promise<void>
+
+  /** Form validation mode */
+  validationMode?: 'onChange' | 'onBlur' | 'onSubmit'
+
+  /** Form layout */
+  layout?: 'vertical' | 'horizontal' | 'inline'
+
+  /** Form size */
+  size?: ComponentSize
+}
+
+// ============================================================================
+// LAYOUT COMPONENT PROPS
+// ============================================================================
+
+export interface ContainerProps extends BaseComponentProps {
+  /** Container size constraint */
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
+
+  /** Container padding */
+  padding?: Spacing
+
+  /** Center content */
+  center?: boolean
+
+  children: React.ReactNode
+}
+
+export interface FlexProps extends BaseComponentProps {
+  /** Flex direction */
+  direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse'
+
+  /** Justify content */
+  justify?: 'start' | 'end' | 'center' | 'between' | 'around' | 'evenly'
+
+  /** Align items */
+  align?: 'start' | 'end' | 'center' | 'baseline' | 'stretch'
+
+  /** Flex wrap */
+  wrap?: boolean | 'wrap' | 'nowrap' | 'wrap-reverse'
+
+  /** Gap between items */
+  gap?: Spacing
+
+  children: React.ReactNode
+}
+
+export interface GridProps extends BaseComponentProps {
+  /** Number of columns */
+  columns?: number | string
+
+  /** Gap between grid items */
+  gap?: Spacing
+
+  /** Minimum item width */
+  minChildWidth?: string | number
+
+  children: React.ReactNode
+}
+
+// ============================================================================
+// OVERLAY COMPONENT PROPS
+// ============================================================================
+
+export interface ModalProps extends BaseComponentProps {
+  /** Whether modal is open */
+  isOpen: boolean
+
+  /** Modal close handler */
+  onClose: () => void
+
   /** Modal title */
-  title?: string;
-  /** Modal content */
-  children: ReactNode;
-  /** Modal footer */
-  footer?: ReactNode;
+  title?: string
+
   /** Modal size */
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  /** Show close button */
-  showCloseButton?: boolean;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
+
+  /** Whether modal is centered */
+  centered?: boolean
+
+  /** Whether to show close button */
+  closable?: boolean
+
+  /** Modal content */
+  children: React.ReactNode
+}
+
+export interface DrawerProps extends BaseComponentProps {
+  /** Whether drawer is open */
+  isOpen: boolean
+
+  /** Drawer close handler */
+  onClose: () => void
+
+  /** Drawer title */
+  title?: string
+
+  /** Drawer position */
+  position?: 'left' | 'right' | 'top' | 'bottom'
+
+  /** Drawer size */
+  size?: string | number
+
+  /** Whether to show close button */
+  closable?: boolean
+
+  /** Drawer content */
+  children: React.ReactNode
+}
+
+export interface TooltipProps extends BaseComponentProps {
+  /** Tooltip content */
+  content: React.ReactNode
+
+  /** Tooltip placement */
+  placement?: 'top' | 'bottom' | 'left' | 'right' | 'auto'
+
+  /** Trigger element */
+  children: React.ReactNode
+
+  /** Whether tooltip is disabled */
+  disabled?: boolean
+}
+
+// ============================================================================
+// DATA DISPLAY COMPONENT PROPS
+// ============================================================================
+
+export interface BadgeProps extends BaseComponentProps {
+  /** Badge variant */
+  variant?: ComponentVariant
+
+  /** Badge size */
+  size?: ComponentSize
+
+  /** Badge content */
+  children: React.ReactNode
+}
+
+export interface AvatarProps extends BaseComponentProps {
+  /** Avatar source URL */
+  src?: string
+
+  /** Avatar alt text */
+  alt?: string
+
+  /** Avatar fallback content */
+  fallback?: React.ReactNode
+
+  /** Avatar size */
+  size?: ComponentSize
+
+  /** Avatar shape */
+  shape?: 'circle' | 'square' | 'rounded'
+
+  /** Whether avatar is online */
+  online?: boolean
+}
+
+export interface TableProps extends BaseComponentProps {
+  /** Table data */
+  data?: Record<string, unknown>[]
+
+  /** Table columns configuration */
+  columns?: Record<string, unknown>[]
+
+  /** Loading state */
+  loading?: boolean
+
+  /** Empty state content */
+  emptyContent?: React.ReactNode
+
+  /** Table size */
+  size?: ComponentSize
+
+  /** Whether table is selectable */
+  selectable?: boolean
+
+  /** Selection change handler */
+  onSelectionChange?: (selectedRows: Record<string, unknown>[]) => void
+}
+
+// ============================================================================
+// FEEDBACK COMPONENT PROPS
+// ============================================================================
+
+export interface AlertProps extends BaseComponentProps {
+  /** Alert type */
+  type?: 'success' | 'error' | 'warning' | 'info'
+
+  /** Alert title */
+  title?: string
+
+  /** Alert message */
+  message?: string
+
+  /** Whether alert is closable */
+  closable?: boolean
+
+  /** Alert close handler */
+  onClose?: () => void
+
+  /** Alert icon */
+  icon?: React.ReactNode
+
+  /** Alert content */
+  children?: React.ReactNode
+}
+
+export interface ToastProps extends AlertProps {
+  /** Toast duration in milliseconds */
+  duration?: number
+
+  /** Toast position */
+  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center'
+}
+
+export interface SpinnerProps extends BaseComponentProps {
+  /** Spinner size */
+  size?: ComponentSize
+
+  /** Spinner color */
+  color?: string
+
+  /** Spinner thickness */
+  thickness?: number
+
+  /** Custom spinner label */
+  label?: string
+}
+
+// ============================================================================
+// UTILITY TYPES
+// ============================================================================
+
+/**
+ * Extract props for a component, excluding children if it's required
+ */
+export type ComponentProps<T extends React.ElementType> = React.ComponentPropsWithoutRef<T>
+
+/**
+ * Create a polymorphic component prop interface
+ */
+export type PolymorphicProps<E extends React.ElementType, P = Record<string, never>> = P & {
+  as?: E
+} & Omit<ComponentProps<E>, keyof P>
+
+/**
+ * Interactive component props for hoverable/clickable elements
+ */
+export interface InteractiveComponentProps extends EventHandlers {
+  /** Whether component is interactive */
+  interactive?: boolean
+
+  /** Hover state */
+  hover?: boolean
+
+  /** Active/pressed state */
+  active?: boolean
+
+  /** Focus state */
+  focused?: boolean
+
+  /** Disabled state */
+  disabled?: boolean
 }
 
 /**
- * Standard animation variants for consistent motion
+ * Animation variants for Framer Motion
  */
-export const AnimationVariants = {
-  fadeIn: {
-    initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    exit: { opacity: 0 },
-  },
-  slideUp: {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -20 },
-  },
-  slideIn: {
-    initial: { opacity: 0, x: -20 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: 20 },
-  },
-  scaleIn: {
-    initial: { opacity: 0, scale: 0.8 },
-    animate: { opacity: 1, scale: 1 },
-    exit: { opacity: 0, scale: 0.8 },
-  },
-} as const;
+export interface AnimationVariants {
+  initial?: Record<string, unknown>
+  animate?: Record<string, unknown>
+  exit?: Record<string, unknown>
+  hover?: Record<string, unknown>
+  tap?: Record<string, unknown>
+  focus?: Record<string, unknown>
+  disabled?: Record<string, unknown>
+}
 
 /**
- * Standard transition configurations
+ * Transition configuration for animations
  */
-export const TransitionConfig = {
-  fast: { duration: 0.15, ease: 'easeOut' },
-  normal: { duration: 0.3, ease: 'easeOut' },
-  slow: { duration: 0.5, ease: 'easeOut' },
-  bounce: { duration: 0.6, ease: [0.68, -0.55, 0.265, 1.55] },
-} as const;
+export interface TransitionConfig {
+  duration?: number
+  delay?: number
+  ease?: string | number[]
+  type?: 'tween' | 'spring' | 'keyframes' | 'inertia' | 'just'
+  stiffness?: number
+  damping?: number
+  mass?: number
+  bounce?: number
+  restSpeed?: number
+  restDelta?: number
+  repeat?: number
+  repeatType?: 'loop' | 'reverse' | 'mirror'
+  repeatDelay?: number
+}
 
 /**
- * Standard component size configurations
+ * Common event handlers
  */
-export const SizeConfig = {
-  sm: { padding: '0.5rem 0.75rem', fontSize: '0.875rem', height: '2rem' },
-  md: { padding: '0.75rem 1rem', fontSize: '1rem', height: '2.5rem' },
-  lg: { padding: '1rem 1.5rem', fontSize: '1.125rem', height: '3rem' },
-} as const;
+export interface EventHandlers {
+  onClick?: (event: React.MouseEvent) => void
+  onMouseEnter?: (event: React.MouseEvent) => void
+  onMouseLeave?: (event: React.MouseEvent) => void
+  onFocus?: (event: React.FocusEvent) => void
+  onBlur?: (event: React.FocusEvent) => void
+  onKeyDown?: (event: React.KeyboardEvent) => void
+  onKeyUp?: (event: React.KeyboardEvent) => void
+}

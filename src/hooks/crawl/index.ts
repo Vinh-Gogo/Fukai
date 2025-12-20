@@ -4,6 +4,7 @@
 
 // Crawl job management hooks
 export { useCrawlJobs } from './useCrawlJobs';
+export { useCrawlJobForm } from './useCrawlJobForm';
 
 // Crawl settings management hooks
 export { useCrawlSettings } from './useCrawlSettings';

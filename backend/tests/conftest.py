@@ -10,8 +10,8 @@ from unittest.mock import Mock, AsyncMock
 import pytest
 from dotenv import load_dotenv
 
-# Load test environment variables
-load_dotenv(Path(__file__).parent.parent / ".env.test")
+# Load test environment variables first
+load_dotenv(Path(__file__).parent.parent / ".env.test", override=True)
 
 from app.core.config import Settings
 

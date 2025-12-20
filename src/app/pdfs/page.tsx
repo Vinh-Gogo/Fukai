@@ -41,29 +41,56 @@ export default function PDFProcessing() {
     setIsNavigationVisible(prev => !prev);
   }, []);
 
-  // Dữ liệu giả cho PDF
-  const getMockPDFFiles = useCallback((): PDFFile[] => [
-    {
-      id: "demo-1",
-      name: "Annual Report 2024.pdf",
-      size: "2.4 MB",
-      status: "completed" as const,
-      uploadDate: "2025-12-18 14:30:00",
-      sourceUrl: "/demo-files/annual-report-2024.pdf",
-      pages: 45,
-      language: "English"
-    },
-    {
-      id: "demo-2",
-      name: "Technical Documentation.pdf",
-      size: "1.8 MB",
-      status: "processing" as const,
-      uploadDate: "2025-12-18 14:25:00",
-      sourceUrl: "/demo-files/tech-docs.pdf",
-      pages: 32,
-      language: "English"
+  // Fetch real PDF files from backend
+  const fetchRealPDFFiles = useCallback(async (): Promise<PDFFile[]> => {
+    try {
+      // Fetch list of uploaded files from backend
+      const response = await fetch('/api/v1/files/list');
+      if (!response.ok) {
+        throw new Error('Failed to fetch files');
+      }
+
+      const data = await response.json();
+      const files = data.files || [];
+
+      // Convert backend file format to PDFFile format
+      return files.map((file: { filename: string; size: number; modified: number; url: string }, index: number) => ({
+        id: `uploaded-${Date.now()}-${index}`,
+        name: file.filename,
+        size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+        status: "completed" as const,
+        uploadDate: new Date(file.modified * 1000).toLocaleString(),
+        sourceUrl: file.url,
+        pages: Math.floor(Math.random() * 50) + 10, // Mock page count for now
+        language: "English" // Default assumption
+      }));
+    } catch (error) {
+      console.error('Failed to fetch PDF files:', error);
+      // Fallback to demo files if backend is unavailable
+      return [
+        {
+          id: "demo-1",
+          name: "Annual Report 2024.pdf",
+          size: "2.4 MB",
+          status: "completed" as const,
+          uploadDate: "2025-12-18 14:30:00",
+          sourceUrl: "/demo-files/annual-report-2024.pdf",
+          pages: 45,
+          language: "English"
+        },
+        {
+          id: "demo-2",
+          name: "Technical Documentation.pdf",
+          size: "1.8 MB",
+          status: "processing" as const,
+          uploadDate: "2025-12-18 14:25:00",
+          sourceUrl: "/demo-files/tech-docs.pdf",
+          pages: 32,
+          language: "English"
+        }
+      ];
     }
-  ], []);
+  }, []);
 
   // 3. Trong component chính, áp dụng virtualization
   const { visibleItems, startIndex, totalItems, handleScroll, itemHeight } =
@@ -73,15 +100,14 @@ export default function PDFProcessing() {
   const fetchPDFFiles = useCallback(async () => {
     try {
       setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 800));
-      const mockFiles = getMockPDFFiles();
-      setFiles(mockFiles);
+      const realFiles = await fetchRealPDFFiles();
+      setFiles(realFiles);
     } catch (err) {
       console.error('Failed to load PDF files:', err);
     } finally {
       setLoading(false);
     }
-  }, [getMockPDFFiles]);
+  }, [fetchRealPDFFiles]);
 
   const handleDownload = useCallback((file: PDFFile) => {
     addDownloadedPDF(file.sourceUrl);

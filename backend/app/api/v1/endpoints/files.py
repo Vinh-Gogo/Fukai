@@ -6,25 +6,9 @@ from pathlib import Path
 from typing import List, Dict, Any
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
 
 from app.core.config import settings
-
-
-class FileInfo(BaseModel):
-    """File information model"""
-    filename: str
-    size: int
-    path: str
-    url: str
-
-
-class UploadResponse(BaseModel):
-    """Upload response model"""
-    success: bool
-    filename: str
-    size: int
-    message: str
+from app.schemas.files import FileInfo, UploadResponse
 
 
 router = APIRouter()
@@ -157,10 +141,11 @@ async def download_pdfs(request: Dict[str, List[str]]) -> Dict[str, Any]:
         if not pdf_urls:
             raise HTTPException(status_code=400, detail="pdf_urls is required")
 
-        from app.services.crawler import BiwaseCrawler
+        from app.domains.crawler.crawler import BiwaseCrawler
 
         # Create crawler instance
-        crawler = BiwaseCrawler(
+        from app.domains.crawler.base_crawler import CrawlConfig
+        config = CrawlConfig(
             base_url=settings.BIWASE_BASE_URL,
             output_dir=settings.UPLOAD_DIR,
             max_retries=3,
@@ -168,6 +153,7 @@ async def download_pdfs(request: Dict[str, List[str]]) -> Dict[str, Any]:
             request_timeout=settings.CRAWL_TIMEOUT,
             rate_limit_delay=settings.CRAWL_DELAY
         )
+        crawler = BiwaseCrawler(config)
 
         # Download PDFs
         downloaded_count = 0

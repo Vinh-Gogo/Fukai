@@ -3,7 +3,7 @@ Main API router that combines all endpoint routers
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import crawl, files, health
+from app.api.v1.endpoints import crawl, files, health, database, auth
 
 api_router = APIRouter()
 
@@ -24,4 +24,16 @@ api_router.include_router(
     files.router,
     prefix="/files",
     tags=["files"]
+)
+
+api_router.include_router(
+    database.router,
+    prefix="/database",
+    tags=["database"]
+)
+
+api_router.include_router(
+    auth.router,
+    prefix="/auth",
+    tags=["authentication"]
 )

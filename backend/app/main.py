@@ -11,6 +11,9 @@ from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api.v1.api import api_router
 from app.core.database import create_tables
+from app.core.middleware import ExceptionHandlerMiddleware, RequestLoggingMiddleware
+from app.core.rate_limiting import limiter, rate_limit_exceeded_handler
+from slowapi import SlowAPIMiddleware
 
 # Setup structured logging
 setup_logging()
@@ -53,6 +56,16 @@ if settings.ALLOWED_HOSTS:
         allowed_hosts=settings.ALLOWED_HOSTS,
     )
 
+# Add custom middleware
+app.add_middleware(ExceptionHandlerMiddleware)
+app.add_middleware(RequestLoggingMiddleware)
+
+# Add rate limiting middleware
+app.add_middleware(SlowAPIMiddleware)
+
+# Add rate limit exception handler
+app.add_exception_handler(429, rate_limit_exceeded_handler)
+
 # Include API routers
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
@@ -65,26 +78,3 @@ async def health_check():
 async def root():
     """Root endpoint"""
     return {"message": "FastAPI Backend for Web Crawling and Document Management"}
-
-# Middleware for request logging
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    """Log all requests"""
-    logger = structlog.get_logger()
-    logger.info(
-        "request_started",
-        method=request.method,
-        url=str(request.url),
-        headers=dict(request.headers),
-    )
-
-    response = await call_next(request)
-
-    logger.info(
-        "request_completed",
-        method=request.method,
-        url=str(request.url),
-        status_code=response.status_code,
-    )
-
-    return response

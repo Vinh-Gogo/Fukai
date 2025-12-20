@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Download, ExternalLink, Play, Square, RefreshCw, Settings } from "lucide-react";
+import { Download, ExternalLink, Play, Square, RefreshCw, Settings, Trash2, Edit } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface JobControlsProps {
@@ -9,6 +9,8 @@ interface JobControlsProps {
   onStart: (id: string) => void;
   onStop: (id: string) => void;
   onReRun: (id: string) => void;
+  onDelete: (id: string) => void;
+  onEdit: (id: string) => void;
   jobId: string;
 }
 
@@ -18,6 +20,8 @@ export const JobControls = React.memo(({
   onStart,
   onStop,
   onReRun,
+  onDelete,
+  onEdit,
   jobId,
 }: JobControlsProps) => {
   return (
@@ -74,6 +78,40 @@ export const JobControls = React.memo(({
           Re-run Crawl
         </motion.button>
       )}
+
+      {/* Edit and Delete buttons - always visible */}
+      <div className="flex flex-wrap gap-2">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => onEdit(jobId)}
+          disabled={isRunning}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 border border-border",
+            isRunning
+              ? "bg-muted text-muted-foreground cursor-not-allowed"
+              : "bg-background hover:bg-accent text-foreground"
+          )}
+        >
+          <Edit className="w-4 h-4" />
+          Edit
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => onDelete(jobId)}
+          disabled={isRunning}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 border border-border",
+            isRunning
+              ? "bg-muted text-muted-foreground cursor-not-allowed"
+              : "bg-background hover:bg-destructive text-destructive hover:text-destructive-foreground"
+          )}
+        >
+          <Trash2 className="w-4 h-4" />
+          Delete
+        </motion.button>
+      </div>
 
       <div className="flex flex-wrap gap-2">
         <motion.button
