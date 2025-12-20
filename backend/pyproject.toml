@@ -1,0 +1,52 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "RAG Backend with PDF processing and vector search"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = [
+    "--verbose",
+    "--tb=short",
+    "--strict-markers",
+    "--disable-warnings",
+    "--cov=app",
+    "--cov-report=html",
+    "--cov-report=term-missing"
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow running tests",
+    "crawler: Crawler related tests",
+    "pdf: PDF processing tests",
+    "embedding: Embedding service tests",
+    "qdrant: QDrant service tests",
+    "api: API endpoint tests"
+]
+
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "*/tests/*",
+    "*/venv/*",
+    "*/__pycache__/*"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError"
+]

@@ -1,0 +1,4 @@
+Failed to get crawl status for crawl_39c0ee07: 1 validation error for CrawlStatusResponse
+created_at
+  Input should be a valid string [type=string_type, input_value=0, input_type=int]
+    For further information visit https://errors.pydantic.dev/2.12/v/string_type

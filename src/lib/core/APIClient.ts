@@ -56,7 +56,7 @@ class APIClient {
   private defaultHeaders: Record<string, string>;
   private cache: Map<string, CacheEntry<unknown>>;
 
-  constructor(baseURL: string = process.env.NEXT_PUBLIC_API_BASE_URL || '') {
+  constructor(baseURL: string = process.env.NEXT_PUBLIC_API_URL || '') {
     this.baseURL = baseURL;
     this.defaultHeaders = {
       'Content-Type': 'application/json',
