@@ -35,24 +35,44 @@ class Settings(BaseSettings):
     DEBUG: bool = True
 
     # CORS
-    BACKEND_CORS_ORIGINS: List[str] = [
-        "http://localhost:3000",  # Next.js frontend
-        "http://localhost:8000",  # FastAPI docs
-    ]
+    BACKEND_CORS_ORIGINS_STR: str = "http://localhost:3000,http://localhost:8000"
 
-    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
-    @classmethod
-    def assemble_cors_origins(
-        cls, v: Union[str, List[str]], info: ValidationInfo
-    ) -> Union[List[str], str]:
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
-            return v
-        raise ValueError(v)
+    @property
+    def BACKEND_CORS_ORIGINS(self) -> List[str]:
+        """Get CORS origins as a list"""
+        if hasattr(self, '_cors_origins_cache'):
+            return self._cors_origins_cache
+
+        origins_str = self.BACKEND_CORS_ORIGINS_STR
+        if origins_str.startswith("["):
+            # JSON array format
+            import json
+            try:
+                self._cors_origins_cache = json.loads(origins_str)
+            except json.JSONDecodeError:
+                raise ValueError(f"Invalid JSON format for BACKEND_CORS_ORIGINS: {origins_str}")
+        else:
+            # Comma-separated format
+            self._cors_origins_cache = [i.strip() for i in origins_str.split(",") if i.strip()]
+
+        return self._cors_origins_cache
 
     # Trusted hosts
-    ALLOWED_HOSTS: Optional[List[str]] = ["localhost", "127.0.0.1"]
+    ALLOWED_HOSTS_STR: str = "localhost,127.0.0.1"
+
+    @property
+    def ALLOWED_HOSTS(self) -> Optional[List[str]]:
+        """Get allowed hosts as a list"""
+        if hasattr(self, '_allowed_hosts_cache'):
+            return self._allowed_hosts_cache
+
+        hosts_str = self.ALLOWED_HOSTS_STR
+        if not hosts_str:
+            self._allowed_hosts_cache = None
+        else:
+            self._allowed_hosts_cache = [i.strip() for i in hosts_str.split(",") if i.strip()]
+
+        return self._allowed_hosts_cache
 
     # Database
     DATABASE_URL: str = "sqlite:///./app.db"
@@ -61,7 +81,27 @@ class Settings(BaseSettings):
     # File storage
     UPLOAD_DIR: str = "./uploads"
     MAX_UPLOAD_SIZE: int = 50 * 1024 * 1024  # 50MB
-    ALLOWED_EXTENSIONS: List[str] = [".pdf"]
+    ALLOWED_EXTENSIONS_STR: str = ".pdf"
+
+    @property
+    def ALLOWED_EXTENSIONS(self) -> List[str]:
+        """Get allowed extensions as a list"""
+        if hasattr(self, '_allowed_extensions_cache'):
+            return self._allowed_extensions_cache
+
+        extensions_str = self.ALLOWED_EXTENSIONS_STR
+        if extensions_str.startswith("["):
+            # JSON array format
+            import json
+            try:
+                self._allowed_extensions_cache = json.loads(extensions_str)
+            except json.JSONDecodeError:
+                raise ValueError(f"Invalid JSON format for ALLOWED_EXTENSIONS: {extensions_str}")
+        else:
+            # Comma-separated format
+            self._allowed_extensions_cache = [i.strip() for i in extensions_str.split(",") if i.strip()]
+
+        return self._allowed_extensions_cache
 
     # Crawling
     CRAWL_USER_AGENT: str = "FastAPI-Crawler/1.0"
@@ -320,9 +360,17 @@ class Settings(BaseSettings):
 
     class Config:
         # Load environment files in order of precedence
-        env_file = (".env.test", ".env")
+        # In test environment, only load .env.test to avoid conflicts
+        env_file = (".env.test",) if os.getenv("PYTEST_CURRENT_TEST") else (".env.test", ".env")
         case_sensitive = True
 
 
-# Create global settings instance
-settings = Settings()
+# Create lazy-loaded settings instance
+def get_settings() -> Settings:
+    """Get the global settings instance"""
+    if not hasattr(get_settings, '_settings'):
+        get_settings._settings = Settings()
+    return get_settings._settings
+
+# For backward compatibility, keep a settings instance
+settings = get_settings()

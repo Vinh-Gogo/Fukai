@@ -15,6 +15,14 @@ from app.models.base import Base
 
 logger = logging.getLogger(__name__)
 
+# Optional async SQLite support
+try:
+    import aiosqlite
+    AIOSQLITE_AVAILABLE = True
+except ImportError:
+    AIOSQLITE_AVAILABLE = False
+    logger.warning("aiosqlite not available, async database features disabled")
+
 
 class DatabaseManager:
     """Database connection and migration manager"""
@@ -45,6 +53,10 @@ class DatabaseManager:
 
     async def init_async_db(self):
         """Initialize asynchronous database connection"""
+        if not AIOSQLITE_AVAILABLE:
+            logger.warning("aiosqlite not available, skipping async database initialization")
+            return
+
         # Convert SQLite URL to async format if needed
         database_url = settings.DATABASE_URL
         if database_url.startswith("sqlite://"):
@@ -226,8 +238,27 @@ def init_database():
     """Initialize database connections"""
     try:
         db_manager.init_db()
-        # Try to initialize async DB if possible
-        asyncio.create_task(db_manager.init_async_db())
+        # Note: Async database initialization is handled separately
+        # in async contexts where needed
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}")
+        raise
+
+
+async def init_database_async():
+    """Initialize both sync and async database connections"""
+    try:
+        # Initialize sync database first
+        db_manager.init_db()
+
+        # Initialize async database if aiosqlite is available
+        if AIOSQLITE_AVAILABLE:
+            await db_manager.init_async_db()
+        else:
+            logger.warning("aiosqlite not available, async database features disabled")
+
+        logger.info("Database initialized successfully (sync + async)")
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}")
         raise

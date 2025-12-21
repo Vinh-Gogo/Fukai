@@ -1,7 +1,7 @@
 # Crawl API Documentation
 
 ## Overview
-The Crawl API provides endpoints for managing PDF crawling operations from the Biwase website. It supports both simple download operations and full RAG pipeline processing.
+The Crawl API provides endpoints for managing PDF crawling operations with configurable targets. It supports both simple download operations and full RAG pipeline processing with authentication and background task management.
 
 ## Base URL
 ```
@@ -161,6 +161,114 @@ Attempts to cancel a running crawl task.
 #### Example
 ```bash
 curl -X DELETE "http://localhost:8000/api/v1/crawl/cancel/crawl_a1b2c3d4"
+```
+
+---
+
+### 5. Get Pages
+**GET** `/pages?url={url}`
+
+Gets pagination links from a specified URL for crawling preparation.
+
+#### Query Parameters
+- `url` (string, required): Base URL to crawl for pagination links
+
+#### Response
+```json
+{
+  "success": true,
+  "pages_found": 5,
+  "page_urls": [
+    "https://example.com/page/1",
+    "https://example.com/page/2",
+    "..."
+  ],
+  "message": "Found 5 pages"
+}
+```
+
+#### Example
+```bash
+curl -X GET "http://localhost:8000/api/v1/crawl/pages?url=https://biwase.com.vn/tin-tuc/ban-tin-biwase"
+```
+
+---
+
+### 6. Get Articles
+**POST** `/articles`
+
+Extracts article/news links from page URLs.
+
+#### Request Body
+```json
+{
+  "page_urls": [
+    "https://example.com/page/1",
+    "https://example.com/page/2"
+  ]
+}
+```
+
+#### Response
+```json
+{
+  "success": true,
+  "article_urls": [
+    "https://example.com/article/1",
+    "https://example.com/article/2",
+    "..."
+  ],
+  "message": "Found 15 articles from 2 pages"
+}
+```
+
+#### Example
+```bash
+curl -X POST "http://localhost:8000/api/v1/crawl/articles" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "page_urls": ["https://biwase.com.vn/page/1", "https://biwase.com.vn/page/2"]
+  }'
+```
+
+---
+
+### 7. Get PDF Links
+**POST** `/pdf-links`
+
+Extracts PDF download links from article URLs.
+
+#### Request Body
+```json
+{
+  "article_urls": [
+    "https://example.com/article/1",
+    "https://example.com/article/2"
+  ]
+}
+```
+
+#### Response
+```json
+{
+  "success": true,
+  "pdfs_found": 8,
+  "pdf_urls": [
+    "https://example.com/uploads/doc1.pdf",
+    "https://example.com/uploads/doc2.pdf",
+    "..."
+  ],
+  "message": "Found 8 PDFs from 2 articles"
+}
+```
+
+#### Example
+```bash
+curl -X POST "http://localhost:8000/api/v1/crawl/pdf-links" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "article_urls": ["https://biwase.com.vn/article/1", "https://biwase.com.vn/article/2"]
+  }'
 ```
 
 ## Error Responses

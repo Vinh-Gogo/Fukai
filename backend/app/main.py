@@ -10,10 +10,10 @@ import structlog
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api.v1.api import api_router
-from app.core.database import create_tables
+from app.core.database import init_database, init_database_async
 from app.core.middleware import ExceptionHandlerMiddleware, RequestLoggingMiddleware
 from app.core.rate_limiting import limiter, rate_limit_exceeded_handler
-from slowapi import SlowAPIMiddleware
+from slowapi.middleware import SlowAPIMiddleware
 
 # Setup structured logging
 setup_logging()
@@ -23,7 +23,9 @@ async def lifespan(app: FastAPI):
     """Application lifespan context manager"""
     # Startup
     structlog.get_logger().info("Starting FastAPI application")
-    await create_tables()
+    init_database()
+    await init_database_async()
+    structlog.get_logger().info("Database initialized successfully")
     yield
     # Shutdown
     structlog.get_logger().info("Shutting down FastAPI application")

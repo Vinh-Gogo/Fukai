@@ -3,11 +3,11 @@
 ## 🎥 Demo Video
 [Watch the Demo](Demo.mp4)
 
-A comprehensive Retrieval-Augmented Generation (RAG) application for processing, indexing, and searching PDF documents from the Biwase website. Features web crawling, PDF text extraction, semantic search, and an intuitive web interface.
+A comprehensive Retrieval-Augmented Generation (RAG) application for processing, indexing, and searching PDF documents. Features web crawling, PDF text extraction, semantic search, vector embeddings, and an intuitive web interface with real-time progress tracking.
 
 ## 🌟 Features
 
-- **Web Crawling**: Automated PDF discovery and download from Biwase website
+- **Web Crawling**: Automated PDF discovery and download with configurable targets
 - **PDF Processing**: Advanced text extraction using marker-pdf and OCR
 - **Semantic Search**: Vector-based search powered by QDrant and embeddings
 - **Modern UI**: Responsive Next.js frontend with real-time progress tracking
@@ -18,7 +18,8 @@ A comprehensive Retrieval-Augmented Generation (RAG) application for processing,
 ## 🏗️ Architecture
 
 ### Project Structure
-```
+
+```text
 search_rag/
 ├── backend/                    # FastAPI backend application
 ├── src/                        # Next.js frontend source code
@@ -38,7 +39,8 @@ search_rag/
 ```
 
 ### Service Architecture
-```
+
+```c
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Next.js UI    │    │   FastAPI       │    │   QDrant        │
 │   (Port 3000)   │◄──►│   Backend       │◄──►│   Vector DB     │
@@ -75,12 +77,14 @@ search_rag/
 ### One-Command Setup
 
 1. **Clone and navigate to the project**:
+
    ```bash
    git clone <repository-url>
    cd search_rag
    ```
 
 2. **Configure environment**:
+
    ```bash
    # Copy and edit backend configuration
    cp backend/.env.example backend/.env
@@ -88,24 +92,23 @@ search_rag/
    ```
 
 3. **Start all services**:
-   ```bash
-   # Terminal 1: Start API servers
-   ./start-apis.sh
 
-   # Terminal 2: Start frontend (after APIs are running)
-   ./start-frontend.sh
+   ```bash
+   ./scripts/start-apis.sh      # Terminal 1
+   ./scripts/start-frontend.sh  # Terminal 2
    ```
 
 4. **Access the application**:
-   - **Web Interface**: http://localhost:3000
-   - **API Documentation**: http://localhost:8000/docs
-   - **API Health Check**: http://localhost:8000/health
+   - **Web Interface**: *`http://localhost:3000`*
+   - **API Documentation**: *`http://localhost:8000/docs`*
+   - **API Health Check**: *`http://localhost:8000/health`*
 
 ## 📋 Detailed Setup
 
 ### Backend Setup
 
 1. **Install Python dependencies**:
+
    ```bash
    cd backend
    pip install -r requirements-core.txt
@@ -113,6 +116,7 @@ search_rag/
    ```
 
 2. **Configure environment variables**:
+
    ```bash
    cp .env.example .env
    # Edit .env with your settings
@@ -158,8 +162,8 @@ search_rag/
 
 ```bash
 # Start all services with auto-reload
-./start-apis.sh      # Terminal 1
-./start-frontend.sh  # Terminal 2
+./scripts/start-apis.sh      # Terminal 1
+./scripts/start-frontend.sh  # Terminal 2
 ```
 
 ### Production Mode
@@ -208,8 +212,8 @@ python run_tests.py
 
 # Run specific test categories
 python run_tests.py crawler
-python run_tests.py embedding
-python run_tests.py qdrant
+python run_tests.py auth
+python run_tests.py integration
 
 # Run with coverage
 python -m pytest --cov=app --cov-report=html
