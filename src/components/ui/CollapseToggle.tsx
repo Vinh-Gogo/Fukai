@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useCallback, useId } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { LogIn, LogOut } from "lucide-react";
-import { useAuthStore } from "@/stores/auth";
+import React, { useState, useEffect, useId } from "react";
+import { motion } from "framer-motion";
 
 // ============================================================================
 // Types
@@ -10,11 +8,6 @@ import { useAuthStore } from "@/stores/auth";
 interface CollapseToggleProps {
   collapsed: boolean;
   onClick: () => void;
-}
-
-interface ContextMenuState {
-  isOpen: boolean;
-  position: { x: number; y: number };
 }
 
 // ============================================================================
@@ -48,67 +41,7 @@ const useRandomPosition = () => {
   return { position, isMounted };
 };
 
-// ============================================================================
-// Auth hook using Zustand store
-// ============================================================================
 
-const useAuth = () => {
-  const isLoggedIn = useAuthStore((state) => state.isAuthenticated)
-  const { login: storeLogin, logout: storeLogout } = useAuthStore((state) => ({
-    login: state.login,
-    logout: state.logout
-  }))
-
-  // Wrap Zustand login to work with the component's expectations
-  const login = useCallback(() => {
-    // For demo purposes, create a mock user and token
-    storeLogin({
-      id: 'demo-user',
-      email: 'demo@example.com',
-      full_name: 'Demo User',
-      is_active: true,
-      created_at: new Date().toISOString()
-    }, 'demo-token')
-  }, [storeLogin])
-
-  const logout = useCallback(() => {
-    storeLogout()
-  }, [storeLogout])
-
-  return { isLoggedIn, login, logout }
-}
-
-// ============================================================================
-// Custom Hook: useContextMenu
-// ============================================================================
-
-const useContextMenu = () => {
-  const [state, setState] = useState<ContextMenuState>({
-    isOpen: false,
-    position: { x: 0, y: 0 },
-  });
-
-  const open = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setState({ isOpen: true, position: { x: e.clientX, y: e.clientY } });
-  }, []);
-
-  const close = useCallback(() => {
-    setState(prev => ({ ...prev, isOpen: false }));
-  }, []);
-
-  // Close on outside click
-  useEffect(() => {
-    if (!state.isOpen) return;
-    
-    const handler = () => close();
-    document.addEventListener('click', handler);
-    return () => document.removeEventListener('click', handler);
-  }, [state.isOpen, close]);
-
-  return { ...state, open, close };
-};
 
 // ============================================================================
 // Sub-component: FlySVG
@@ -189,65 +122,7 @@ const FlySVG = React.memo(({ uniqueId }: FlySVGProps) => {
 
 FlySVG.displayName = "FlySVG";
 
-// ============================================================================
-// Sub-component: AuthContextMenu
-// ============================================================================
 
-interface AuthContextMenuProps {
-  isOpen: boolean;
-  position: { x: number; y: number };
-  isLoggedIn: boolean;
-  onLogin: () => void;
-  onLogout: () => void;
-}
-
-const AuthContextMenu = React.memo(({
-  isOpen,
-  position,
-  isLoggedIn,
-  onLogin,
-  onLogout,
-}: AuthContextMenuProps) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        transition={{ duration: 0.15 }}
-        className="fixed z-[200] bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden min-w-[160px]"
-        style={{ left: position.x, top: position.y }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="py-1">
-          <div className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-            {isLoggedIn ? '🟢 Đã đăng nhập' : '🔴 Chưa đăng nhập'}
-          </div>
-
-          {isLoggedIn ? (
-            <button
-              onClick={onLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="font-medium">Đăng xuất</span>
-            </button>
-          ) : (
-            <button
-              onClick={onLogin}
-              className="w-full flex items-center gap-3 px-4 py-3 text-left text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-            >
-              <LogIn className="w-4 h-4" />
-              <span className="font-medium">Đăng nhập</span>
-            </button>
-          )}
-        </div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-));
-
-AuthContextMenu.displayName = "AuthContextMenu";
 
 // ============================================================================
 // Main Component: CollapseToggle
@@ -256,63 +131,38 @@ AuthContextMenu.displayName = "AuthContextMenu";
 export const CollapseToggle = React.memo(({ collapsed, onClick }: CollapseToggleProps) => {
   const uniqueId = useId();
   const { position, isMounted } = useRandomPosition();
-  const { isLoggedIn, login, logout } = useAuth();
-  const contextMenu = useContextMenu();
-
-  const handleLogin = useCallback(() => {
-    login();
-    contextMenu.close();
-    alert('🪰 Đăng nhập thành công!');
-  }, [login, contextMenu]);
-
-  const handleLogout = useCallback(() => {
-    logout();
-    contextMenu.close();
-    alert('🪰 Đăng xuất thành công!');
-  }, [logout, contextMenu]);
 
   if (!isMounted) return null;
 
   return (
-    <>
-      <button
-        onClick={onClick}
-        onContextMenu={contextMenu.open}
-        className="fixed z-[100] transition-all duration-300 hover:scale-125 flex items-center justify-center cursor-pointer"
-        aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
-        title="🪰 Click: Toggle Navigation | Right-click: Login/Logout"
-        style={{
-          top: `${position.top}%`,
-          left: `${position.left}%`,
-          width: '50px',
-          height: '50px',
-          background: 'transparent',
-          border: 'none',
-          transform: 'translate(-50%, -50%)',
+    <button
+      onClick={onClick}
+      className="fixed z-[100] transition-all duration-300 hover:scale-125 flex items-center justify-center cursor-pointer"
+      aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
+      title="🪰 Click: Toggle Navigation"
+      style={{
+        top: `${position.top}%`,
+        left: `${position.left}%`,
+        width: '50px',
+        height: '50px',
+        background: 'transparent',
+        border: 'none',
+        transform: 'translate(-50%, -50%)',
+      }}
+    >
+      <motion.div
+        animate={{
+          rotate: [0, 5, -5, 3, -3, 0],
+          x: [0, 2, -2, 1, -1, 0],
+          y: [0, -2, 2, -1, 1, 0],
         }}
+        transition={{ duration: 0.3, repeat: Infinity, ease: "linear" }}
+        className="relative w-12 h-12"
       >
-        <motion.div
-          animate={{
-            rotate: [0, 5, -5, 3, -3, 0],
-            x: [0, 2, -2, 1, -1, 0],
-            y: [0, -2, 2, -1, 1, 0],
-          }}
-          transition={{ duration: 0.3, repeat: Infinity, ease: "linear" }}
-          className="relative w-12 h-12"
-        >
-          <FlySVG uniqueId={uniqueId} />
-          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-2 rounded-full bg-black/20 blur-sm" />
-        </motion.div>
-      </button>
-
-      <AuthContextMenu
-        isOpen={contextMenu.isOpen}
-        position={contextMenu.position}
-        isLoggedIn={isLoggedIn}
-        onLogin={handleLogin}
-        onLogout={handleLogout}
-      />
-    </>
+        <FlySVG uniqueId={uniqueId} />
+        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-2 rounded-full bg-black/20 blur-sm" />
+      </motion.div>
+    </button>
   );
 });
 
