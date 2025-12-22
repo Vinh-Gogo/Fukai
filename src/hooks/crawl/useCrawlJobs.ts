@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from "react";
 
 export interface CrawlJob {
   id: string;
@@ -27,7 +27,7 @@ interface UseCrawlJobsResult {
   clearJobs: () => void;
 }
 
-const STORAGE_KEY = 'crawlJobs';
+const STORAGE_KEY = "crawlJobs";
 
 // Default jobs for first-time users
 const getDefaultJobs = (): CrawlJob[] => [
@@ -102,7 +102,7 @@ const saveJobsToStorage = (jobs: CrawlJob[]): void => {
 const isValidUrl = (url: string): boolean => {
   try {
     const urlObj = new URL(url);
-    return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+    return urlObj.protocol === "http:" || urlObj.protocol === "https:";
   } catch {
     return false;
   }
@@ -130,46 +130,54 @@ export const useCrawlJobs = (): UseCrawlJobsResult => {
     }
   }, [jobs, isLoading]);
 
-  const addJob = useCallback((url: string) => {
-    if (!url.trim()) return;
+  const addJob = useCallback(
+    (url: string) => {
+      if (!url.trim()) return;
 
-    const trimmedUrl = url.trim();
-    if (!isValidUrl(trimmedUrl)) {
-      throw new Error("Please enter a valid URL starting with http:// or https://");
-    }
+      const trimmedUrl = url.trim();
+      if (!isValidUrl(trimmedUrl)) {
+        throw new Error(
+          "Please enter a valid URL starting with http:// or https://",
+        );
+      }
 
-    // Check for duplicate URLs
-    const existingJob = jobs.find(job => job.url === trimmedUrl);
-    if (existingJob) {
-      throw new Error("A job with this URL already exists");
-    }
+      // Check for duplicate URLs
+      const existingJob = jobs.find((job) => job.url === trimmedUrl);
+      if (existingJob) {
+        throw new Error("A job with this URL already exists");
+      }
 
-    const newJob: CrawlJob = {
-      id: Date.now().toString(),
-      url: trimmedUrl,
-      status: "idle",
-      progress: 0,
-      pagesFound: 0,
-      pdfsFound: 0,
-      lastRun: "Never",
-    };
+      const newJob: CrawlJob = {
+        id: Date.now().toString(),
+        url: trimmedUrl,
+        status: "idle",
+        progress: 0,
+        pagesFound: 0,
+        pdfsFound: 0,
+        lastRun: "Never",
+      };
 
-    setJobs(prev => [...prev, newJob]);
-  }, [jobs]);
+      setJobs((prev) => [...prev, newJob]);
+    },
+    [jobs],
+  );
 
   const updateJob = useCallback((jobId: string, updates: Partial<CrawlJob>) => {
-    setJobs(prev => prev.map(job =>
-      job.id === jobId ? { ...job, ...updates } : job
-    ));
+    setJobs((prev) =>
+      prev.map((job) => (job.id === jobId ? { ...job, ...updates } : job)),
+    );
   }, []);
 
   const removeJob = useCallback((jobId: string) => {
-    setJobs(prev => prev.filter(job => job.id !== jobId));
+    setJobs((prev) => prev.filter((job) => job.id !== jobId));
   }, []);
 
-  const getJob = useCallback((jobId: string) => {
-    return jobs.find(job => job.id === jobId);
-  }, [jobs]);
+  const getJob = useCallback(
+    (jobId: string) => {
+      return jobs.find((job) => job.id === jobId);
+    },
+    [jobs],
+  );
 
   const clearJobs = useCallback(() => {
     setJobs([]);

@@ -1,6 +1,6 @@
-import React from 'react';
-import { Send, Loader2, Mic } from 'lucide-react';
-import { QuickPrompts } from './QuickPrompts';
+import React from "react";
+import { Send, Loader2, Mic } from "lucide-react";
+import { QuickPrompts } from "./QuickPrompts";
 
 interface ChatInputProps {
   inputValue: string;
@@ -19,7 +19,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   onKeyDown,
   selectedPrompt,
   onPromptSelect,
-  isLoading
+  isLoading,
 }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +74,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           ) : (
             <Send className="w-4 h-4" />
           )}
-          {isLoading ? 'Sending...' : 'Send'}
+          {isLoading ? "Sending..." : "Send"}
         </button>
       </form>
 

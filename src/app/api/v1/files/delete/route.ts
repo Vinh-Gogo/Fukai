@@ -1,7 +1,7 @@
 // Enhanced file delete API route with proper validation, error handling, and security
-import { NextRequest } from 'next/server';
-import { unlink, stat } from 'fs/promises';
-import { join } from 'path';
+import { NextRequest } from "next/server";
+import { unlink, stat } from "fs/promises";
+import { join } from "path";
 
 import {
   createSuccessResponse,
@@ -11,10 +11,10 @@ import {
   createBadRequestResponse,
   createInternalServerErrorResponse,
   generateRequestId,
-  createRequestContext
-} from '../../../_lib/utils/response';
-import { validateFileDelete } from '../../../_lib/api/validation';
-import { PATHS } from '../../../_lib/api/config';
+  createRequestContext,
+} from "../../../_lib/utils/response";
+import { validateFileDelete } from "../../../_lib/api/validation";
+import { PATHS } from "../../../_lib/api/config";
 
 // Verify file exists and get its stats
 async function verifyFileExists(filepath: string) {
@@ -41,13 +41,18 @@ export async function DELETE(request: NextRequest) {
     // Validate delete request
     const validation = validateFileDelete(searchParams);
     if (!validation.success) {
-      return createValidationErrorResponse({
-        isValid: false,
-        errors: validation.errors
-      }, requestId);
+      return createValidationErrorResponse(
+        {
+          isValid: false,
+          errors: validation.errors,
+        },
+        requestId,
+      );
     }
 
-    const filename = (validation as { success: true; data: { filename: string } }).data.filename;
+    const filename = (
+      validation as { success: true; data: { filename: string } }
+    ).data.filename;
 
     // Construct full file path
     const filepath = join(PATHS.UPLOAD_DIR, filename);
@@ -64,9 +69,9 @@ export async function DELETE(request: NextRequest) {
     } catch (error) {
       console.error(`Failed to delete file ${filename}:`, error);
       return createStorageErrorResponse(
-        'delete file',
+        "delete file",
         error instanceof Error ? error.message : undefined,
-        requestId
+        requestId,
       );
     }
 
@@ -75,14 +80,16 @@ export async function DELETE(request: NextRequest) {
     if (postDeleteCheck.exists) {
       console.error(`File ${filename} still exists after deletion attempt`);
       return createStorageErrorResponse(
-        'verify deletion',
-        'File was not successfully deleted',
-        requestId
+        "verify deletion",
+        "File was not successfully deleted",
+        requestId,
       );
     }
 
     // Log successful deletion
-    console.log(`[${requestId}] File deleted successfully: ${filename} (${fileInfo.size} bytes)`);
+    console.log(
+      `[${requestId}] File deleted successfully: ${filename} (${fileInfo.size} bytes)`,
+    );
 
     return createSuccessResponse(
       {
@@ -93,15 +100,14 @@ export async function DELETE(request: NextRequest) {
       },
       `File "${filename}" deleted successfully`,
       undefined,
-      requestId
+      requestId,
     );
-
   } catch (error) {
     console.error(`[${requestId}] Delete error:`, error);
     return createInternalServerErrorResponse(
-      'An unexpected error occurred during file deletion',
+      "An unexpected error occurred during file deletion",
       error,
-      requestId
+      requestId,
     );
   }
 }
@@ -112,18 +118,26 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const filename = searchParams.get('filename');
+    const filename = searchParams.get("filename");
 
     if (!filename) {
-      return createBadRequestResponse('Filename parameter is required', undefined, requestId);
+      return createBadRequestResponse(
+        "Filename parameter is required",
+        undefined,
+        requestId,
+      );
     }
 
     // Validate filename format
-    if (!filename.startsWith('/uploaded/')) {
-      return createBadRequestResponse('Invalid file path format', undefined, requestId);
+    if (!filename.startsWith("/uploaded/")) {
+      return createBadRequestResponse(
+        "Invalid file path format",
+        undefined,
+        requestId,
+      );
     }
 
-    const basename = filename.replace('/uploaded/', '');
+    const basename = filename.replace("/uploaded/", "");
     const filepath = join(PATHS.UPLOAD_DIR, basename);
 
     // Check if file exists
@@ -138,17 +152,16 @@ export async function GET(request: NextRequest) {
           modifiedAt: fileInfo.modifiedAt,
         }),
       },
-      fileInfo.exists ? 'File exists' : 'File does not exist',
+      fileInfo.exists ? "File exists" : "File does not exist",
       undefined,
-      requestId
+      requestId,
     );
-
   } catch (error) {
     console.error(`[${requestId}] File existence check error:`, error);
     return createInternalServerErrorResponse(
-      'An unexpected error occurred while checking file existence',
+      "An unexpected error occurred while checking file existence",
       error,
-      requestId
+      requestId,
     );
   }
 }
@@ -156,18 +169,24 @@ export async function GET(request: NextRequest) {
 // Handle unsupported methods
 export async function POST() {
   return createSuccessResponse(
-    { error: 'Method not allowed - use DELETE to remove files or GET to check existence' },
+    {
+      error:
+        "Method not allowed - use DELETE to remove files or GET to check existence",
+    },
     undefined,
     405, // Method Not Allowed
-    generateRequestId()
+    generateRequestId(),
   );
 }
 
 export async function PUT() {
   return createSuccessResponse(
-    { error: 'Method not allowed - use DELETE to remove files or GET to check existence' },
+    {
+      error:
+        "Method not allowed - use DELETE to remove files or GET to check existence",
+    },
     undefined,
     405, // Method Not Allowed
-    generateRequestId()
+    generateRequestId(),
   );
 }

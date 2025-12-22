@@ -19,16 +19,19 @@ tests/
 ## Test Categories
 
 ### Unit Tests (`pytest -m unit`)
+
 - Test individual service methods in isolation
 - Mock all external dependencies
 - Fast execution, high coverage
 
 ### Integration Tests (`pytest -m integration`)
+
 - Test service interactions
 - End-to-end pipeline testing
 - Slower execution, comprehensive validation
 
 ### Component Tests
+
 - **Crawler Tests** (`pytest -m crawler`): Web scraping functionality
 - **PDF Tests** (`pytest -m pdf`): Document processing
 - **Embedding Tests** (`pytest -m embedding`): Vector generation
@@ -36,6 +39,7 @@ tests/
 - **API Tests** (`pytest -m api`): REST endpoint validation
 
 ### Performance Tests (`pytest -m slow`)
+
 - Load testing and benchmarking
 - Concurrent processing validation
 - Resource usage monitoring
@@ -142,6 +146,7 @@ markers = [
 ### Service Fixtures
 
 Each test file provides fixtures for its specific service:
+
 - `crawler` - BiwaseCrawler instance
 - `processor` - PDFProcessor instance
 - `embedding_service` - EmbeddingService instance
@@ -169,11 +174,13 @@ The integration tests (`test_data_collection_pipeline.py`) validate the complete
 ## Test Data
 
 ### Sample Files
+
 - `sample_pdf_content` - Minimal PDF for testing
 - Generated test files in temporary directories
 - Mock API responses for external services
 
 ### Mock Services
+
 - OpenAI Embeddings API
 - QDrant Cloud Database
 - HTTP requests for web crawling

@@ -47,7 +47,7 @@ export const StatusBadge = ({ status }: StatusBadgeProps) => {
         "px-4 py-2 rounded-full text-sm font-medium border flex items-center gap-2",
         config.bg,
         config.textClass,
-        config.border
+        config.border,
       )}
     >
       {config.icon}

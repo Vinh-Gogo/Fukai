@@ -1,10 +1,10 @@
 "use client";
 
 // Disable SSR to prevent hydration issues with browser APIs
-export const runtime = 'edge';
+export const runtime = "edge";
 
 import React, { useState } from "react";
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 import BrandHeader from "@/components/layout/BrandHeader";
 import { Activity } from "lucide-react";
 
@@ -19,23 +19,29 @@ import { NavigationSkeleton } from "@/components/navigation";
 import { useActivityData } from "@/hooks";
 
 // Dynamically import Navigation to prevent SSR issues
-const Navigation = dynamic(() => import('@/components/navigation').then(mod => ({ default: mod.Navigation })), {
-  ssr: false,
-  loading: () => <NavigationSkeleton />
-});
+const Navigation = dynamic(
+  () =>
+    import("@/components/navigation").then((mod) => ({
+      default: mod.Navigation,
+    })),
+  {
+    ssr: false,
+    loading: () => <NavigationSkeleton />,
+  },
+);
 
 export default function ActivityDashboardPage() {
   const [isNavigationVisible, setIsNavigationVisible] = useState(true);
   const [filters, setFilters] = useState({
-    timeRange: '7d',
-    activityType: 'all',
-    searchQuery: ''
+    timeRange: "7d",
+    activityType: "all",
+    searchQuery: "",
   });
 
   const { activities, stats, isLoading } = useActivityData(filters);
 
   const handleNavigationToggle = () => {
-    setIsNavigationVisible(prev => !prev);
+    setIsNavigationVisible((prev) => !prev);
   };
 
   const handleFiltersChange = (newFilters: typeof filters) => {
@@ -66,7 +72,7 @@ export default function ActivityDashboardPage() {
         {/* Header */}
         <main className="flex-1 overflow-y-auto rounded-3xl">
           <BrandHeader
-            icon={Activity}
+            icon="activity"
             title="Activity Dashboard"
             subtitle="Monitor User Activities & Analytics"
             statusText="Real-time activity tracking & insights"
@@ -111,7 +117,8 @@ export default function ActivityDashboardPage() {
         <footer className="border-t border-border py-3 px-4">
           <div className="container mx-auto text-center text-sm text-muted-foreground">
             <p>
-              Activity Dashboard © {new Date().getFullYear()} - Real-time Analytics & Monitoring
+              Activity Dashboard © {new Date().getFullYear()} - Real-time
+              Analytics & Monitoring
             </p>
           </div>
         </footer>

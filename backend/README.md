@@ -140,11 +140,13 @@ docker-compose -f ../docker/docker-compose.yml up -d backend
 ### Main Endpoints
 
 #### Authentication
+
 - `POST /api/v1/auth/login` - User login
 - `POST /api/v1/auth/register` - User registration
 - `GET /api/v1/auth/me` - Get current user
 
 #### Crawling Operations
+
 - `POST /api/v1/crawl/start` - Start crawl job
 - `GET /api/v1/crawl/status/{task_id}` - Get job status
 - `GET /api/v1/crawl/history` - List crawl history
@@ -154,12 +156,14 @@ docker-compose -f ../docker/docker-compose.yml up -d backend
 - `POST /api/v1/crawl/pdf-links` - Extract PDF links
 
 #### File Management
+
 - `GET /api/v1/files/list` - List uploaded files
 - `POST /api/v1/files/upload` - Upload file
 - `GET /api/v1/files/{file_id}` - Download file
 - `DELETE /api/v1/files/{file_id}` - Delete file
 
 #### Search/RAG
+
 - `POST /api/v1/rag/search` - Semantic search
 - `POST /api/v1/rag/ingest` - Ingest documents
 - `GET /api/v1/rag/documents` - List documents
@@ -212,14 +216,17 @@ RATE_LIMIT_WINDOW=60
 ### External Services Setup
 
 #### QDrant Vector Database
+
 1. Sign up at https://cloud.qdrant.io
 2. Create a new cluster
 3. Get API key and URL
 4. Update environment variables
 
 #### Embedding Service
+
 1. Run Qwen3-Embedding model locally or use hosted service
 2. Example with vLLM:
+
 ```bash
 python -m vllm.entrypoints.openai.api_server \
   --model Qwen/Qwen3-Embedding-0.6B \
@@ -299,6 +306,7 @@ docker run -v $(pwd):/app -p 8000:8000 rag-backend:dev
 ### Structured Logging
 
 All logs are structured JSON with the following fields:
+
 - `timestamp`: ISO 8601 timestamp
 - `level`: Log level (INFO, WARNING, ERROR)
 - `logger`: Logger name
@@ -407,6 +415,7 @@ results = search_response.json()
 ### Debug Mode
 
 Enable debug logging:
+
 ```bash
 LOG_LEVEL=DEBUG uvicorn app.main:app --reload
 ```

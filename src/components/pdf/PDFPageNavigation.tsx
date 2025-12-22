@@ -1,5 +1,5 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
+import React from "react";
+import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 
 interface PDFPageNavigationProps {
   currentPage: number;
@@ -27,7 +27,10 @@ export const PDFPageNavigation: React.FC<PDFPageNavigationProps> = ({
           type="number"
           value={currentPage}
           onChange={(e) => {
-            const page = Math.max(1, Math.min(totalPages, parseInt(e.target.value) || 1));
+            const page = Math.max(
+              1,
+              Math.min(totalPages, parseInt(e.target.value) || 1),
+            );
             onGoToPage(page);
           }}
           min="1"
@@ -46,7 +49,9 @@ export const PDFPageNavigation: React.FC<PDFPageNavigationProps> = ({
         </button>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-600 hidden sm:inline">Scroll or use arrow keys to navigate</span>
+        <span className="text-sm text-gray-600 hidden sm:inline">
+          Scroll or use arrow keys to navigate
+        </span>
         <Info className="w-4 h-4 text-blue-500 cursor-help" />
       </div>
     </div>

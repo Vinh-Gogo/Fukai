@@ -1,18 +1,24 @@
 "use client";
 
 // Disable SSR to prevent hydration issues with browser APIs
-export const runtime = 'edge';
+export const runtime = "edge";
 
 import React, { useState, useCallback } from "react";
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 import BrandHeader from "@/components/layout/BrandHeader";
 import { NavigationSkeleton } from "@/components/navigation";
 
 // Dynamically import Navigation to prevent SSR issues
-const Navigation = dynamic(() => import('@/components/navigation').then(mod => ({ default: mod.Navigation })), {
-  ssr: false,
-  loading: () => <NavigationSkeleton />
-});
+const Navigation = dynamic(
+  () =>
+    import("@/components/navigation").then((mod) => ({
+      default: mod.Navigation,
+    })),
+  {
+    ssr: false,
+    loading: () => <NavigationSkeleton />,
+  },
+);
 
 import {
   Archive,
@@ -27,7 +33,7 @@ import {
   FileText,
   BarChart3,
   Folder,
-  Calendar
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFileManager } from "@/hooks";
@@ -45,7 +51,7 @@ const MOCK_ARCHIVE_FILES: ArchiveFile[] = [
     type: "PDF",
     category: "reports",
     tags: ["report", "annual", "2024"],
-    isDownloaded: true
+    isDownloaded: true,
   },
   {
     id: "archive-2",
@@ -56,7 +62,7 @@ const MOCK_ARCHIVE_FILES: ArchiveFile[] = [
     type: "PDF",
     category: "manuals",
     tags: ["technical", "manual"],
-    isDownloaded: true
+    isDownloaded: true,
   },
   {
     id: "archive-3",
@@ -67,7 +73,7 @@ const MOCK_ARCHIVE_FILES: ArchiveFile[] = [
     type: "PDF",
     category: "manuals",
     tags: ["guide", "user"],
-    isDownloaded: false
+    isDownloaded: false,
   },
   {
     id: "archive-4",
@@ -78,38 +84,41 @@ const MOCK_ARCHIVE_FILES: ArchiveFile[] = [
     type: "PDF",
     category: "reports",
     tags: ["financial", "summary", "2024"],
-    isDownloaded: false
-  }
+    isDownloaded: false,
+  },
 ];
 
 // Archive categories for organization
 const ARCHIVE_CATEGORIES: CategoryInfo[] = [
-  { id: 'all', name: 'All Files', icon: Archive, count: 0 },
-  { id: 'documents', name: 'Documents', icon: FileText, count: 0 },
-  { id: 'reports', name: 'Reports', icon: BarChart3, count: 0 },
-  { id: 'manuals', name: 'Manuals', icon: Folder, count: 0 },
-  { id: 'recent', name: 'Recent', icon: Calendar, count: 0 },
+  { id: "all", name: "All Files", icon: Archive, count: 0 },
+  { id: "documents", name: "Documents", icon: FileText, count: 0 },
+  { id: "reports", name: "Reports", icon: BarChart3, count: 0 },
+  { id: "manuals", name: "Manuals", icon: Folder, count: 0 },
+  { id: "recent", name: "Recent", icon: Calendar, count: 0 },
 ];
 
 export default function ArchivePage() {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   // Use the custom file manager hook
   const fileManager = useFileManager({
     initialFiles: MOCK_ARCHIVE_FILES,
-    categories: ARCHIVE_CATEGORIES
+    categories: ARCHIVE_CATEGORIES,
   });
 
   // Event handlers
   const handleFilePreview = useCallback((file: ArchiveFile) => {
-    window.open(file.sourceUrl, '_blank');
+    window.open(file.sourceUrl, "_blank");
   }, []);
 
-  const handleFileDelete = useCallback((fileId: string) => {
-    if (confirm('Are you sure you want to delete this file?')) {
-      fileManager.removeFile(fileId);
-    }
-  }, [fileManager]);
+  const handleFileDelete = useCallback(
+    (fileId: string) => {
+      if (confirm("Are you sure you want to delete this file?")) {
+        fileManager.removeFile(fileId);
+      }
+    },
+    [fileManager],
+  );
 
   const handleBulkDelete = useCallback(() => {
     if (fileManager.selectedFiles.size === 0) return;
@@ -130,7 +139,7 @@ export default function ArchivePage() {
         <main className="flex-1 overflow-y-auto rounded-3xl">
           {/* Brand Header - Now scrolls with content */}
           <BrandHeader
-            icon={Archive}
+            icon="archive"
             title="Archive"
             subtitle="File Management & Storage Optimization"
             statusText={`${fileManager.storageStats.totalFiles} files • ${fileManager.storageStats.totalSizeFormatted}`}
@@ -156,19 +165,23 @@ export default function ArchivePage() {
                   {/* View Mode Toggle */}
                   <div className="flex items-center bg-gray-100 rounded-lg p-1">
                     <button
-                      onClick={() => setViewMode('grid')}
+                      onClick={() => setViewMode("grid")}
                       className={cn(
                         "p-2 rounded-md transition-colors",
-                        viewMode === 'grid' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
+                        viewMode === "grid"
+                          ? "bg-white shadow-sm"
+                          : "hover:bg-gray-200",
                       )}
                     >
                       <Grid className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => setViewMode('list')}
+                      onClick={() => setViewMode("list")}
                       className={cn(
                         "p-2 rounded-md transition-colors",
-                        viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
+                        viewMode === "list"
+                          ? "bg-white shadow-sm"
+                          : "hover:bg-gray-200",
                       )}
                     >
                       <List className="w-4 h-4" />
@@ -198,12 +211,14 @@ export default function ArchivePage() {
                 {fileManager.categoryCounts.map((category) => (
                   <button
                     key={category.id}
-                    onClick={() => fileManager.handleCategoryChange(category.id)}
+                    onClick={() =>
+                      fileManager.handleCategoryChange(category.id)
+                    }
                     className={cn(
                       "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                       fileManager.selectedCategory === category.id
-                        ? 'bg-blue-100 text-blue-700 border-blue-200'
-                        : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                        ? "bg-blue-100 text-blue-700 border-blue-200"
+                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50",
                     )}
                   >
                     <category.icon className="w-4 h-4" />
@@ -234,7 +249,8 @@ export default function ArchivePage() {
                       onClick={fileManager.selectAllFiles}
                       className="flex items-center gap-2 px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg"
                     >
-                      {fileManager.selectedFiles.size === fileManager.filteredFiles.length ? (
+                      {fileManager.selectedFiles.size ===
+                      fileManager.filteredFiles.length ? (
                         <CheckSquare className="w-4 h-4" />
                       ) : (
                         <Square className="w-4 h-4" />
@@ -245,26 +261,31 @@ export default function ArchivePage() {
 
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-600">Sort by:</span>
-                    {(['name', 'date', 'size'] as const).map((field) => (
+                    {(["name", "date", "size"] as const).map((field) => (
                       <button
                         key={field}
                         onClick={() => fileManager.handleSort(field)}
                         className={cn(
                           "flex items-center gap-1 px-3 py-1 text-sm rounded-lg transition-colors",
-                          fileManager.sortBy === field ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'
+                          fileManager.sortBy === field
+                            ? "bg-blue-100 text-blue-700"
+                            : "hover:bg-gray-100",
                         )}
                       >
                         {field.charAt(0).toUpperCase() + field.slice(1)}
-                        {fileManager.sortBy === field && (
-                          fileManager.sortOrder === 'asc' ? <SortAsc className="w-3 h-3" /> : <SortDesc className="w-3 h-3" />
-                        )}
+                        {fileManager.sortBy === field &&
+                          (fileManager.sortOrder === "asc" ? (
+                            <SortAsc className="w-3 h-3" />
+                          ) : (
+                            <SortDesc className="w-3 h-3" />
+                          ))}
                       </button>
                     ))}
                   </div>
                 </div>
 
                 {/* Files Display */}
-                {viewMode === 'grid' ? (
+                {viewMode === "grid" ? (
                   <FileGrid
                     files={fileManager.filteredFiles}
                     selectedFiles={fileManager.selectedFiles}

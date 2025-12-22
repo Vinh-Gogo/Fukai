@@ -8,7 +8,7 @@ export interface LoadingProps {
 
 export const LoadingSpinner: React.FC<LoadingProps> = ({
   size = "md",
-  className
+  className,
 }) => {
   const sizeClasses = {
     sm: "w-4 h-4",
@@ -20,9 +20,9 @@ export const LoadingSpinner: React.FC<LoadingProps> = ({
   return (
     <div
       className={cn(
-        "inline-block animate-spin rounded-full border-2 border-current border-t-transparent",
+        "inline-block animate-spin rounded-full border-2 border-gray-300 border-t-primary-600",
         sizeClasses[size],
-        className
+        className,
       )}
       role="status"
       aria-label="Loading"
@@ -58,7 +58,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
             className={cn(
               baseClasses,
               "h-4",
-              width ? `w-${width}` : index === lines - 1 ? "w-3/4" : "w-full"
+              width ? `w-${width}` : index === lines - 1 ? "w-3/4" : "w-full",
             )}
           />
         ))}
@@ -67,8 +67,9 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   }
 
   const style: React.CSSProperties = {};
-  if (width) style.width = typeof width === 'number' ? `${width}px` : width;
-  if (height) style.height = typeof height === 'number' ? `${height}px` : height;
+  if (width) style.width = typeof width === "number" ? `${width}px` : width;
+  if (height)
+    style.height = typeof height === "number" ? `${height}px` : height;
 
   const variantClasses = {
     text: "h-4 w-full",
@@ -96,7 +97,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
   isVisible,
   message = "Loading...",
   children,
-  className
+  className,
 }) => {
   if (!isVisible) return <>{children}</>;
 
@@ -113,12 +114,70 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
   );
 };
 
+export interface ProgressBarProps {
+  value: number; // 0-100
+  size?: "sm" | "md" | "lg";
+  variant?: "default" | "success" | "warning" | "error";
+  showPercentage?: boolean;
+  className?: string;
+}
+
+export const ProgressBar: React.FC<ProgressBarProps> = ({
+  value,
+  size = "md",
+  variant = "default",
+  showPercentage = false,
+  className,
+}) => {
+  const clampedValue = Math.min(Math.max(value, 0), 100);
+
+  const sizeClasses = {
+    sm: "h-1",
+    md: "h-2",
+    lg: "h-3",
+  };
+
+  const variantClasses = {
+    default: "bg-primary-600",
+    success: "bg-success-500",
+    warning: "bg-warning-500",
+    error: "bg-error-500",
+  };
+
+  return (
+    <div className={cn("w-full", className)}>
+      <div
+        className={cn(
+          "w-full bg-gray-200 rounded-full overflow-hidden",
+          sizeClasses[size],
+        )}
+      >
+        <div
+          className={cn(
+            "h-full rounded-full transition-all duration-300 ease-out",
+            variantClasses[variant],
+          )}
+          style={{ width: `${clampedValue}%` }}
+        />
+      </div>
+      {showPercentage && (
+        <div className="flex justify-between items-center mt-1">
+          <span className="text-xs text-gray-500">
+            {Math.round(clampedValue)}%
+          </span>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export interface LoadingStateProps {
-  type?: "spinner" | "skeleton" | "overlay";
+  type?: "spinner" | "skeleton" | "overlay" | "progress";
   size?: "sm" | "md" | "lg";
   message?: string;
   className?: string;
   skeletonLines?: number;
+  progressValue?: number;
 }
 
 export const LoadingState: React.FC<LoadingStateProps> = ({
@@ -126,7 +185,8 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   size = "md",
   message,
   className,
-  skeletonLines = 3
+  skeletonLines = 3,
+  progressValue = 0,
 }) => {
   if (type === "skeleton") {
     return (
@@ -144,10 +204,29 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
     );
   }
 
+  if (type === "progress") {
+    return (
+      <div
+        className={cn(
+          "flex flex-col items-center justify-center space-y-3 py-8",
+          className,
+        )}
+      >
+        <ProgressBar value={progressValue} size={size} />
+        {message && <p className="text-sm text-gray-600">{message}</p>}
+      </div>
+    );
+  }
+
   return (
-    <div className={cn("flex flex-col items-center justify-center space-y-3 py-8", className)}>
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center space-y-3 py-8",
+        className,
+      )}
+    >
       <LoadingSpinner size={size} />
-      {message && <p className="text-sm text-muted-foreground">{message}</p>}
+      {message && <p className="text-sm text-gray-600">{message}</p>}
     </div>
   );
 };

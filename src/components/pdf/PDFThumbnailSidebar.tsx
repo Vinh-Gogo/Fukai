@@ -1,13 +1,16 @@
-import React, { useCallback } from 'react';
-import { cn } from '@/lib/utils';
-import { PDFDocumentProxy } from '@/types/pdf';
+import React, { useCallback } from "react";
+import { cn } from "@/lib/utils";
+import { PDFDocumentProxy } from "@/types/pdf";
 
 interface PDFThumbnailSidebarProps {
   totalPages: number;
   currentPage: number;
   pdfDoc: PDFDocumentProxy | null;
   onGoToPage: (page: number) => void;
-  renderThumbnail: (pageNumber: number, canvas: HTMLCanvasElement) => Promise<void>;
+  renderThumbnail: (
+    pageNumber: number,
+    canvas: HTMLCanvasElement,
+  ) => Promise<void>;
 }
 
 export const PDFThumbnailSidebar: React.FC<PDFThumbnailSidebarProps> = ({
@@ -17,9 +20,12 @@ export const PDFThumbnailSidebar: React.FC<PDFThumbnailSidebarProps> = ({
   onGoToPage,
   renderThumbnail,
 }) => {
-  const handleThumbnailClick = useCallback((page: number) => {
-    onGoToPage(page);
-  }, [onGoToPage]);
+  const handleThumbnailClick = useCallback(
+    (page: number) => {
+      onGoToPage(page);
+    },
+    [onGoToPage],
+  );
 
   return (
     <div className="hidden md:block absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-2 border border-gray-200 max-h-[80%] overflow-y-auto">
@@ -37,7 +43,7 @@ export const PDFThumbnailSidebar: React.FC<PDFThumbnailSidebarProps> = ({
                 "w-16 h-20 rounded-lg flex flex-col items-center justify-center text-xs p-1 border transition-all",
                 currentPage === page
                   ? "border-blue-500 bg-blue-50 shadow-md scale-105"
-                  : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                  : "border-gray-200 hover:border-blue-300 hover:bg-gray-50",
               )}
               aria-label={`Go to page ${page}`}
             >

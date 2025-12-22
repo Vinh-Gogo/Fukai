@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from 'react';
-import { PDFFile, VirtualizationResult } from '@/types/pdf';
+import { useState, useMemo, useCallback } from "react";
+import { PDFFile, VirtualizationResult } from "@/types/pdf";
 
 /**
  * Hook for virtualizing large lists of PDF files
@@ -8,7 +8,7 @@ import { PDFFile, VirtualizationResult } from '@/types/pdf';
 export const useVirtualizedList = (
   items: PDFFile[],
   containerHeight = 600,
-  itemHeight = 64
+  itemHeight = 64,
 ): VirtualizationResult<PDFFile> => {
   const [scrollTop, setScrollTop] = useState(0);
 
@@ -30,6 +30,6 @@ export const useVirtualizedList = (
     startIndex,
     totalItems: items.length,
     handleScroll,
-    itemHeight
+    itemHeight,
   };
 };

@@ -1,6 +1,6 @@
-import React from 'react';
-import { JobCard } from '@/components/features';
-import { CrawlJob } from '@/lib/crawl';
+import React from "react";
+import { JobCard } from "@/components/features";
+import { CrawlJob } from "@/lib/crawl";
 
 interface CrawlJobListProps {
   jobs: CrawlJob[];
@@ -28,7 +28,9 @@ export const CrawlJobList: React.FC<CrawlJobListProps> = ({
   if (jobs.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">No crawl jobs yet. Add your first job above.</p>
+        <p className="text-muted-foreground">
+          No crawl jobs yet. Add your first job above.
+        </p>
       </div>
     );
   }
@@ -45,14 +47,10 @@ export const CrawlJobList: React.FC<CrawlJobListProps> = ({
         <div className="flex items-center gap-2 text-sm">
           <div
             className={`w-2 h-2 rounded-full ${
-              isRunning
-                ? "bg-success animate-pulse"
-                : "bg-muted-foreground"
+              isRunning ? "bg-success animate-pulse" : "bg-muted-foreground"
             }`}
           />
-          <span className="font-medium">
-            {isRunning ? "Running" : "Idle"}
-          </span>
+          <span className="font-medium">{isRunning ? "Running" : "Idle"}</span>
         </div>
       </div>
 

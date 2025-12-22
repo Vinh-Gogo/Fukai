@@ -17,7 +17,9 @@ interface UseParticleEffectsReturn {
 /**
  * Custom hook to generate stable particle styles for floating background effects
  */
-export function useParticleEffects(particleCount: number = 15): UseParticleEffectsReturn {
+export function useParticleEffects(
+  particleCount: number = 15,
+): UseParticleEffectsReturn {
   // Generate stable random values for particles (lazy initializer runs once)
   const [particleStyles] = useState<ParticleStyle[]>(() =>
     [...Array(particleCount)].map((_, i) => ({
@@ -33,7 +35,7 @@ export function useParticleEffects(particleCount: number = 15): UseParticleEffec
           : i % 3 === 1
             ? "bg-purple-400"
             : "bg-cyan-400",
-    }))
+    })),
   );
 
   return {

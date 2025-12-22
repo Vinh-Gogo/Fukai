@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { cn } from "@/lib/utils";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -15,7 +15,10 @@ interface ErrorBoundaryProps {
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
 }
 
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
@@ -27,10 +30,10 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     this.setState({ error, errorInfo });
-    
+
     // Log error to monitoring service
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+
     // Call custom error handler if provided
     this.props.onError?.(error, errorInfo);
   }
@@ -50,9 +53,9 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 }
 
 // Default error fallback component
-const DefaultErrorFallback: React.FC<{ error?: Error; reset: () => void }> = ({ 
-  error, 
-  reset 
+const DefaultErrorFallback: React.FC<{ error?: Error; reset: () => void }> = ({
+  error,
+  reset,
 }) => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -72,13 +75,14 @@ const DefaultErrorFallback: React.FC<{ error?: Error; reset: () => void }> = ({
             />
           </svg>
         </div>
-        
+
         <h2 className="text-xl font-semibold text-gray-900 mb-2">
           Something went wrong
         </h2>
-        
+
         <p className="text-gray-600 mb-6">
-          We apologize for the inconvenience. The application encountered an unexpected error.
+          We apologize for the inconvenience. The application encountered an
+          unexpected error.
         </p>
 
         {error && (
@@ -112,8 +116,8 @@ const DefaultErrorFallback: React.FC<{ error?: Error; reset: () => void }> = ({
 };
 
 // Page-level error boundary for Next.js
-export const PageErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ 
-  children 
+export const PageErrorBoundary: React.FC<{ children: React.ReactNode }> = ({
+  children,
 }) => {
   return (
     <ErrorBoundary
@@ -136,16 +140,16 @@ export const PageErrorBoundary: React.FC<{ children: React.ReactNode }> = ({
                   />
                 </svg>
               </div>
-              
+
               <h1 className="text-3xl font-bold text-gray-900 mb-4">
                 Page Error
               </h1>
 
-                  <p className="text-lg text-gray-600 mb-6">
-                    This page encountered an error and could not load properly.
-                  </p>
+              <p className="text-lg text-gray-600 mb-6">
+                This page encountered an error and could not load properly.
+              </p>
 
-              {process.env.NODE_ENV === 'development' && error && (
+              {process.env.NODE_ENV === "development" && error && (
                 <details className="mb-6 text-left bg-red-50 rounded-lg p-4">
                   <summary className="cursor-pointer text-sm font-medium text-red-800 hover:text-red-900">
                     Development Error Details
@@ -164,7 +168,7 @@ export const PageErrorBoundary: React.FC<{ children: React.ReactNode }> = ({
                   Retry
                 </button>
                 <button
-                  onClick={() => window.location.href = '/'}
+                  onClick={() => (window.location.href = "/")}
                   className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium"
                 >
                   Go Home
@@ -188,46 +192,51 @@ export const ComponentErrorBoundary: React.FC<{
 }> = ({ children, className, fallback }) => {
   return (
     <ErrorBoundary
-      fallback={fallback || (({ error, reset }) => (
-        <div className={cn(
-          "p-4 bg-red-50 border border-red-200 rounded-lg",
-          className
-        )}>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-4 h-4 text-red-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
+      fallback={
+        fallback ||
+        (({ error, reset }) => (
+          <div
+            className={cn(
+              "p-4 bg-red-50 border border-red-200 rounded-lg",
+              className,
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-4 h-4 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-red-800">
                   Component failed to load
                 </p>
-              {process.env.NODE_ENV === 'development' && error && (
-                <p className="text-xs text-red-600 mt-1 truncate">
-                  {error.message}
-                </p>
-              )}
+                {process.env.NODE_ENV === "development" && error && (
+                  <p className="text-xs text-red-600 mt-1 truncate">
+                    {error.message}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={reset}
+                className="text-sm text-red-600 hover:text-red-800 font-medium"
+              >
+                Retry
+              </button>
             </div>
-            <button
-              onClick={reset}
-              className="text-sm text-red-600 hover:text-red-800 font-medium"
-            >
-              Retry
-            </button>
           </div>
-        </div>
-      ))}
+        ))
+      }
     >
       {children}
     </ErrorBoundary>

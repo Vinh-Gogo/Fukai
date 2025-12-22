@@ -1,7 +1,6 @@
-// Layout Components Barrel Export
-export { default as BrandHeader } from './BrandHeader';
-export { MainBackgroundBar } from './MainBackgroundBar';
-export { BackgroundBarControls } from './BackgroundBarControls';
-export { BackgroundBarWithControls } from './BackgroundBarWithControls';
-export { BackgroundBarWrapper } from './BackgroundBarWrapper';
-export { BackgroundBarPopup } from './BackgroundBarPopup';
+export { Container } from "./Container";
+export { Grid, GridItem } from "./Grid";
+export { Section, Divider } from "./Section";
+export { BackgroundBarWrapper } from "./BackgroundBarWrapper";
+export { MainBackgroundBar } from "./MainBackgroundBar";
+export { BackgroundBarPopup } from "./BackgroundBarPopup";

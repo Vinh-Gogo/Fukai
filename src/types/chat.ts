@@ -5,7 +5,7 @@
 // Core Chat Types
 export interface ChatMessage {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   timestamp: Date;
   confidence?: number;
@@ -31,7 +31,7 @@ export interface QuickPrompt {
 // Hook Result Types
 export interface UseChatMessagesResult {
   messages: ChatMessage[];
-  addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
+  addMessage: (message: Omit<ChatMessage, "id" | "timestamp">) => void;
   clearMessages: () => void;
   getLastMessage: () => ChatMessage | undefined;
   getMessageCount: () => number;
@@ -43,8 +43,12 @@ export interface UseChatInputResult {
   setInputValue: (value: string) => void;
   clearInput: () => void;
   isValid: boolean;
-  handleSubmit: (onSubmit: (value: string) => void) => (e: React.FormEvent) => void;
-  handleKeyDown: (onSubmit: (value: string) => void) => (e: React.KeyboardEvent) => void;
+  handleSubmit: (
+    onSubmit: (value: string) => void,
+  ) => (e: React.FormEvent) => void;
+  handleKeyDown: (
+    onSubmit: (value: string) => void,
+  ) => (e: React.KeyboardEvent) => void;
 }
 
 export interface UseAIResponsesResult {
@@ -105,45 +109,45 @@ export interface ConversationStats {
 // Constants
 export const QUICK_PROMPTS: QuickPrompt[] = [
   {
-    id: 'summary',
-    label: 'Summarize',
+    id: "summary",
+    label: "Summarize",
     icon: () => null, // Will be imported where needed
-    query: 'Provide a comprehensive summary of the key points',
-    description: 'Get a concise overview'
+    query: "Provide a comprehensive summary of the key points",
+    description: "Get a concise overview",
   },
   {
-    id: 'explain',
-    label: 'Explain',
+    id: "explain",
+    label: "Explain",
     icon: () => null,
-    query: 'Explain this concept in simple terms',
-    description: 'Break down complex ideas'
+    query: "Explain this concept in simple terms",
+    description: "Break down complex ideas",
   },
   {
-    id: 'find',
-    label: 'Find Info',
+    id: "find",
+    label: "Find Info",
     icon: () => null,
-    query: 'Find relevant information about',
-    description: 'Search for specific details'
+    query: "Find relevant information about",
+    description: "Search for specific details",
   },
   {
-    id: 'analyze',
-    label: 'Analyze',
+    id: "analyze",
+    label: "Analyze",
     icon: () => null,
-    query: 'Analyze and provide insights on',
-    description: 'Deep analysis & insights'
-  }
+    query: "Analyze and provide insights on",
+    description: "Deep analysis & insights",
+  },
 ];
 
 // Type Guards
 export const isChatMessage = (obj: unknown): obj is ChatMessage => {
   const message = obj as Record<string, unknown>;
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
-    typeof message.id === 'string' &&
-    typeof message.role === 'string' &&
-    ['user', 'assistant'].includes(message.role) &&
-    typeof message.content === 'string' &&
+    typeof message.id === "string" &&
+    typeof message.role === "string" &&
+    ["user", "assistant"].includes(message.role) &&
+    typeof message.content === "string" &&
     message.timestamp instanceof Date
   );
 };
@@ -152,11 +156,14 @@ export const isValidMessage = (content: string): MessageValidationResult => {
   const trimmed = content.trim();
 
   if (!trimmed) {
-    return { isValid: false, error: 'Message cannot be empty' };
+    return { isValid: false, error: "Message cannot be empty" };
   }
 
   if (trimmed.length > 10000) {
-    return { isValid: false, error: 'Message is too long (max 10,000 characters)' };
+    return {
+      isValid: false,
+      error: "Message is too long (max 10,000 characters)",
+    };
   }
 
   return { isValid: true };
@@ -165,44 +172,52 @@ export const isValidMessage = (content: string): MessageValidationResult => {
 // Utility Functions
 export const createErrorMessage = (error: string): ChatMessage => ({
   id: `error-${Date.now()}`,
-  role: 'assistant',
+  role: "assistant",
   content: `I apologize, but I encountered an error while processing your query: ${error}. Please try again.`,
-  timestamp: new Date()
+  timestamp: new Date(),
 });
 
 export const formatMessage = (message: ChatMessage): ChatMessage => ({
   ...message,
-  content: message.content.trim()
+  content: message.content.trim(),
 });
 
-export const getConversationStats = (messages: ChatMessage[]): ConversationStats => {
-  const userMessages = messages.filter(m => m.role === 'user').length;
-  const assistantMessages = messages.filter(m => m.role === 'assistant').length;
-  const averageConfidence = messages
-    .filter(m => m.confidence !== undefined)
-    .reduce((sum, m) => sum + (m.confidence || 0), 0) / assistantMessages || 0;
+export const getConversationStats = (
+  messages: ChatMessage[],
+): ConversationStats => {
+  const userMessages = messages.filter((m) => m.role === "user").length;
+  const assistantMessages = messages.filter(
+    (m) => m.role === "assistant",
+  ).length;
+  const averageConfidence =
+    messages
+      .filter((m) => m.confidence !== undefined)
+      .reduce((sum, m) => sum + (m.confidence || 0), 0) / assistantMessages ||
+    0;
 
   return {
     totalMessages: messages.length,
     userMessages,
     assistantMessages,
-    averageConfidence: Math.round(averageConfidence)
+    averageConfidence: Math.round(averageConfidence),
   };
 };
 
 // Factory Functions
-export const createUserMessage = (content: string): Omit<ChatMessage, 'id' | 'timestamp'> => ({
-  role: 'user',
-  content: content.trim()
+export const createUserMessage = (
+  content: string,
+): Omit<ChatMessage, "id" | "timestamp"> => ({
+  role: "user",
+  content: content.trim(),
 });
 
 export const createAssistantMessage = (
   content: string,
   confidence?: number,
-  sources?: string[]
-): Omit<ChatMessage, 'id' | 'timestamp'> => ({
-  role: 'assistant',
+  sources?: string[],
+): Omit<ChatMessage, "id" | "timestamp"> => ({
+  role: "assistant",
   content: content.trim(),
   confidence,
-  sources
+  sources,
 });

@@ -1,1 +1,1 @@
-export { NavigationControls } from './NavigationControls';
+export { NavigationControls } from "./NavigationControls";

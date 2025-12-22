@@ -3,9 +3,7 @@
  */
 
 // Virtualization hooks
-export { useVirtualizedList } from './useVirtualizedList';
+export { useVirtualizedList } from "./useVirtualizedList";
 
 // Re-export types for convenience
-export type {
-  VirtualizationResult,
-} from '@/types/pdf';
+export type { VirtualizationResult } from "@/types/pdf";

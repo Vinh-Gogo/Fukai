@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  MessageCircle, 
-  Plus, 
-  Trash2, 
-  ChevronLeft, 
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  MessageCircle,
+  Plus,
+  Trash2,
+  ChevronLeft,
   ChevronRight,
   Clock,
-  User
-} from 'lucide-react';
-import type { ConversationSession } from '@/types/chat';
+  User,
+} from "lucide-react";
+import type { ConversationSession } from "@/types/chat";
 
 interface ConversationHistoryPanelProps {
   conversations: ConversationSession[];
@@ -21,14 +21,16 @@ interface ConversationHistoryPanelProps {
   onCreateNewConversation: () => void;
 }
 
-export const ConversationHistoryPanel: React.FC<ConversationHistoryPanelProps> = ({
+export const ConversationHistoryPanel: React.FC<
+  ConversationHistoryPanelProps
+> = ({
   conversations,
   currentConversationId,
   isVisible,
   onToggle,
   onSelectConversation,
   onDeleteConversation,
-  onCreateNewConversation
+  onCreateNewConversation,
 }) => {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
@@ -37,18 +39,18 @@ export const ConversationHistoryPanel: React.FC<ConversationHistoryPanelProps> =
     const diff = now.getTime() - date.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(hours / 24);
-    
-    if (hours < 1) return 'Just now';
+
+    if (hours < 1) return "Just now";
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;
     return date.toLocaleDateString();
   };
 
   const getLastMessage = (conversation: ConversationSession): string => {
-    if (conversation.messages.length === 0) return 'No messages yet';
+    if (conversation.messages.length === 0) return "No messages yet";
     const lastMessage = conversation.messages[conversation.messages.length - 1];
     const content = lastMessage.content;
-    return content.length > 50 ? content.substring(0, 50) + '...' : content;
+    return content.length > 50 ? content.substring(0, 50) + "..." : content;
   };
 
   const handleDelete = (conversationId: string, e: React.MouseEvent) => {
@@ -62,8 +64,8 @@ export const ConversationHistoryPanel: React.FC<ConversationHistoryPanelProps> =
     }
   };
 
-  const sortedConversations = [...conversations].sort((a, b) => 
-    b.updatedAt.getTime() - a.updatedAt.getTime()
+  const sortedConversations = [...conversations].sort(
+    (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
   );
 
   return (
@@ -73,14 +75,16 @@ export const ConversationHistoryPanel: React.FC<ConversationHistoryPanelProps> =
           initial={{ x: 300, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: 300, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className="fixed right-0 top-0 h-full w-80 bg-white/95 backdrop-blur-sm border-l border-gray-200 shadow-2xl z-40 flex flex-col"
         >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50">
             <div className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-indigo-600" />
-              <h2 className="text-lg font-semibold text-gray-800">Conversations</h2>
+              <h2 className="text-lg font-semibold text-gray-800">
+                Conversations
+              </h2>
             </div>
             <button
               onClick={onToggle}
@@ -124,8 +128,8 @@ export const ConversationHistoryPanel: React.FC<ConversationHistoryPanelProps> =
                       onClick={() => onSelectConversation(conversation.id)}
                       className={`group relative p-3 rounded-lg cursor-pointer transition-all duration-200 ${
                         currentConversationId === conversation.id
-                          ? 'bg-indigo-100 border-2 border-indigo-300'
-                          : 'hover:bg-gray-50 border-2 border-transparent'
+                          ? "bg-indigo-100 border-2 border-indigo-300"
+                          : "hover:bg-gray-50 border-2 border-transparent"
                       }`}
                     >
                       {/* Current conversation indicator */}
@@ -144,15 +148,17 @@ export const ConversationHistoryPanel: React.FC<ConversationHistoryPanelProps> =
                             onClick={(e) => handleDelete(conversation.id, e)}
                             className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-red-100 ${
                               deleteConfirmId === conversation.id
-                                ? 'bg-red-100 opacity-100'
-                                : ''
+                                ? "bg-red-100 opacity-100"
+                                : ""
                             }`}
                           >
-                            <Trash2 className={`w-3 h-3 ${
-                              deleteConfirmId === conversation.id
-                                ? 'text-red-600'
-                                : 'text-gray-400 hover:text-red-600'
-                            }`} />
+                            <Trash2
+                              className={`w-3 h-3 ${
+                                deleteConfirmId === conversation.id
+                                  ? "text-red-600"
+                                  : "text-gray-400 hover:text-red-600"
+                              }`}
+                            />
                           </button>
                         </div>
 
@@ -190,7 +196,8 @@ export const ConversationHistoryPanel: React.FC<ConversationHistoryPanelProps> =
           {/* Footer */}
           <div className="p-3 border-t border-gray-200 bg-gray-50">
             <div className="text-xs text-gray-500 text-center">
-              {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
+              {conversations.length} conversation
+              {conversations.length !== 1 ? "s" : ""}
             </div>
           </div>
         </motion.div>

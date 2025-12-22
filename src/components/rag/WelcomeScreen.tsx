@@ -1,6 +1,6 @@
-import React from 'react';
-import { Bot, FileText, Lightbulb, Search, Target } from 'lucide-react';
-import { QUICK_PROMPTS } from '@/lib/chat';
+import React from "react";
+import { Bot, FileText, Lightbulb, Search, Target } from "lucide-react";
+import { QUICK_PROMPTS } from "@/lib/chat";
 
 interface WelcomeScreenProps {
   onQuickPromptSelect: (promptId: string, enhancedQuery: string) => void;
@@ -9,9 +9,9 @@ interface WelcomeScreenProps {
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onQuickPromptSelect,
-  currentInputValue
+  currentInputValue,
 }) => {
-  const handleQuickPromptClick = (prompt: typeof QUICK_PROMPTS[0]) => {
+  const handleQuickPromptClick = (prompt: (typeof QUICK_PROMPTS)[0]) => {
     const enhancedQuery = `${prompt.query} ${currentInputValue}`.trim();
     onQuickPromptSelect(prompt.id, enhancedQuery);
   };
@@ -21,9 +21,12 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-4 shadow-lg">
         <Bot className="w-8 h-8 text-white" />
       </div>
-      <h3 className="text-2xl font-bold text-gray-900 mb-2">Welcome to RAG Query</h3>
+      <h3 className="text-2xl font-bold text-gray-900 mb-2">
+        Welcome to RAG Query
+      </h3>
       <p className="text-gray-600 mb-6 max-w-md mx-auto">
-        Ask questions about your documents and get AI-powered answers based on your knowledge base.
+        Ask questions about your documents and get AI-powered answers based on
+        your knowledge base.
       </p>
 
       {/* Quick Start Prompts */}
@@ -40,9 +43,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 <div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
                   <IconComponent className="w-4 h-4 text-blue-600" />
                 </div>
-                <span className="font-medium text-gray-900">{prompt.label}</span>
+                <span className="font-medium text-gray-900">
+                  {prompt.label}
+                </span>
               </div>
-              <p className="text-sm text-gray-600 text-left">{prompt.description}</p>
+              <p className="text-sm text-gray-600 text-left">
+                {prompt.description}
+              </p>
             </button>
           );
         })}
@@ -54,13 +61,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 // Helper function to get icon for prompt
 const getIconForPrompt = (promptId: string) => {
   switch (promptId) {
-    case 'summary':
+    case "summary":
       return FileText;
-    case 'explain':
+    case "explain":
       return Lightbulb;
-    case 'find':
+    case "find":
       return Search;
-    case 'analyze':
+    case "analyze":
       return Target;
     default:
       return FileText;

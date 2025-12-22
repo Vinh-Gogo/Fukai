@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   createMemoryManagedRenderTask,
   cancelMemoryManagedRenderTask,
@@ -6,12 +6,12 @@ import {
   calculateOptimalScale,
   debounce,
   PDFRenderTask,
-  PDFDocumentProxy
-} from '@/lib/pdf';
+  PDFDocumentProxy,
+} from "@/lib/pdf";
 
 // Enhanced error types for PDF rendering
 export interface PDFRenderError {
-  type: 'canvas' | 'render' | 'memory' | 'timeout' | 'unknown';
+  type: "canvas" | "render" | "memory" | "timeout" | "unknown";
   message: string;
   originalError?: Error;
   pageNumber?: number;
@@ -20,10 +20,19 @@ export interface PDFRenderError {
 }
 
 export interface UsePDFRendererResult {
-  renderPage: (pageNumber: number, canvas: HTMLCanvasElement, pdfDoc?: PDFDocumentProxy, scale?: number) => Promise<void>;
+  renderPage: (
+    pageNumber: number,
+    canvas: HTMLCanvasElement,
+    pdfDoc?: PDFDocumentProxy,
+    scale?: number,
+  ) => Promise<void>;
   cancelAllRenders: () => void;
   cleanup: () => void;
-  calculateScale: (containerWidth: number, pageWidth: number, zoomLevel?: number) => number;
+  calculateScale: (
+    containerWidth: number,
+    pageWidth: number,
+    zoomLevel?: number,
+  ) => number;
   activeRenders: PDFRenderTask[];
   isRendering: boolean;
 }
@@ -38,16 +47,21 @@ export const usePDFRenderer = (): UsePDFRendererResult => {
   const debouncedRender = useCallback(
     (() => {
       let timeout: NodeJS.Timeout;
-      return (pageNumber: number, canvas: HTMLCanvasElement, pdfDoc: PDFDocumentProxy, scale: number) => {
+      return (
+        pageNumber: number,
+        canvas: HTMLCanvasElement,
+        pdfDoc: PDFDocumentProxy,
+        scale: number,
+      ) => {
         clearTimeout(timeout);
         timeout = setTimeout(async () => {
           if (!pdfDoc) return;
 
           try {
             // Check if we're at the concurrent render limit
-            const currentRenders = Array.from(renderQueueRef.current.values()).filter(
-              task => !task.cancelled
-            );
+            const currentRenders = Array.from(
+              renderQueueRef.current.values(),
+            ).filter((task) => !task.cancelled);
 
             if (currentRenders.length >= maxConcurrentRenders) {
               // Cancel oldest render if we're at limit
@@ -68,11 +82,18 @@ export const usePDFRenderer = (): UsePDFRendererResult => {
             const page = await pdfDoc.getPage(pageNumber);
 
             // Create new render task
-            const renderTask = createMemoryManagedRenderTask(page, canvas, scale);
+            const renderTask = createMemoryManagedRenderTask(
+              page,
+              canvas,
+              scale,
+            );
 
             // Add to active renders
             renderQueueRef.current.set(pageNumber, renderTask);
-            setActiveRenders(prev => [...prev.filter(t => t.pageNumber !== pageNumber), renderTask]);
+            setActiveRenders((prev) => [
+              ...prev.filter((t) => t.pageNumber !== pageNumber),
+              renderTask,
+            ]);
             setIsRendering(true);
 
             // Wait for render to complete
@@ -80,48 +101,57 @@ export const usePDFRenderer = (): UsePDFRendererResult => {
 
             // Remove from active renders on success
             renderQueueRef.current.delete(pageNumber);
-            setActiveRenders(prev => prev.filter(t => t.pageNumber !== pageNumber));
-
+            setActiveRenders((prev) =>
+              prev.filter((t) => t.pageNumber !== pageNumber),
+            );
           } catch (error) {
             // Remove from active renders on error
             renderQueueRef.current.delete(pageNumber);
-            setActiveRenders(prev => prev.filter(t => t.pageNumber !== pageNumber));
+            setActiveRenders((prev) =>
+              prev.filter((t) => t.pageNumber !== pageNumber),
+            );
 
             // Only log errors that aren't due to cancellation
-            if (!(error instanceof Error) || !error.message.includes('cancelled')) {
+            if (
+              !(error instanceof Error) ||
+              !error.message.includes("cancelled")
+            ) {
               console.error(`Failed to render page ${pageNumber}:`, error);
             }
           } finally {
             // Check if any renders are still active
-            const remainingRenders = Array.from(renderQueueRef.current.values()).filter(
-              task => !task.cancelled
-            );
+            const remainingRenders = Array.from(
+              renderQueueRef.current.values(),
+            ).filter((task) => !task.cancelled);
             setIsRendering(remainingRenders.length > 0);
           }
         }, 100); // 100ms debounce
       };
     })(),
-    []
+    [],
   );
 
-  const renderPage = useCallback(async (
-    pageNumber: number,
-    canvas: HTMLCanvasElement,
-    pdfDoc?: PDFDocumentProxy,
-    scale: number = 1.5
-  ) => {
-    if (!pdfDoc) return;
+  const renderPage = useCallback(
+    async (
+      pageNumber: number,
+      canvas: HTMLCanvasElement,
+      pdfDoc?: PDFDocumentProxy,
+      scale: number = 1.5,
+    ) => {
+      if (!pdfDoc) return;
 
-    // Clean up existing canvas
-    cleanupCanvasMemory(canvas);
+      // Clean up existing canvas
+      cleanupCanvasMemory(canvas);
 
-    // Trigger debounced render
-    debouncedRender(pageNumber, canvas, pdfDoc, scale);
-  }, [debouncedRender]);
+      // Trigger debounced render
+      debouncedRender(pageNumber, canvas, pdfDoc, scale);
+    },
+    [debouncedRender],
+  );
 
   const cancelAllRenders = useCallback(() => {
     // Cancel all active render tasks
-    renderQueueRef.current.forEach(task => {
+    renderQueueRef.current.forEach((task) => {
       cancelMemoryManagedRenderTask(task);
     });
 
@@ -135,7 +165,7 @@ export const usePDFRenderer = (): UsePDFRendererResult => {
     cancelAllRenders();
 
     // Clean up any remaining canvas elements
-    activeRenders.forEach(task => {
+    activeRenders.forEach((task) => {
       cleanupCanvasMemory(task.canvas);
     });
   }, [cancelAllRenders, activeRenders]);

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from "react";
 import {
   ArchiveFile,
   CategoryInfo,
@@ -7,21 +7,24 @@ import {
   filterFiles,
   sortFiles,
   updateCategoryCounts,
-  formatBytes
-} from '@/lib/archive';
+  formatBytes,
+} from "@/lib/archive";
 
 interface UseFileManagerOptions {
   initialFiles?: ArchiveFile[];
   categories: CategoryInfo[];
 }
 
-export const useFileManager = ({ initialFiles = [], categories }: UseFileManagerOptions) => {
+export const useFileManager = ({
+  initialFiles = [],
+  categories,
+}: UseFileManagerOptions) => {
   const [files, setFiles] = useState<ArchiveFile[]>(initialFiles);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState<'name' | 'date' | 'size'>('date');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sortBy, setSortBy] = useState<"name" | "date" | "size">("date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   // Memoized computations
   const storageStats = useMemo((): StorageStats => {
@@ -39,32 +42,37 @@ export const useFileManager = ({ initialFiles = [], categories }: UseFileManager
 
   // File operations
   const addFile = useCallback((file: ArchiveFile) => {
-    setFiles(prev => [...prev, file]);
+    setFiles((prev) => [...prev, file]);
   }, []);
 
   const removeFile = useCallback((fileId: string) => {
-    setFiles(prev => prev.filter(file => file.id !== fileId));
-    setSelectedFiles(prev => {
+    setFiles((prev) => prev.filter((file) => file.id !== fileId));
+    setSelectedFiles((prev) => {
       const newSelected = new Set(prev);
       newSelected.delete(fileId);
       return newSelected;
     });
   }, []);
 
-  const updateFile = useCallback((fileId: string, updates: Partial<ArchiveFile>) => {
-    setFiles(prev => prev.map(file =>
-      file.id === fileId ? { ...file, ...updates } : file
-    ));
-  }, []);
+  const updateFile = useCallback(
+    (fileId: string, updates: Partial<ArchiveFile>) => {
+      setFiles((prev) =>
+        prev.map((file) =>
+          file.id === fileId ? { ...file, ...updates } : file,
+        ),
+      );
+    },
+    [],
+  );
 
   const removeSelectedFiles = useCallback(() => {
-    setFiles(prev => prev.filter(file => !selectedFiles.has(file.id)));
+    setFiles((prev) => prev.filter((file) => !selectedFiles.has(file.id)));
     setSelectedFiles(new Set());
   }, [selectedFiles]);
 
   // Selection operations
   const toggleFileSelection = useCallback((fileId: string) => {
-    setSelectedFiles(prev => {
+    setSelectedFiles((prev) => {
       const newSelected = new Set(prev);
       if (newSelected.has(fileId)) {
         newSelected.delete(fileId);
@@ -79,7 +87,7 @@ export const useFileManager = ({ initialFiles = [], categories }: UseFileManager
     if (selectedFiles.size === filteredFiles.length) {
       setSelectedFiles(new Set());
     } else {
-      setSelectedFiles(new Set(filteredFiles.map(f => f.id)));
+      setSelectedFiles(new Set(filteredFiles.map((f) => f.id)));
     }
   }, [selectedFiles.size, filteredFiles]);
 
@@ -88,14 +96,17 @@ export const useFileManager = ({ initialFiles = [], categories }: UseFileManager
   }, []);
 
   // Sorting operations
-  const handleSort = useCallback((field: 'name' | 'date' | 'size') => {
-    if (sortBy === field) {
-      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(field);
-      setSortOrder('desc');
-    }
-  }, [sortBy]);
+  const handleSort = useCallback(
+    (field: "name" | "date" | "size") => {
+      if (sortBy === field) {
+        setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+      } else {
+        setSortBy(field);
+        setSortOrder("desc");
+      }
+    },
+    [sortBy],
+  );
 
   // Search operations
   const handleSearch = useCallback((query: string) => {

@@ -1,2 +1,2 @@
 // Search hooks barrel export
-export { useGlobalSearch } from './useGlobalSearch';
+export { useGlobalSearch } from "./useGlobalSearch";

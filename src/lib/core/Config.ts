@@ -1,5 +1,5 @@
 // Configuration management system
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 
 interface AppConfig {
   api: {
@@ -26,7 +26,7 @@ interface AppConfig {
     enableContentSecurityPolicy: boolean;
   };
   ui: {
-    theme: 'light' | 'dark' | 'auto';
+    theme: "light" | "dark" | "auto";
     language: string;
     pageSize: number;
     enableAnimations: boolean;
@@ -36,34 +36,35 @@ interface AppConfig {
 // Default configuration
 const defaultConfig: AppConfig = {
   api: {
-    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || '',
+    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "",
     timeout: 30000,
-    retries: 3
+    retries: 3,
   },
   features: {
-    crawlEnabled: process.env.NEXT_PUBLIC_CRAWL_ENABLED !== 'false',
-    fileUploadEnabled: process.env.NEXT_PUBLIC_FILE_UPLOAD_ENABLED !== 'false',
-    chatEnabled: process.env.NEXT_PUBLIC_CHAT_ENABLED !== 'false',
-    activityTracking: process.env.NEXT_PUBLIC_ACTIVITY_TRACKING_ENABLED !== 'false'
+    crawlEnabled: process.env.NEXT_PUBLIC_CRAWL_ENABLED !== "false",
+    fileUploadEnabled: process.env.NEXT_PUBLIC_FILE_UPLOAD_ENABLED !== "false",
+    chatEnabled: process.env.NEXT_PUBLIC_CHAT_ENABLED !== "false",
+    activityTracking:
+      process.env.NEXT_PUBLIC_ACTIVITY_TRACKING_ENABLED !== "false",
   },
   performance: {
     enableVirtualization: true,
     enableLazyLoading: true,
     enableDebouncing: true,
-    enableThrottling: true
+    enableThrottling: true,
   },
   security: {
-    enableCSRFProtection: process.env.NODE_ENV === 'production',
-    enableRateLimiting: process.env.NODE_ENV === 'production',
+    enableCSRFProtection: process.env.NODE_ENV === "production",
+    enableRateLimiting: process.env.NODE_ENV === "production",
     enableFileValidation: true,
-    enableContentSecurityPolicy: process.env.NODE_ENV === 'production'
+    enableContentSecurityPolicy: process.env.NODE_ENV === "production",
   },
   ui: {
-    theme: 'auto',
-    language: 'en',
+    theme: "auto",
+    language: "en",
     pageSize: 20,
-    enableAnimations: true
-  }
+    enableAnimations: true,
+  },
 };
 
 // Configuration manager class
@@ -121,7 +122,7 @@ export class ConfigManager {
   subscribe(callback: (config: AppConfig) => void): () => void {
     this.listeners.add(callback);
     callback(this.config);
-    
+
     return () => {
       this.listeners.delete(callback);
     };
@@ -129,17 +130,17 @@ export class ConfigManager {
 
   // Load configuration from localStorage
   private loadFromStorage(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     try {
-      const stored = localStorage.getItem('app-config');
+      const stored = localStorage.getItem("app-config");
       if (stored) {
         const parsedConfig = JSON.parse(stored);
         // Merge with defaults to handle new properties
         this.config = this.mergeConfig(defaultConfig, parsedConfig);
       }
     } catch {
-      console.warn('Failed to load configuration from storage');
+      console.warn("Failed to load configuration from storage");
     }
   }
 
@@ -148,37 +149,51 @@ export class ConfigManager {
     // Override with environment variables
     const envConfig: Partial<AppConfig> = {
       api: {
-        baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || defaultConfig.api.baseUrl,
-        timeout: process.env.NEXT_PUBLIC_API_TIMEOUT ? 
-          parseInt(process.env.NEXT_PUBLIC_API_TIMEOUT) : defaultConfig.api.timeout,
-        retries: process.env.NEXT_PUBLIC_API_RETRIES ? 
-          parseInt(process.env.NEXT_PUBLIC_API_RETRIES) : defaultConfig.api.retries
+        baseUrl:
+          process.env.NEXT_PUBLIC_API_BASE_URL || defaultConfig.api.baseUrl,
+        timeout: process.env.NEXT_PUBLIC_API_TIMEOUT
+          ? parseInt(process.env.NEXT_PUBLIC_API_TIMEOUT)
+          : defaultConfig.api.timeout,
+        retries: process.env.NEXT_PUBLIC_API_RETRIES
+          ? parseInt(process.env.NEXT_PUBLIC_API_RETRIES)
+          : defaultConfig.api.retries,
       },
       features: {
-        crawlEnabled: process.env.NEXT_PUBLIC_CRAWL_ENABLED !== 'false',
-        fileUploadEnabled: process.env.NEXT_PUBLIC_FILE_UPLOAD_ENABLED !== 'false',
-        chatEnabled: process.env.NEXT_PUBLIC_CHAT_ENABLED !== 'false',
-        activityTracking: process.env.NEXT_PUBLIC_ACTIVITY_TRACKING_ENABLED !== 'false'
+        crawlEnabled: process.env.NEXT_PUBLIC_CRAWL_ENABLED !== "false",
+        fileUploadEnabled:
+          process.env.NEXT_PUBLIC_FILE_UPLOAD_ENABLED !== "false",
+        chatEnabled: process.env.NEXT_PUBLIC_CHAT_ENABLED !== "false",
+        activityTracking:
+          process.env.NEXT_PUBLIC_ACTIVITY_TRACKING_ENABLED !== "false",
       },
       performance: {
-        enableVirtualization: process.env.NEXT_PUBLIC_ENABLE_VIRTUALIZATION !== 'false',
-        enableLazyLoading: process.env.NEXT_PUBLIC_ENABLE_LAZY_LOADING !== 'false',
-        enableDebouncing: process.env.NEXT_PUBLIC_ENABLE_DEBOUNCING !== 'false',
-        enableThrottling: process.env.NEXT_PUBLIC_ENABLE_THROTTLING !== 'false'
+        enableVirtualization:
+          process.env.NEXT_PUBLIC_ENABLE_VIRTUALIZATION !== "false",
+        enableLazyLoading:
+          process.env.NEXT_PUBLIC_ENABLE_LAZY_LOADING !== "false",
+        enableDebouncing: process.env.NEXT_PUBLIC_ENABLE_DEBOUNCING !== "false",
+        enableThrottling: process.env.NEXT_PUBLIC_ENABLE_THROTTLING !== "false",
       },
       security: {
-        enableCSRFProtection: process.env.NEXT_PUBLIC_ENABLE_CSRF_PROTECTION === 'true',
-        enableRateLimiting: process.env.NEXT_PUBLIC_ENABLE_RATE_LIMITING === 'true',
-        enableFileValidation: process.env.NEXT_PUBLIC_ENABLE_FILE_VALIDATION !== 'false',
-        enableContentSecurityPolicy: process.env.NEXT_PUBLIC_ENABLE_CSP === 'true'
+        enableCSRFProtection:
+          process.env.NEXT_PUBLIC_ENABLE_CSRF_PROTECTION === "true",
+        enableRateLimiting:
+          process.env.NEXT_PUBLIC_ENABLE_RATE_LIMITING === "true",
+        enableFileValidation:
+          process.env.NEXT_PUBLIC_ENABLE_FILE_VALIDATION !== "false",
+        enableContentSecurityPolicy:
+          process.env.NEXT_PUBLIC_ENABLE_CSP === "true",
       },
       ui: {
-        theme: (process.env.NEXT_PUBLIC_THEME as 'light' | 'dark' | 'auto') || defaultConfig.ui.theme,
+        theme:
+          (process.env.NEXT_PUBLIC_THEME as "light" | "dark" | "auto") ||
+          defaultConfig.ui.theme,
         language: process.env.NEXT_PUBLIC_LANGUAGE || defaultConfig.ui.language,
-        pageSize: process.env.NEXT_PUBLIC_PAGE_SIZE ? 
-          parseInt(process.env.NEXT_PUBLIC_PAGE_SIZE) : defaultConfig.ui.pageSize,
-        enableAnimations: process.env.NEXT_PUBLIC_ENABLE_ANIMATIONS !== 'false'
-      }
+        pageSize: process.env.NEXT_PUBLIC_PAGE_SIZE
+          ? parseInt(process.env.NEXT_PUBLIC_PAGE_SIZE)
+          : defaultConfig.ui.pageSize,
+        enableAnimations: process.env.NEXT_PUBLIC_ENABLE_ANIMATIONS !== "false",
+      },
     };
 
     this.config = this.mergeConfig(this.config, envConfig);
@@ -186,24 +201,34 @@ export class ConfigManager {
 
   // Save configuration to localStorage
   private saveToStorage(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     try {
-      localStorage.setItem('app-config', JSON.stringify(this.config));
+      localStorage.setItem("app-config", JSON.stringify(this.config));
     } catch {
-      console.warn('Failed to save configuration to storage');
+      console.warn("Failed to save configuration to storage");
     }
   }
 
   // Deep merge configuration objects
-  private mergeConfig(base: AppConfig, override: Partial<AppConfig>): AppConfig {
+  private mergeConfig(
+    base: AppConfig,
+    override: Partial<AppConfig>,
+  ): AppConfig {
     const result = { ...base };
 
     for (const key in override) {
       const k = key as keyof AppConfig;
       const value = override[k];
-      if (value !== undefined && typeof value === 'object' && !Array.isArray(value)) {
-        (result[k] as Record<string, unknown>) = { ...(base[k] as Record<string, unknown>), ...value };
+      if (
+        value !== undefined &&
+        typeof value === "object" &&
+        !Array.isArray(value)
+      ) {
+        (result[k] as Record<string, unknown>) = {
+          ...(base[k] as Record<string, unknown>),
+          ...value,
+        };
       } else if (value !== undefined) {
         (result as Record<keyof AppConfig, unknown>)[k] = value;
       }
@@ -214,7 +239,7 @@ export class ConfigManager {
 
   // Notify all listeners
   private notifyListeners(): void {
-    this.listeners.forEach(callback => callback(this.config));
+    this.listeners.forEach((callback) => callback(this.config));
   }
 
   // Validate configuration
@@ -223,30 +248,30 @@ export class ConfigManager {
 
     // Validate API configuration
     if (this.config.api.timeout <= 0) {
-      errors.push('API timeout must be positive');
+      errors.push("API timeout must be positive");
     }
 
     if (this.config.api.retries < 0) {
-      errors.push('API retries must be non-negative');
+      errors.push("API retries must be non-negative");
     }
 
     // Validate UI configuration
     if (this.config.ui.pageSize <= 0) {
-      errors.push('Page size must be positive');
+      errors.push("Page size must be positive");
     }
 
-    if (!['light', 'dark', 'auto'].includes(this.config.ui.theme)) {
-      errors.push('Theme must be light, dark, or auto');
+    if (!["light", "dark", "auto"].includes(this.config.ui.theme)) {
+      errors.push("Theme must be light, dark, or auto");
     }
 
     // Validate feature flags
-    if (typeof this.config.features.crawlEnabled !== 'boolean') {
-      errors.push('Crawl enabled must be boolean');
+    if (typeof this.config.features.crawlEnabled !== "boolean") {
+      errors.push("Crawl enabled must be boolean");
     }
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -260,22 +285,22 @@ export class ConfigManager {
     try {
       const imported = JSON.parse(configJson);
       const validation = this.validate();
-      
+
       if (validation.valid) {
         this.config = this.mergeConfig(defaultConfig, imported);
         this.saveToStorage();
         this.notifyListeners();
         return { success: true };
       } else {
-        return { 
-          success: false, 
-          error: `Invalid configuration: ${validation.errors.join(', ')}` 
+        return {
+          success: false,
+          error: `Invalid configuration: ${validation.errors.join(", ")}`,
         };
       }
     } catch {
-      return { 
-        success: false, 
-        error: 'Invalid JSON format' 
+      return {
+        success: false,
+        error: "Invalid JSON format",
       };
     }
   }
@@ -284,56 +309,59 @@ export class ConfigManager {
 // Configuration utilities
 export const configUtils = {
   // Get environment-specific configuration
-  getEnvironmentConfig(): 'development' | 'staging' | 'production' {
-    if (process.env.NODE_ENV === 'production') return 'production';
-    if (process.env.NODE_ENV === 'test') return 'staging';
-    return 'development';
+  getEnvironmentConfig(): "development" | "staging" | "production" {
+    if (process.env.NODE_ENV === "production") return "production";
+    if (process.env.NODE_ENV === "test") return "staging";
+    return "development";
   },
 
   // Check if feature is enabled
-  isFeatureEnabled(feature: keyof AppConfig['features']): boolean {
+  isFeatureEnabled(feature: keyof AppConfig["features"]): boolean {
     const config = ConfigManager.getInstance();
-    return config.get('features')[feature];
+    return config.get("features")[feature];
   },
 
   // Get API URL
   getApiUrl(endpoint: string): string {
     const config = ConfigManager.getInstance();
-    const baseUrl = config.get('api').baseUrl;
+    const baseUrl = config.get("api").baseUrl;
     return baseUrl ? `${baseUrl}${endpoint}` : endpoint;
   },
 
   // Get pagination size
   getPageSize(): number {
     const config = ConfigManager.getInstance();
-    return config.get('ui').pageSize;
+    return config.get("ui").pageSize;
   },
 
   // Check if security is enabled
-  isSecurityEnabled(feature: keyof AppConfig['security']): boolean {
+  isSecurityEnabled(feature: keyof AppConfig["security"]): boolean {
     const config = ConfigManager.getInstance();
-    return config.get('security')[feature];
+    return config.get("security")[feature];
   },
 
   // Check if performance optimization is enabled
-  isPerformanceEnabled(feature: keyof AppConfig['performance']): boolean {
+  isPerformanceEnabled(feature: keyof AppConfig["performance"]): boolean {
     const config = ConfigManager.getInstance();
-    return config.get('performance')[feature];
-  }
+    return config.get("performance")[feature];
+  },
 };
 
 // Configuration hooks for React
 export function useConfig<K extends keyof AppConfig>(
-  key: K
+  key: K,
 ): [AppConfig[K], (value: AppConfig[K]) => void] {
   const [value, setValue] = useState(() => {
     return ConfigManager.getInstance().get(key);
   });
 
-  const updateValue = useCallback((newValue: AppConfig[K]) => {
-    ConfigManager.getInstance().set(key, newValue);
-    setValue(newValue);
-  }, [key]);
+  const updateValue = useCallback(
+    (newValue: AppConfig[K]) => {
+      ConfigManager.getInstance().set(key, newValue);
+      setValue(newValue);
+    },
+    [key],
+  );
 
   return [value, updateValue];
 }
@@ -351,7 +379,7 @@ export function useConfigAll(): UseConfigAllResult {
 
   const updateConfig = useCallback((updates: Partial<AppConfig>) => {
     ConfigManager.getInstance().update(updates);
-    setConfig(prev => ({ ...prev, ...updates }));
+    setConfig((prev) => ({ ...prev, ...updates }));
   }, []);
 
   const resetConfig = useCallback(() => {
@@ -362,7 +390,7 @@ export function useConfigAll(): UseConfigAllResult {
   return {
     config,
     updateConfig,
-    resetConfig
+    resetConfig,
   };
 }
 

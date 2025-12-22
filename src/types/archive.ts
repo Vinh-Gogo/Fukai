@@ -30,9 +30,9 @@ export interface StorageStats {
 }
 
 // Sorting and Filtering Types
-export type SortField = 'name' | 'date' | 'size';
-export type SortOrder = 'asc' | 'desc';
-export type FileCategory = 'all' | 'recent' | string;
+export type SortField = "name" | "date" | "size";
+export type SortOrder = "asc" | "desc";
+export type FileCategory = "all" | "recent" | string;
 
 // Hook Result Types
 export interface UseFileManagerResult {
@@ -136,39 +136,39 @@ export interface ArchiveFileValidation {
 
 // Constants
 export const ARCHIVE_CATEGORIES = {
-  ALL: 'all' as const,
-  RECENT: 'recent' as const,
-  REPORTS: 'reports' as const,
-  MANUALS: 'manuals' as const,
-  DOCUMENTS: 'documents' as const,
+  ALL: "all" as const,
+  RECENT: "recent" as const,
+  REPORTS: "reports" as const,
+  MANUALS: "manuals" as const,
+  DOCUMENTS: "documents" as const,
 };
 
 export const SORT_FIELDS = {
-  NAME: 'name' as const,
-  DATE: 'date' as const,
-  SIZE: 'size' as const,
+  NAME: "name" as const,
+  DATE: "date" as const,
+  SIZE: "size" as const,
 };
 
 export const SORT_ORDERS = {
-  ASC: 'asc' as const,
-  DESC: 'desc' as const,
+  ASC: "asc" as const,
+  DESC: "desc" as const,
 };
 
 // Type Guards
 export const isArchiveFile = (obj: unknown): obj is ArchiveFile => {
   const file = obj as Record<string, unknown>;
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
-    typeof file.id === 'string' &&
-    typeof file.name === 'string' &&
-    typeof file.size === 'string' &&
-    typeof file.sourceUrl === 'string' &&
-    typeof file.downloadDate === 'string' &&
-    typeof file.type === 'string' &&
-    typeof file.category === 'string' &&
+    typeof file.id === "string" &&
+    typeof file.name === "string" &&
+    typeof file.size === "string" &&
+    typeof file.sourceUrl === "string" &&
+    typeof file.downloadDate === "string" &&
+    typeof file.type === "string" &&
+    typeof file.category === "string" &&
     Array.isArray(file.tags) &&
-    typeof file.isDownloaded === 'boolean'
+    typeof file.isDownloaded === "boolean"
   );
 };
 
@@ -180,35 +180,42 @@ export const parseSize = (sizeStr: string): number => {
   const value = parseFloat(match[1]);
   const unit = match[2];
 
-  const multiplier = unit === 'GB' ? 1024 * 1024 * 1024 :
-                    unit === 'MB' ? 1024 * 1024 :
-                    unit === 'KB' ? 1024 : 1;
+  const multiplier =
+    unit === "GB"
+      ? 1024 * 1024 * 1024
+      : unit === "MB"
+        ? 1024 * 1024
+        : unit === "KB"
+          ? 1024
+          : 1;
 
   return value * multiplier;
 };
 
 export const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 B';
+  if (bytes === 0) return "0 B";
 
   const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
 export const formatDate = (dateStr: string): string => {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   });
 };
 
 export const categorizeFile = (filename: string): string => {
   const lowerName = filename.toLowerCase();
-  if (lowerName.includes('report') || lowerName.includes('annual')) return ARCHIVE_CATEGORIES.REPORTS;
-  if (lowerName.includes('manual') || lowerName.includes('guide')) return ARCHIVE_CATEGORIES.MANUALS;
+  if (lowerName.includes("report") || lowerName.includes("annual"))
+    return ARCHIVE_CATEGORIES.REPORTS;
+  if (lowerName.includes("manual") || lowerName.includes("guide"))
+    return ARCHIVE_CATEGORIES.MANUALS;
   return ARCHIVE_CATEGORIES.DOCUMENTS;
 };
 
@@ -216,10 +223,11 @@ export const extractTags = (filename: string): string[] => {
   const tags: string[] = [];
   const lowerName = filename.toLowerCase();
 
-  if (lowerName.includes('2024') || lowerName.includes('2025')) tags.push('current');
-  if (lowerName.includes('report')) tags.push('report');
-  if (lowerName.includes('manual')) tags.push('manual');
-  if (lowerName.includes('technical')) tags.push('technical');
+  if (lowerName.includes("2024") || lowerName.includes("2025"))
+    tags.push("current");
+  if (lowerName.includes("report")) tags.push("report");
+  if (lowerName.includes("manual")) tags.push("manual");
+  if (lowerName.includes("technical")) tags.push("technical");
 
   return tags;
 };
@@ -232,7 +240,7 @@ export const calculateStorageStats = (files: ArchiveFile[]): StorageStats => {
     totalFiles,
     totalSize,
     totalSizeFormatted: formatBytes(totalSize),
-    averageSize: totalFiles > 0 ? totalSize / totalFiles : 0
+    averageSize: totalFiles > 0 ? totalSize / totalFiles : 0,
   };
 };
 
@@ -240,8 +248,8 @@ export const calculateStorageStats = (files: ArchiveFile[]): StorageStats => {
 export const createArchiveFile = (
   name: string,
   sourceUrl: string,
-  size: string = 'Unknown',
-  type: string = 'application/pdf'
+  size: string = "Unknown",
+  type: string = "application/pdf",
 ): ArchiveFile => ({
   id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
   name,
@@ -257,7 +265,7 @@ export const createArchiveFile = (
 export const createDefaultCategoryInfo = (
   id: string,
   name: string,
-  icon: React.ComponentType<{ className?: string }>
+  icon: React.ComponentType<{ className?: string }>,
 ): CategoryInfo => ({
   id,
   name,

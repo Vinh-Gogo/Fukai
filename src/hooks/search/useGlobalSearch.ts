@@ -1,16 +1,16 @@
 // Global search hook for the application
 
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { useDebounce } from '@/lib/core/Performance';
-import SearchEngine from '@/lib/search/SearchEngine';
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { useDebounce } from "@/lib/core/Performance";
+import SearchEngine from "@/lib/search/SearchEngine";
 import type {
   SearchQuery,
   SearchResult,
   SearchFilters,
   SearchSuggestion,
-  SearchHistory
-} from '@/types/search';
-import { localStorageAdapter } from '@/lib/core/StateManager';
+  SearchHistory,
+} from "@/types/search";
+import { localStorageAdapter } from "@/lib/core/StateManager";
 
 interface UseGlobalSearchResult {
   // Search state
@@ -38,7 +38,7 @@ interface UseGlobalSearchResult {
   isInitialized: boolean;
 }
 
-const SEARCH_HISTORY_KEY = 'search-history';
+const SEARCH_HISTORY_KEY = "search-history";
 const MAX_HISTORY_ITEMS = 20;
 
 // Custom hook for search history persistence
@@ -48,13 +48,14 @@ function useSearchHistory() {
   // Load search history from localStorage on mount
   useEffect(() => {
     try {
-      const stored = localStorageAdapter.get<SearchHistory[]>(SEARCH_HISTORY_KEY);
+      const stored =
+        localStorageAdapter.get<SearchHistory[]>(SEARCH_HISTORY_KEY);
       if (stored && Array.isArray(stored)) {
         // Defer state update to avoid cascading renders
         setTimeout(() => setSearchHistory(stored), 0);
       }
     } catch (err) {
-      console.error('Failed to load search history:', err);
+      console.error("Failed to load search history:", err);
     }
   }, []);
 
@@ -63,26 +64,29 @@ function useSearchHistory() {
     try {
       localStorageAdapter.set(SEARCH_HISTORY_KEY, searchHistory);
     } catch (err) {
-      console.error('Failed to save search history:', err);
+      console.error("Failed to save search history:", err);
     }
   }, [searchHistory]);
 
-  const addToHistory = useCallback((query: string, filters: SearchFilters, resultCount: number) => {
-    if (!query.trim()) return;
+  const addToHistory = useCallback(
+    (query: string, filters: SearchFilters, resultCount: number) => {
+      if (!query.trim()) return;
 
-    const historyEntry: SearchHistory = {
-      id: `search-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      query,
-      filters,
-      timestamp: new Date(),
-      resultCount
-    };
+      const historyEntry: SearchHistory = {
+        id: `search-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        query,
+        filters,
+        timestamp: new Date(),
+        resultCount,
+      };
 
-    setSearchHistory(prev => {
-      const filtered = prev.filter(item => item.query !== query);
-      return [historyEntry, ...filtered].slice(0, MAX_HISTORY_ITEMS);
-    });
-  }, []);
+      setSearchHistory((prev) => {
+        const filtered = prev.filter((item) => item.query !== query);
+        return [historyEntry, ...filtered].slice(0, MAX_HISTORY_ITEMS);
+      });
+    },
+    [],
+  );
 
   return { searchHistory, addToHistory };
 }
@@ -91,38 +95,40 @@ function useSearchHistory() {
 function generateSuggestions(
   query: string,
   searchHistory: SearchHistory[],
-  searchEngine: SearchEngine
+  searchEngine: SearchEngine,
 ): SearchSuggestion[] {
   if (!query.trim()) return [];
 
   try {
     const engineSuggestions = searchEngine.getSuggestions(query);
-    const suggestionObjects: SearchSuggestion[] = engineSuggestions.map(text => ({
-      text,
-      type: 'query' as const,
-      lastUsed: searchHistory.find(h => h.query === text)?.timestamp
-    }));
+    const suggestionObjects: SearchSuggestion[] = engineSuggestions.map(
+      (text) => ({
+        text,
+        type: "query" as const,
+        lastUsed: searchHistory.find((h) => h.query === text)?.timestamp,
+      }),
+    );
 
-    const recentSearches = searchHistory.slice(0, 5).map(item => item.query);
+    const recentSearches = searchHistory.slice(0, 5).map((item) => item.query);
     const recentSuggestions: SearchSuggestion[] = recentSearches
-      .filter(search => search.toLowerCase().includes(query.toLowerCase()))
+      .filter((search) => search.toLowerCase().includes(query.toLowerCase()))
       .slice(0, 3)
-      .map(search => ({
+      .map((search) => ({
         text: search,
-        type: 'recent' as const,
-        lastUsed: searchHistory.find(h => h.query === search)?.timestamp
+        type: "recent" as const,
+        lastUsed: searchHistory.find((h) => h.query === search)?.timestamp,
       }));
 
     return [...suggestionObjects, ...recentSuggestions].slice(0, 10);
   } catch (err) {
-    console.error('Failed to generate suggestions:', err);
+    console.error("Failed to generate suggestions:", err);
     return [];
   }
 }
 
 export function useGlobalSearch(): UseGlobalSearchResult {
   // Search state
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<SearchFilters>({});
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -141,7 +147,7 @@ export function useGlobalSearch(): UseGlobalSearchResult {
 
   // Refs for debouncing and pagination
   const searchEngineRef = useRef<SearchEngine | null>(null);
-  const currentSearchRef = useRef<string>('');
+  const currentSearchRef = useRef<string>("");
 
   // Initialize search engine
   useEffect(() => {
@@ -153,8 +159,8 @@ export function useGlobalSearch(): UseGlobalSearchResult {
         }
         setIsInitialized(true);
       } catch (err) {
-        console.error('Failed to initialize search:', err);
-        setError('Failed to initialize search engine');
+        console.error("Failed to initialize search:", err);
+        setError("Failed to initialize search engine");
       }
     };
 
@@ -162,56 +168,64 @@ export function useGlobalSearch(): UseGlobalSearchResult {
   }, []);
 
   // Debounced search function
-  const debouncedSearch = useDebounce(async (searchQuery: string, searchFilters: SearchFilters = {}) => {
-    if (!searchEngineRef.current || !searchQuery.trim()) {
-      setResults([]);
-      setTotalCount(0);
-      setHasMore(false);
-      return;
-    }
+  const debouncedSearch = useDebounce(
+    async (searchQuery: string, searchFilters: SearchFilters = {}) => {
+      if (!searchEngineRef.current || !searchQuery.trim()) {
+        setResults([]);
+        setTotalCount(0);
+        setHasMore(false);
+        return;
+      }
 
-    try {
-      setIsLoading(true);
-      setError(null);
-      setCurrentOffset(0);
+      try {
+        setIsLoading(true);
+        setError(null);
+        setCurrentOffset(0);
 
-      const searchParams: SearchQuery = {
-        query: searchQuery,
-        filters: searchFilters,
-        limit: 20,
-        offset: 0
-      };
+        const searchParams: SearchQuery = {
+          query: searchQuery,
+          filters: searchFilters,
+          limit: 20,
+          offset: 0,
+        };
 
-      const { results: searchResults, totalCount: total, hasMore: more } =
-        await searchEngineRef.current.search(searchParams);
+        const {
+          results: searchResults,
+          totalCount: total,
+          hasMore: more,
+        } = await searchEngineRef.current.search(searchParams);
 
-      setResults(searchResults);
-      setTotalCount(total);
-      setHasMore(more);
+        setResults(searchResults);
+        setTotalCount(total);
+        setHasMore(more);
 
-      // Add to search history
-      addToHistory(searchQuery, searchFilters, total);
+        // Add to search history
+        addToHistory(searchQuery, searchFilters, total);
 
-      // Update current search ref
-      currentSearchRef.current = searchQuery;
-
-    } catch (err) {
-      console.error('Search failed:', err);
-      setError(err instanceof Error ? err.message : 'Search failed');
-      setResults([]);
-      setTotalCount(0);
-      setHasMore(false);
-    } finally {
-      setIsLoading(false);
-    }
-  }, 300);
+        // Update current search ref
+        currentSearchRef.current = searchQuery;
+      } catch (err) {
+        console.error("Search failed:", err);
+        setError(err instanceof Error ? err.message : "Search failed");
+        setResults([]);
+        setTotalCount(0);
+        setHasMore(false);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    300,
+  );
 
   // Main search function
-  const search = useCallback(async (searchQuery: string, searchFilters: SearchFilters = {}) => {
-    setQuery(searchQuery);
-    setFilters(searchFilters);
-    await debouncedSearch(searchQuery, searchFilters);
-  }, [debouncedSearch, setIsSearchOpen]);
+  const search = useCallback(
+    async (searchQuery: string, searchFilters: SearchFilters = {}) => {
+      setQuery(searchQuery);
+      setFilters(searchFilters);
+      await debouncedSearch(searchQuery, searchFilters);
+    },
+    [debouncedSearch, setIsSearchOpen],
+  );
 
   // Load more results
   const loadMore = useCallback(async () => {
@@ -224,19 +238,20 @@ export function useGlobalSearch(): UseGlobalSearchResult {
         query: currentSearchRef.current,
         filters,
         limit: 20,
-        offset: currentOffset + 20
+        offset: currentOffset + 20,
       };
 
       const { results: newResults, hasMore: more } =
         await searchEngineRef.current.search(searchParams);
 
-      setResults(prev => [...prev, ...newResults]);
-      setCurrentOffset(prev => prev + 20);
+      setResults((prev) => [...prev, ...newResults]);
+      setCurrentOffset((prev) => prev + 20);
       setHasMore(more);
-
     } catch (err) {
-      console.error('Load more failed:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load more results');
+      console.error("Load more failed:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to load more results",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -244,22 +259,20 @@ export function useGlobalSearch(): UseGlobalSearchResult {
 
   // Clear search
   const clearSearch = useCallback(() => {
-    setQuery('');
+    setQuery("");
     setFilters({});
     setResults([]);
     setTotalCount(0);
     setHasMore(false);
     setCurrentOffset(0);
     setError(null);
-    currentSearchRef.current = '';
+    currentSearchRef.current = "";
   }, []);
-
-
 
   // Get recent searches (memoized to prevent infinite loops)
   const recentSearches = useMemo(
-    () => searchHistory.slice(0, 5).map(item => item.query),
-    [searchHistory]
+    () => searchHistory.slice(0, 5).map((item) => item.query),
+    [searchHistory],
   );
 
   // Generate suggestions based on query
@@ -269,7 +282,11 @@ export function useGlobalSearch(): UseGlobalSearchResult {
       return;
     }
 
-    const newSuggestions = generateSuggestions(query, searchHistory, searchEngineRef.current);
+    const newSuggestions = generateSuggestions(
+      query,
+      searchHistory,
+      searchEngineRef.current,
+    );
     setSuggestions(newSuggestions);
   }, [query, searchHistory]);
 
@@ -296,7 +313,7 @@ export function useGlobalSearch(): UseGlobalSearchResult {
     // UI state
     isSearchOpen,
     setIsSearchOpen,
-    isInitialized
+    isInitialized,
   };
 }
 

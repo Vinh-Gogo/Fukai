@@ -1,12 +1,12 @@
 // Global search component accessible from any page
 
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Search, X, Filter, Clock, ArrowRight, Loader2 } from 'lucide-react';
-import { useGlobalSearch } from '@/hooks/search/useGlobalSearch';
-import { cn } from '@/lib/utils';
-import type { SearchResult, SearchFilters } from '@/types/search';
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { Search, X, Filter, Clock, ArrowRight, Loader2 } from "lucide-react";
+import { useGlobalSearch } from "@/hooks/search/useGlobalSearch";
+import { cn } from "@/lib/utils";
+import type { SearchResult, SearchFilters } from "@/types/search";
 
 interface GlobalSearchProps {
   className?: string;
@@ -21,7 +21,7 @@ export function GlobalSearch({
   placeholder = "Search documents, chat history, and content...",
   showFilters = true,
   maxResults = 10,
-  onResultClick
+  onResultClick,
 }: GlobalSearchProps) {
   const {
     query,
@@ -37,7 +37,7 @@ export function GlobalSearch({
     recentSearches,
     isSearchOpen,
     setIsSearchOpen,
-    isInitialized
+    isInitialized,
   } = useGlobalSearch();
 
   const [inputValue, setInputValue] = useState(query);
@@ -48,90 +48,115 @@ export function GlobalSearch({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Handle result click
-  const handleResultClick = useCallback((result: SearchResult) => {
-    onResultClick?.(result);
-    setIsSearchOpen(false);
-    setSelectedIndex(-1);
+  const handleResultClick = useCallback(
+    (result: SearchResult) => {
+      onResultClick?.(result);
+      setIsSearchOpen(false);
+      setSelectedIndex(-1);
 
-    // Navigate based on result type
-    switch (result.type) {
-      case 'pdf':
-        // Navigate to PDF viewer
-        window.location.href = `/pdfs?id=${result.id}`;
-        break;
-      case 'chat':
-        // Navigate to chat page
-        window.location.href = '/rag';
-        break;
-      default:
-        // Stay on current page or navigate to archive
-        window.location.href = '/archive';
-        break;
-    }
-  }, [onResultClick, setIsSearchOpen, setSelectedIndex]);
+      // Navigate based on result type
+      switch (result.type) {
+        case "pdf":
+          // Navigate to PDF viewer
+          window.location.href = `/pdfs?id=${result.id}`;
+          break;
+        case "chat":
+          // Navigate to chat page
+          window.location.href = "/rag";
+          break;
+        default:
+          // Stay on current page or navigate to archive
+          window.location.href = "/archive";
+          break;
+      }
+    },
+    [onResultClick, setIsSearchOpen, setSelectedIndex],
+  );
 
   // Handle suggestion click
-  const handleSuggestionClick = useCallback(async (suggestion: { text: string }) => {
-    setInputValue(suggestion.text);
-    await search(suggestion.text);
-    setShowSuggestions(false);
-  }, [search]);
+  const handleSuggestionClick = useCallback(
+    async (suggestion: { text: string }) => {
+      setInputValue(suggestion.text);
+      await search(suggestion.text);
+      setShowSuggestions(false);
+    },
+    [search],
+  );
 
   // Handle recent search click
-  const handleRecentSearchClick = useCallback(async (recentQuery: string) => {
-    setInputValue(recentQuery);
-    await search(recentQuery);
-    setShowSuggestions(false);
-  }, [search]);
+  const handleRecentSearchClick = useCallback(
+    async (recentQuery: string) => {
+      setInputValue(recentQuery);
+      await search(recentQuery);
+      setShowSuggestions(false);
+    },
+    [search],
+  );
 
   // Handle input changes
-  const handleInputChange = useCallback(async (value: string) => {
-    setInputValue(value);
-    setSelectedIndex(-1);
+  const handleInputChange = useCallback(
+    async (value: string) => {
+      setInputValue(value);
+      setSelectedIndex(-1);
 
-    if (value.trim()) {
-      await search(value);
-      setShowSuggestions(true);
-    } else {
-      clearSearch();
-      setShowSuggestions(false);
-    }
-  }, [search, clearSearch]);
+      if (value.trim()) {
+        await search(value);
+        setShowSuggestions(true);
+      } else {
+        clearSearch();
+        setShowSuggestions(false);
+      }
+    },
+    [search, clearSearch],
+  );
 
   // Handle keyboard navigation in results
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    const totalItems = results.length + (showSuggestions ? suggestions.length : 0);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const totalItems =
+        results.length + (showSuggestions ? suggestions.length : 0);
 
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex(prev => (prev + 1) % totalItems);
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex(prev => prev <= 0 ? totalItems - 1 : prev - 1);
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedIndex >= 0) {
-          if (selectedIndex < results.length) {
-            handleResultClick(results[selectedIndex]);
-          } else {
-            const suggestionIndex = selectedIndex - results.length;
-            if (suggestions[suggestionIndex]) {
-              handleSuggestionClick(suggestions[suggestionIndex]);
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          setSelectedIndex((prev) => (prev + 1) % totalItems);
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          setSelectedIndex((prev) => (prev <= 0 ? totalItems - 1 : prev - 1));
+          break;
+        case "Enter":
+          e.preventDefault();
+          if (selectedIndex >= 0) {
+            if (selectedIndex < results.length) {
+              handleResultClick(results[selectedIndex]);
+            } else {
+              const suggestionIndex = selectedIndex - results.length;
+              if (suggestions[suggestionIndex]) {
+                handleSuggestionClick(suggestions[suggestionIndex]);
+              }
             }
+          } else if (inputValue.trim()) {
+            handleInputChange(inputValue);
           }
-        } else if (inputValue.trim()) {
-          handleInputChange(inputValue);
-        }
-        break;
-      case 'Escape':
-        setIsSearchOpen(false);
-        setSelectedIndex(-1);
-        break;
-    }
-  }, [results, suggestions, selectedIndex, inputValue, showSuggestions, handleResultClick, handleSuggestionClick, handleInputChange]);
+          break;
+        case "Escape":
+          setIsSearchOpen(false);
+          setSelectedIndex(-1);
+          break;
+      }
+    },
+    [
+      results,
+      suggestions,
+      selectedIndex,
+      inputValue,
+      showSuggestions,
+      handleResultClick,
+      handleSuggestionClick,
+      handleInputChange,
+    ],
+  );
 
   // Sync input value with search query
   useEffect(() => {
@@ -142,70 +167,75 @@ export function GlobalSearch({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Open search with Cmd+K or Ctrl+K
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setIsSearchOpen(true);
         inputRef.current?.focus();
       }
 
       // Close search with Escape
-      if (e.key === 'Escape' && isSearchOpen) {
+      if (e.key === "Escape" && isSearchOpen) {
         setIsSearchOpen(false);
         setSelectedIndex(-1);
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isSearchOpen, setIsSearchOpen, setSelectedIndex]);
 
   // Close search when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setIsSearchOpen(false);
         setSelectedIndex(-1);
       }
     };
 
     if (isSearchOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isSearchOpen, setIsSearchOpen, setSelectedIndex]);
 
   // Get result icon based on type
   const getResultIcon = (type: string) => {
     switch (type) {
-      case 'pdf':
-        return '📄';
-      case 'chat':
-        return '💬';
-      case 'metadata':
-        return 'ℹ️';
+      case "pdf":
+        return "📄";
+      case "chat":
+        return "💬";
+      case "metadata":
+        return "ℹ️";
       default:
-        return '📄';
+        return "📄";
     }
   };
 
   // Get result type label
   const getResultTypeLabel = (type: string) => {
     switch (type) {
-      case 'pdf':
-        return 'PDF Document';
-      case 'chat':
-        return 'Chat Message';
-      case 'metadata':
-        return 'System Info';
+      case "pdf":
+        return "PDF Document";
+      case "chat":
+        return "Chat Message";
+      case "metadata":
+        return "System Info";
       default:
-        return 'Document';
+        return "Document";
     }
   };
 
   const displayResults = results.slice(0, maxResults);
   const hasResults = displayResults.length > 0;
-  const showDropdown = isSearchOpen && (hasResults || showSuggestions || recentSearches.length > 0);
+  const showDropdown =
+    isSearchOpen &&
+    (hasResults || showSuggestions || recentSearches.length > 0);
 
   return (
     <div ref={containerRef} className={cn("relative", className)}>
@@ -226,7 +256,7 @@ export function GlobalSearch({
               "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
               "placeholder-gray-400 text-gray-900",
               "transition-all duration-200",
-              isSearchOpen && "rounded-b-none border-b-0"
+              isSearchOpen && "rounded-b-none border-b-0",
             )}
           />
 
@@ -234,7 +264,7 @@ export function GlobalSearch({
           {inputValue && (
             <button
               onClick={() => {
-                setInputValue('');
+                setInputValue("");
                 clearSearch();
                 setShowSuggestions(false);
               }}
@@ -262,10 +292,12 @@ export function GlobalSearch({
 
       {/* Dropdown Results */}
       {showDropdown && (
-        <div className={cn(
-          "absolute top-full left-0 right-0 bg-white border border-t-0 border-gray-300 rounded-b-lg",
-          "shadow-lg z-50 max-h-96 overflow-y-auto"
-        )}>
+        <div
+          className={cn(
+            "absolute top-full left-0 right-0 bg-white border border-t-0 border-gray-300 rounded-b-lg",
+            "shadow-lg z-50 max-h-96 overflow-y-auto",
+          )}
+        >
           {/* Error State */}
           {error && (
             <div className="p-4 text-center text-red-600 bg-red-50 border-b border-red-200">
@@ -282,11 +314,13 @@ export function GlobalSearch({
                   onClick={() => handleResultClick(result)}
                   className={cn(
                     "flex items-start gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0",
-                    selectedIndex === index && "bg-blue-50"
+                    selectedIndex === index && "bg-blue-50",
                   )}
                 >
                   <div className="flex-shrink-0 mt-1">
-                    <span className="text-lg">{getResultIcon(result.type)}</span>
+                    <span className="text-lg">
+                      {getResultIcon(result.type)}
+                    </span>
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -363,7 +397,7 @@ export function GlobalSearch({
                     onClick={() => handleSuggestionClick(suggestion)}
                     className={cn(
                       "w-full text-left p-2 text-sm hover:bg-gray-50 rounded flex items-center gap-2",
-                      selectedIndex === results.length + index && "bg-blue-50"
+                      selectedIndex === results.length + index && "bg-blue-50",
                     )}
                   >
                     <Search className="w-4 h-4 text-gray-400" />
@@ -402,13 +436,19 @@ export function GlobalSearch({
           )}
 
           {/* No Results */}
-          {!hasResults && !showSuggestions && !recentSearches.length && inputValue && !isLoading && (
-            <div className="p-8 text-center text-gray-500">
-              <Search className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-              <p className="text-sm">No results found for ${inputValue}</p>
-              <p className="text-xs mt-1">Try different keywords or check your spelling</p>
-            </div>
-          )}
+          {!hasResults &&
+            !showSuggestions &&
+            !recentSearches.length &&
+            inputValue &&
+            !isLoading && (
+              <div className="p-8 text-center text-gray-500">
+                <Search className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                <p className="text-sm">No results found for ${inputValue}</p>
+                <p className="text-xs mt-1">
+                  Try different keywords or check your spelling
+                </p>
+              </div>
+            )}
 
           {/* Search Tips */}
           {!inputValue && (
@@ -416,7 +456,9 @@ export function GlobalSearch({
               <div className="text-xs text-gray-600">
                 <p className="font-medium mb-1">Search Tips:</p>
                 <ul className="space-y-1">
-                  <li>• Search across PDFs, chat history, and system content</li>
+                  <li>
+                    • Search across PDFs, chat history, and system content
+                  </li>
                   <li>• Use quotes for exact phrases</li>
                   <li>• Filter by type: pdf, chat, or metadata</li>
                 </ul>

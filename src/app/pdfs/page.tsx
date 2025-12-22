@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useCallback, useEffect } from "react";
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
 // Disable SSR to prevent hydration issues with browser APIs
-export const runtime = 'edge';
+export const runtime = "edge";
 import { RefreshCw, Search, X, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FileUploadZone } from "@/components/uploads/FileUploadZone";
@@ -16,17 +16,20 @@ import { Navigation } from "@/components/navigation";
 import BrandHeader from "@/components/layout/BrandHeader";
 
 // Dynamically import PDFViewer with SSR disabled to prevent document access errors
-const PDFViewer = dynamic(() => import('@/components/pdf/PDFViewer').then(mod => mod.PDFViewer), {
-  ssr: false,
-  loading: () => (
-    <div className="h-full flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <RefreshCw className="w-12 h-12 border-b-2 border-blue-600 animate-spin mx-auto mb-4" />
-        <p className="text-gray-600">Loading PDF Viewer...</p>
+const PDFViewer = dynamic(
+  () => import("@/components/pdf/PDFViewer").then((mod) => mod.PDFViewer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full flex items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <RefreshCw className="w-12 h-12 border-b-2 border-blue-600 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading PDF Viewer...</p>
+        </div>
       </div>
-    </div>
-  )
-});
+    ),
+  },
+);
 
 export default function PDFProcessing() {
   const { addDownloadedPDF } = useDownloadedPDFs();
@@ -38,34 +41,44 @@ export default function PDFProcessing() {
 
   // Navigation toggle function
   const toggleNavigation = useCallback(() => {
-    setIsNavigationVisible(prev => !prev);
+    setIsNavigationVisible((prev) => !prev);
   }, []);
 
   // Fetch real PDF files from backend
   const fetchRealPDFFiles = useCallback(async (): Promise<PDFFile[]> => {
     try {
       // Fetch list of uploaded files from backend
-      const response = await fetch('/api/v1/files/list');
+      const response = await fetch("/api/v1/files/list");
       if (!response.ok) {
-        throw new Error('Failed to fetch files');
+        throw new Error("Failed to fetch files");
       }
 
       const data = await response.json();
       const files = data.files || [];
 
       // Convert backend file format to PDFFile format
-      return files.map((file: { filename: string; size: number; modified: number; url: string }, index: number) => ({
-        id: `uploaded-${Date.now()}-${index}`,
-        name: file.filename,
-        size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-        status: "completed" as const,
-        uploadDate: new Date(file.modified * 1000).toLocaleString(),
-        sourceUrl: file.url,
-        pages: Math.floor(Math.random() * 50) + 10, // Mock page count for now
-        language: "English" // Default assumption
-      }));
+      return files.map(
+        (
+          file: {
+            filename: string;
+            size: number;
+            modified: number;
+            url: string;
+          },
+          index: number,
+        ) => ({
+          id: `uploaded-${Date.now()}-${index}`,
+          name: file.filename,
+          size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+          status: "completed" as const,
+          uploadDate: new Date(file.modified * 1000).toLocaleString(),
+          sourceUrl: file.url,
+          pages: Math.floor(Math.random() * 50) + 10, // Mock page count for now
+          language: "English", // Default assumption
+        }),
+      );
     } catch (error) {
-      console.error('Failed to fetch PDF files:', error);
+      console.error("Failed to fetch PDF files:", error);
       // Fallback to demo files if backend is unavailable
       return [
         {
@@ -76,7 +89,7 @@ export default function PDFProcessing() {
           uploadDate: "2025-12-18 14:30:00",
           sourceUrl: "/demo-files/annual-report-2024.pdf",
           pages: 45,
-          language: "English"
+          language: "English",
         },
         {
           id: "demo-2",
@@ -86,8 +99,8 @@ export default function PDFProcessing() {
           uploadDate: "2025-12-18 14:25:00",
           sourceUrl: "/demo-files/tech-docs.pdf",
           pages: 32,
-          language: "English"
-        }
+          language: "English",
+        },
       ];
     }
   }, []);
@@ -103,48 +116,56 @@ export default function PDFProcessing() {
       const realFiles = await fetchRealPDFFiles();
       setFiles(realFiles);
     } catch (err) {
-      console.error('Failed to load PDF files:', err);
+      console.error("Failed to load PDF files:", err);
     } finally {
       setLoading(false);
     }
   }, [fetchRealPDFFiles]);
 
-  const handleDownload = useCallback((file: PDFFile) => {
-    addDownloadedPDF(file.sourceUrl);
-  }, [addDownloadedPDF]);
+  const handleDownload = useCallback(
+    (file: PDFFile) => {
+      addDownloadedPDF(file.sourceUrl);
+    },
+    [addDownloadedPDF],
+  );
 
-  const handleDelete = useCallback(async (file: PDFFile) => {
-    // Confirm deletion
-    if (!confirm(`Are you sure you want to delete "${file.name}"?`)) {
-      return;
-    }
+  const handleDelete = useCallback(
+    async (file: PDFFile) => {
+      // Confirm deletion
+      if (!confirm(`Are you sure you want to delete "${file.name}"?`)) {
+        return;
+      }
 
-    try {
-      // For uploaded files, call the delete API
-      if (file.sourceUrl.startsWith('/uploaded/')) {
-        const response = await fetch(`/api/delete?filename=${encodeURIComponent(file.sourceUrl)}`, {
-          method: 'DELETE',
-        });
+      try {
+        // For uploaded files, call the delete API
+        if (file.sourceUrl.startsWith("/uploaded/")) {
+          const response = await fetch(
+            `/api/delete?filename=${encodeURIComponent(file.sourceUrl)}`,
+            {
+              method: "DELETE",
+            },
+          );
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to delete file');
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Failed to delete file");
+          }
         }
+
+        // Remove from the files list
+        setFiles((prev) => prev.filter((f) => f.id !== file.id));
+
+        // Close viewer if the deleted file was being viewed
+        if (selectedFile?.id === file.id) {
+          setSelectedFile(null);
+        }
+      } catch (error) {
+        console.error("Delete error:", error);
+        alert("Failed to delete file. Please try again.");
       }
-
-      // Remove from the files list
-      setFiles(prev => prev.filter(f => f.id !== file.id));
-
-      // Close viewer if the deleted file was being viewed
-      if (selectedFile?.id === file.id) {
-        setSelectedFile(null);
-      }
-
-    } catch (error) {
-      console.error('Delete error:', error);
-      alert('Failed to delete file. Please try again.');
-    }
-  }, [selectedFile]);
+    },
+    [selectedFile],
+  );
 
   const handleRowClick = useCallback((file: PDFFile) => {
     setSelectedFile(file);
@@ -155,68 +176,70 @@ export default function PDFProcessing() {
   }, [fetchPDFFiles]);
 
   // Handle file uploads
-  const handleFilesSelected = useCallback(async (uploadedFiles: File[]) => {
-    if (uploadedFiles.length === 0) return;
+  const handleFilesSelected = useCallback(
+    async (uploadedFiles: File[]) => {
+      if (uploadedFiles.length === 0) return;
 
-    // Start upload simulation for progress tracking
-    await uploadFiles(uploadedFiles);
+      // Start upload simulation for progress tracking
+      await uploadFiles(uploadedFiles);
 
-    // Upload files to server
-    const uploadPromises = uploadedFiles.map(async (file) => {
-      const formData = new FormData();
-      formData.append('file', file);
+      // Upload files to server
+      const uploadPromises = uploadedFiles.map(async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
 
-      try {
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
+        try {
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Upload failed');
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Upload failed");
+          }
+
+          const result = await response.json();
+          return {
+            file,
+            result,
+            success: true,
+          };
+        } catch (error) {
+          console.error("Upload error for file:", file.name, error);
+          return {
+            file,
+            error: error instanceof Error ? error.message : "Upload failed",
+            success: false,
+          };
         }
+      });
 
-        const result = await response.json();
-        return {
-          file,
-          result,
-          success: true
-        };
-      } catch (error) {
-        console.error('Upload error for file:', file.name, error);
-        return {
-          file,
-          error: error instanceof Error ? error.message : 'Upload failed',
-          success: false
-        };
-      }
-    });
+      const uploadResults = await Promise.all(uploadPromises);
 
-    const uploadResults = await Promise.all(uploadPromises);
+      // Convert uploaded files to PDFFile objects
+      const newPDFFiles: PDFFile[] = uploadResults.map(
+        ({ file, result, success }, index) => ({
+          id: `uploaded-${Date.now()}-${index}`,
+          name: file.name,
+          size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+          status: success ? ("completed" as const) : ("error" as const),
+          uploadDate: new Date().toISOString().slice(0, 19).replace("T", " "),
+          sourceUrl: success ? result.url : "",
+          pages: success ? Math.floor(Math.random() * 50) + 10 : 0, // Mock page count for successful uploads
+          language: success ? "English" : "", // Default assumption
+        }),
+      );
 
-    // Convert uploaded files to PDFFile objects
-    const newPDFFiles: PDFFile[] = uploadResults.map(({ file, result, success }, index) => ({
-      id: `uploaded-${Date.now()}-${index}`,
-      name: file.name,
-      size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-      status: success ? "completed" as const : "error" as const,
-      uploadDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
-      sourceUrl: success ? result.url : '',
-      pages: success ? Math.floor(Math.random() * 50) + 10 : 0, // Mock page count for successful uploads
-      language: success ? "English" : "" // Default assumption
-    }));
-
-    setFiles(prev => [...newPDFFiles, ...prev]);
-  }, [uploadFiles]);
+      setFiles((prev) => [...newPDFFiles, ...prev]);
+    },
+    [uploadFiles],
+  );
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 overflow-x-hidden">
       {/* Navigation Sidebar - Left side */}
-      <Navigation
-        isVisible={isNavigationVisible}
-        onToggle={toggleNavigation}
-      />
+      <Navigation isVisible={isNavigationVisible} onToggle={toggleNavigation} />
 
       {/* Main Content Area - Right side */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -224,26 +247,32 @@ export default function PDFProcessing() {
         <main className="flex-1 overflow-y-auto rounded-3xl">
           {/* Brand Header - Now scrolls with content */}
           <BrandHeader
-            icon={FileText}
+            icon="file-text"
             title="PDF Processing"
-            subtitle="Document Processing Pipeline"
-            statusText="AI Agent Online & Ready"
+            subtitle="Intelligent Document Analysis & Management"
+            statusText="AI-powered PDF processing ready"
           />
 
           <div className="container mx-auto px-4 py-8">
             <div className="mb-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">PDF Processing</h1>
-                  <p className="text-gray-600">Manage PDF files and convert to markdown</p>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    PDF Processing
+                  </h1>
+                  <p className="text-gray-600">
+                    Manage PDF files and convert to markdown
+                  </p>
                 </div>
                 <button
                   onClick={fetchPDFFiles}
                   disabled={loading}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
-                  <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
-                  {loading ? 'Loading...' : 'Refresh'}
+                  <RefreshCw
+                    className={cn("w-4 h-4", loading && "animate-spin")}
+                  />
+                  {loading ? "Loading..." : "Refresh"}
                 </button>
               </div>
             </div>
@@ -256,7 +285,9 @@ export default function PDFProcessing() {
             {/* Upload Progress Bars */}
             {uploads.length > 0 && (
               <div className="mb-6 space-y-3">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">Upload Progress</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-3">
+                  Upload Progress
+                </h3>
                 {uploads.map((upload) => (
                   <UploadProgressBar
                     key={upload.id}
@@ -279,7 +310,11 @@ export default function PDFProcessing() {
                 </div>
               </div>
 
-              <div className="overflow-hidden" style={{ height: '600px' }} onScroll={handleScroll}>
+              <div
+                className="overflow-hidden"
+                style={{ height: "600px" }}
+                onScroll={handleScroll}
+              >
                 {loading ? (
                   <div className="flex items-center justify-center h-64">
                     <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
@@ -290,9 +325,15 @@ export default function PDFProcessing() {
                     <table className="w-full flex-shrink-0">
                       <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">File</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            File
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            Status
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            Actions
+                          </th>
                         </tr>
                       </thead>
                     </table>
@@ -304,7 +345,11 @@ export default function PDFProcessing() {
                           {totalItems > 0 ? (
                             <>
                               {/* Placeholder cho các items ở trên */}
-                              <tr style={{ height: `${startIndex * itemHeight}px` }}>
+                              <tr
+                                style={{
+                                  height: `${startIndex * itemHeight}px`,
+                                }}
+                              >
                                 <td colSpan={3} />
                               </tr>
 
@@ -321,13 +366,20 @@ export default function PDFProcessing() {
                               ))}
 
                               {/* Placeholder cho các items ở dưới */}
-                              <tr style={{ height: `${Math.max(0, totalItems - startIndex - visibleItems.length) * itemHeight}px` }}>
+                              <tr
+                                style={{
+                                  height: `${Math.max(0, totalItems - startIndex - visibleItems.length) * itemHeight}px`,
+                                }}
+                              >
                                 <td colSpan={3} />
                               </tr>
                             </>
                           ) : (
                             <tr>
-                              <td colSpan={3} className="px-4 py-8 text-center text-gray-500">
+                              <td
+                                colSpan={3}
+                                className="px-4 py-8 text-center text-gray-500"
+                              >
                                 No PDF files found
                               </td>
                             </tr>
@@ -352,7 +404,10 @@ export default function PDFProcessing() {
                       <X className="w-5 h-5 text-gray-600" />
                     </button>
                   </div>
-                  <PDFViewer file={selectedFile} onClose={() => setSelectedFile(null)} />
+                  <PDFViewer
+                    file={selectedFile}
+                    onClose={() => setSelectedFile(null)}
+                  />
                 </div>
               </div>
             )}

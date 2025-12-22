@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from 'react';
-import { RefreshCw } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React, { useRef, useEffect } from "react";
+import { RefreshCw } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface PDFPageContainerProps {
   pageNumber: number;
@@ -32,15 +32,17 @@ export const PDFPageContainer: React.FC<PDFPageContainerProps> = ({
       className="absolute w-full transition-opacity duration-300 p-4"
       style={{
         top: `${topPosition}px`,
-        height: `${1100 * zoomLevel + 32}px` // +32 for padding
+        height: `${1100 * zoomLevel + 32}px`, // +32 for padding
       }}
     >
       <div className="h-full w-full bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
         <div
           className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center"
-          style={{ height: '40px' }}
+          style={{ height: "40px" }}
         >
-          <span className="text-sm font-medium text-gray-700">Page {pageNumber}</span>
+          <span className="text-sm font-medium text-gray-700">
+            Page {pageNumber}
+          </span>
           <span className="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded">
             PDF Viewer
           </span>

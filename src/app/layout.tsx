@@ -31,13 +31,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <PageErrorBoundary>
-          <ThemeProvider defaultTheme="auto">
-            <BackgroundBarWrapper />
-            {children}
-            <Toaster position="top-right" />
-          </ThemeProvider>
-        </PageErrorBoundary>
+        <ThemeProvider defaultTheme="auto">
+          <BackgroundBarWrapper />
+          {children}
+          <Toaster position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );

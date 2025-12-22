@@ -1,14 +1,16 @@
 "use client";
 
-import React from 'react';
-import { MainBackgroundBar } from './index';
-import { useBackgroundBar } from '@/hooks/layout';
+import React from "react";
+import { MainBackgroundBar } from "./MainBackgroundBar";
+import { useBackgroundBar } from "@/hooks/layout";
 
 interface BackgroundBarWithControlsProps {
   className?: string;
 }
 
-export function BackgroundBarWithControls({ className }: BackgroundBarWithControlsProps) {
+export function BackgroundBarWithControls({
+  className,
+}: BackgroundBarWithControlsProps) {
   const { config } = useBackgroundBar();
 
   return (

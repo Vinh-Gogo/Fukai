@@ -1,17 +1,28 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
-import { ButtonProps, ComponentVariant, ComponentSize } from "@/types/components";
+import {
+  ButtonProps,
+  ComponentVariant,
+  ComponentSize,
+} from "@/types/components";
 
 const buttonVariants: Record<ComponentVariant, string> = {
-  primary: "bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-primary/20",
-  secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 focus:ring-secondary/20",
-  outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground focus:ring-accent/20",
-  ghost: "hover:bg-accent hover:text-accent-foreground focus:ring-accent/20",
-  destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 focus:ring-destructive/20",
-  success: "bg-success text-success-foreground hover:bg-success/90 focus:ring-success/20",
-  warning: "bg-warning text-warning-foreground hover:bg-warning/90 focus:ring-warning/20",
-  info: "bg-info text-info-foreground hover:bg-info/90 focus:ring-info/20",
+  primary:
+    "bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-200 border border-primary-600",
+  secondary:
+    "bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-300 border border-gray-300",
+  outline:
+    "border border-gray-300 bg-white hover:bg-gray-50 focus:ring-primary-200 text-gray-700",
+  ghost: "hover:bg-gray-100 focus:ring-primary-200 text-gray-700",
+  icon: "p-2 hover:bg-gray-100 focus:ring-primary-200 text-gray-700 rounded-md",
+  destructive:
+    "bg-error-500 text-white hover:bg-error-600 focus:ring-error-200 border border-error-500",
+  success:
+    "bg-success-500 text-white hover:bg-success-600 focus:ring-success-200 border border-success-500",
+  warning:
+    "bg-warning-500 text-white hover:bg-warning-600 focus:ring-warning-200 border border-warning-500",
+  info: "bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-200 border border-primary-500",
 };
 
 const buttonSizes: Record<ComponentSize, string> = {
@@ -23,16 +34,19 @@ const buttonSizes: Record<ComponentSize, string> = {
 };
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({
-    className,
-    variant = "primary",
-    size = "md",
-    loading = false,
-    fullWidth = false,
-    disabled,
-    children,
-    ...props
-  }, ref) => {
+  (
+    {
+      className,
+      variant = "primary",
+      size = "md",
+      loading = false,
+      fullWidth = false,
+      disabled,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
     const isDisabled = disabled || loading;
 
     return (
@@ -55,18 +69,16 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           // Width
           fullWidth && "w-full",
 
-          className
+          className,
         )}
         disabled={isDisabled}
         {...props}
       >
-        {loading && (
-          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-        )}
+        {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
         {children}
       </button>
     );
-  }
+  },
 );
 
 Button.displayName = "Button";

@@ -15,7 +15,10 @@ interface UseMouseInteractionReturn {
  * Custom hook to handle mouse interactions for interactive backgrounds and hover effects
  */
 export function useMouseInteraction(): UseMouseInteractionReturn {
-  const [mousePosition, setMousePosition] = useState<MousePosition>({ x: 0, y: 0 });
+  const [mousePosition, setMousePosition] = useState<MousePosition>({
+    x: 0,
+    y: 0,
+  });
   const [activeGradient, setActiveGradient] = useState("");
 
   // Track mouse position for interactive background effects

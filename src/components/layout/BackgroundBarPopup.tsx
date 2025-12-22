@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
-import { MainBackgroundBar } from './MainBackgroundBar';
-import { useBackgroundBar } from '@/hooks/layout';
-import { useThemeContext } from '@/components/theme/ThemeProvider';
-import { cn } from '@/lib/utils';
-import { Eye, EyeOff } from 'lucide-react';
+import React, { useEffect, useRef, useState } from "react";
+import { MainBackgroundBar } from "./MainBackgroundBar";
+import { useBackgroundBar } from "@/hooks/layout";
+import { useThemeContext } from "@/components/theme/ThemeProvider";
+import { cn } from "@/lib/utils";
+import { Eye, EyeOff } from "lucide-react";
 
 interface BackgroundBarPopupProps {
   isOpen: boolean;
@@ -13,8 +13,13 @@ interface BackgroundBarPopupProps {
   buttonRef: React.RefObject<HTMLDivElement | null>;
 }
 
-export function BackgroundBarPopup({ isOpen, onClose, buttonRef }: BackgroundBarPopupProps) {
-  const { config, setVariant, setHeight, toggleBackgroundBar } = useBackgroundBar();
+export function BackgroundBarPopup({
+  isOpen,
+  onClose,
+  buttonRef,
+}: BackgroundBarPopupProps) {
+  const { config, setVariant, setHeight, toggleBackgroundBar } =
+    useBackgroundBar();
   const { isDark } = useThemeContext();
   const popupRef = useRef<HTMLDivElement>(null);
   const [popupStyle, setPopupStyle] = useState<React.CSSProperties>({});
@@ -45,7 +50,7 @@ export function BackgroundBarPopup({ isOpen, onClose, buttonRef }: BackgroundBar
       }
 
       setPopupStyle({
-        position: 'fixed' as const,
+        position: "fixed" as const,
         left: `${left}px`,
         top: `${top}px`,
         width: `${popupWidth}px`,
@@ -55,9 +60,9 @@ export function BackgroundBarPopup({ isOpen, onClose, buttonRef }: BackgroundBar
     };
 
     updatePopupStyle();
-    window.addEventListener('resize', updatePopupStyle);
-    return () => window.removeEventListener('resize', updatePopupStyle);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    window.addEventListener("resize", updatePopupStyle);
+    return () => window.removeEventListener("resize", updatePopupStyle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   // Close popup when clicking outside
@@ -74,11 +79,11 @@ export function BackgroundBarPopup({ isOpen, onClose, buttonRef }: BackgroundBar
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, onClose]);
 
@@ -110,7 +115,7 @@ export function BackgroundBarPopup({ isOpen, onClose, buttonRef }: BackgroundBar
           "before:absolute before:inset-0 before:rounded-xl before:opacity-10 before:bg-gradient-to-br",
           isDark
             ? "before:from-blue-600 before:via-purple-600 before:to-blue-700"
-            : "before:from-blue-500 before:via-purple-500 before:to-blue-600"
+            : "before:from-blue-500 before:via-purple-500 before:to-blue-600",
         )}
       >
         {/* Content with proper contrast */}
@@ -131,15 +136,15 @@ export function BackgroundBarPopup({ isOpen, onClose, buttonRef }: BackgroundBar
           {/* Master Toggle */}
           <div className="mb-4">
             <button
-                onClick={toggleBackgroundBar}
-                className={cn(
-                  "w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-                  config.showBackgroundBar
-                    ? "bg-green-500 text-white hover:bg-green-600"
-                    : isDark
-                      ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                )}
+              onClick={toggleBackgroundBar}
+              className={cn(
+                "w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                config.showBackgroundBar
+                  ? "bg-green-500 text-white hover:bg-green-600"
+                  : isDark
+                    ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300",
+              )}
             >
               {config.showBackgroundBar ? (
                 <>
@@ -161,18 +166,18 @@ export function BackgroundBarPopup({ isOpen, onClose, buttonRef }: BackgroundBar
               Style
             </label>
             <div className="grid grid-cols-3 gap-1">
-              {(['gradient', 'solid', 'text'] as const).map((variant) => (
+              {(["gradient", "solid", "text"] as const).map((variant) => (
                 <button
-                    key={variant}
-                    onClick={() => setVariant(variant)}
-                    className={cn(
-                      "px-2 py-1 text-xs rounded-md transition-all",
-                      config.variant === variant
-                        ? "bg-blue-500 text-white"
-                        : isDark
-                          ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    )}
+                  key={variant}
+                  onClick={() => setVariant(variant)}
+                  className={cn(
+                    "px-2 py-1 text-xs rounded-md transition-all",
+                    config.variant === variant
+                      ? "bg-blue-500 text-white"
+                      : isDark
+                        ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300",
+                  )}
                 >
                   {variant.charAt(0).toUpperCase() + variant.slice(1)}
                 </button>
@@ -186,18 +191,18 @@ export function BackgroundBarPopup({ isOpen, onClose, buttonRef }: BackgroundBar
               Height
             </label>
             <div className="grid grid-cols-3 gap-1">
-              {(['sm', 'md', 'lg'] as const).map((height) => (
+              {(["sm", "md", "lg"] as const).map((height) => (
                 <button
-                    key={height}
-                    onClick={() => setHeight(height)}
-                    className={cn(
-                      "px-2 py-1 text-xs rounded-md transition-all",
-                      config.height === height
-                        ? "bg-purple-500 text-white"
-                        : isDark
-                          ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    )}
+                  key={height}
+                  onClick={() => setHeight(height)}
+                  className={cn(
+                    "px-2 py-1 text-xs rounded-md transition-all",
+                    config.height === height
+                      ? "bg-purple-500 text-white"
+                      : isDark
+                        ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300",
+                  )}
                 >
                   {height.toUpperCase()}
                 </button>
@@ -214,17 +219,17 @@ export function BackgroundBarPopup({ isOpen, onClose, buttonRef }: BackgroundBar
               <div
                 className={cn(
                   "h-full w-full",
-                  config.variant === 'gradient'
+                  config.variant === "gradient"
                     ? isDark
-                      ? 'bg-gradient-to-r from-blue-800 via-purple-800 to-blue-900'
-                      : 'bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700'
-                    : config.variant === 'solid'
+                      ? "bg-gradient-to-r from-blue-800 via-purple-800 to-blue-900"
+                      : "bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700"
+                    : config.variant === "solid"
                       ? isDark
-                        ? 'bg-gray-900 border-b border-gray-800'
-                        : 'bg-blue-600 border-b border-blue-700'
+                        ? "bg-gray-900 border-b border-gray-800"
+                        : "bg-blue-600 border-b border-blue-700"
                       : isDark
-                        ? 'bg-gray-950 text-blue-200'
-                        : 'bg-white text-blue-600'
+                        ? "bg-gray-950 text-blue-200"
+                        : "bg-white text-blue-600",
                 )}
               />
             </div>

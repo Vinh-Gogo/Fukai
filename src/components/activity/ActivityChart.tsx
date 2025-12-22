@@ -1,32 +1,39 @@
-import React from 'react';
-import { TrendingUp, PieChart, BarChart3 } from 'lucide-react';
-import { ActivityItem } from '@/types/activity';
+import React from "react";
+import { TrendingUp, PieChart, BarChart3 } from "lucide-react";
+import { ActivityItem } from "@/types/activity";
 
 interface ActivityChartProps {
   activities: ActivityItem[];
   timeRange: string;
-  chartType?: 'line' | 'pie';
+  chartType?: "line" | "pie";
   title: string;
   description: string;
 }
 
 // Simple line chart component
-const LineChart: React.FC<{ data: Array<{ date: string; count: number }> }> = ({ data }) => {
-  const maxValue = Math.max(...data.map(d => d.count));
+const LineChart: React.FC<{ data: Array<{ date: string; count: number }> }> = ({
+  data,
+}) => {
+  const maxValue = Math.max(...data.map((d) => d.count));
   const chartHeight = 200;
   const chartWidth = 400;
 
   return (
     <div className="w-full h-48">
-      <svg width="100%" height="100%" viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="overflow-visible">
+      <svg
+        width="100%"
+        height="100%"
+        viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+        className="overflow-visible"
+      >
         {/* Grid lines */}
         {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => (
           <line
             key={i}
             x1="0"
-            y1={chartHeight - (ratio * chartHeight)}
+            y1={chartHeight - ratio * chartHeight}
             x2={chartWidth}
-            y2={chartHeight - (ratio * chartHeight)}
+            y2={chartHeight - ratio * chartHeight}
             stroke="#e5e7eb"
             strokeWidth="1"
             strokeDasharray="2,2"
@@ -40,19 +47,19 @@ const LineChart: React.FC<{ data: Array<{ date: string; count: number }> }> = ({
           strokeWidth="3"
           strokeLinecap="round"
           strokeLinejoin="round"
-          points={
-            data.map((point, index) => {
+          points={data
+            .map((point, index) => {
               const x = (index / (data.length - 1)) * chartWidth;
-              const y = chartHeight - ((point.count / maxValue) * chartHeight);
+              const y = chartHeight - (point.count / maxValue) * chartHeight;
               return `${x},${y}`;
-            }).join(' ')
-          }
+            })
+            .join(" ")}
         />
 
         {/* Data points */}
         {data.map((point, index) => {
           const x = (index / (data.length - 1)) * chartWidth;
-          const y = chartHeight - ((point.count / maxValue) * chartHeight);
+          const y = chartHeight - (point.count / maxValue) * chartHeight;
           return (
             <circle
               key={index}
@@ -70,7 +77,10 @@ const LineChart: React.FC<{ data: Array<{ date: string; count: number }> }> = ({
       <div className="flex justify-between mt-2 px-2">
         {data.map((point, index) => (
           <span key={index} className="text-xs text-muted-foreground">
-            {new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            {new Date(point.date).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            })}
           </span>
         ))}
       </div>
@@ -79,9 +89,18 @@ const LineChart: React.FC<{ data: Array<{ date: string; count: number }> }> = ({
 };
 
 // Simple pie chart component
-const PieChartComponent: React.FC<{ data: Record<string, number> }> = ({ data }) => {
+const PieChartComponent: React.FC<{ data: Record<string, number> }> = ({
+  data,
+}) => {
   const total = Object.values(data).reduce((sum, value) => sum + value, 0);
-  const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
+  const colors = [
+    "#3b82f6",
+    "#ef4444",
+    "#10b981",
+    "#f59e0b",
+    "#8b5cf6",
+    "#06b6d4",
+  ];
 
   let currentAngle = 0;
   const slices = Object.entries(data).map(([key, value], index) => {
@@ -104,8 +123,8 @@ const PieChartComponent: React.FC<{ data: Record<string, number> }> = ({ data })
       `M 100 100`,
       `L ${x1} ${y1}`,
       `A 80 80 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-      `Z`
-    ].join(' ');
+      `Z`,
+    ].join(" ");
 
     currentAngle = endAngle;
 
@@ -115,7 +134,7 @@ const PieChartComponent: React.FC<{ data: Record<string, number> }> = ({ data })
       percentage,
       pathData,
       color: colors[index % colors.length],
-      label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+      label: key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
     };
   });
 
@@ -158,31 +177,32 @@ const PieChartComponent: React.FC<{ data: Record<string, number> }> = ({ data })
 export const ActivityChart: React.FC<ActivityChartProps> = ({
   activities,
   timeRange,
-  chartType = 'line',
+  chartType = "line",
   title,
-  description
+  description,
 }) => {
   // Prepare data based on chart type
   const chartData = React.useMemo(() => {
-    if (chartType === 'pie') {
+    if (chartType === "pie") {
       // Activity type breakdown for pie chart
       const breakdown: Record<string, number> = {};
-      activities.forEach(activity => {
+      activities.forEach((activity) => {
         breakdown[activity.type] = (breakdown[activity.type] || 0) + 1;
       });
       return breakdown;
     } else {
       // Trend data for line chart
       const trendData: Array<{ date: string; count: number }> = [];
-      const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 1;
+      const days = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 1;
 
       for (let i = days - 1; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
+        const dateStr = date.toISOString().split("T")[0];
 
-        const count = activities.filter(activity =>
-          activity.timestamp.toISOString().split('T')[0] === dateStr
+        const count = activities.filter(
+          (activity) =>
+            activity.timestamp.toISOString().split("T")[0] === dateStr,
         ).length;
 
         trendData.push({ date: dateStr, count });
@@ -197,7 +217,7 @@ export const ActivityChart: React.FC<ActivityChartProps> = ({
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            {chartType === 'pie' ? (
+            {chartType === "pie" ? (
               <PieChart className="w-5 h-5 text-primary" />
             ) : (
               <BarChart3 className="w-5 h-5 text-primary" />
@@ -213,10 +233,12 @@ export const ActivityChart: React.FC<ActivityChartProps> = ({
       </div>
 
       <div className="flex justify-center">
-        {chartType === 'pie' ? (
+        {chartType === "pie" ? (
           <PieChartComponent data={chartData as Record<string, number>} />
         ) : (
-          <LineChart data={chartData as Array<{ date: string; count: number }>} />
+          <LineChart
+            data={chartData as Array<{ date: string; count: number }>}
+          />
         )}
       </div>
     </div>

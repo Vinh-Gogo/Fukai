@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # Next.js Frontend - Production build
@@ -7,7 +7,7 @@ services:
       context: ..
       dockerfile: docker/frontend/Dockerfile
     ports:
-      - "80:3000"  # Expose on standard HTTP port
+      - "80:3000" # Expose on standard HTTP port
     environment:
       - NEXT_PUBLIC_API_URL=http://backend:8000/api/v1
       - NEXT_PUBLIC_FASTAPI_URL=http://backend:8000
@@ -36,7 +36,7 @@ services:
       - UPLOAD_DIR=./uploads
       - BIWASE_BASE_URL=https://biwase.com.vn/tin-tuc/ban-tin-biwase
       - CRAWL_TIMEOUT=30
-      - CRAWL_MAX_CONCURRENT=5  # Higher concurrency in production
+      - CRAWL_MAX_CONCURRENT=5 # Higher concurrency in production
       - CRAWL_DELAY=1.0
       - DEBUG=false
     volumes:

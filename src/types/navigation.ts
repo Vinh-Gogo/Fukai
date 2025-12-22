@@ -27,7 +27,7 @@ export interface NavigationState {
   isMobile: boolean;
 }
 
-export type NavigationMode = 'desktop' | 'mobile';
+export type NavigationMode = "desktop" | "mobile";
 
 // Hook Result Types
 export interface UseNavigationStateResult {
@@ -102,52 +102,60 @@ export const NAVIGATION_BREAKPOINTS = {
 } as const;
 
 export const NAVIGATION_MODES = {
-  DESKTOP: 'desktop' as const,
-  MOBILE: 'mobile' as const,
+  DESKTOP: "desktop" as const,
+  MOBILE: "mobile" as const,
 };
 
 // Type Guards
-export const isNavigationItemConfig = (obj: unknown): obj is NavigationItemConfig => {
+export const isNavigationItemConfig = (
+  obj: unknown,
+): obj is NavigationItemConfig => {
   const item = obj as Record<string, unknown>;
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
-    typeof item.name === 'string' &&
-    typeof item.href === 'string' &&
-    typeof item.description === 'string' &&
-    typeof item.gradient === 'string' &&
-    typeof item.icon === 'function'
+    typeof item.name === "string" &&
+    typeof item.href === "string" &&
+    typeof item.description === "string" &&
+    typeof item.gradient === "string" &&
+    typeof item.icon === "function"
   );
 };
 
 export const isToolItemConfig = (obj: unknown): obj is ToolItemConfig => {
   const item = obj as Record<string, unknown>;
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
-    typeof item.name === 'string' &&
-    typeof item.href === 'string' &&
-    typeof item.gradient === 'string' &&
-    typeof item.icon === 'function'
+    typeof item.name === "string" &&
+    typeof item.href === "string" &&
+    typeof item.gradient === "string" &&
+    typeof item.icon === "function"
   );
 };
 
 // Utility Functions
 export const getNavigationMode = (width: number): NavigationMode => {
-  return width < NAVIGATION_BREAKPOINTS.MOBILE ? 'mobile' : 'desktop';
+  return width < NAVIGATION_BREAKPOINTS.MOBILE ? "mobile" : "desktop";
 };
 
-export const shouldAutoCollapse = (mode: NavigationMode, isCollapsed: boolean): boolean => {
-  return mode === 'mobile' && !isCollapsed;
+export const shouldAutoCollapse = (
+  mode: NavigationMode,
+  isCollapsed: boolean,
+): boolean => {
+  return mode === "mobile" && !isCollapsed;
 };
 
 export const getNavigationItemKey = (item: NavigationItemConfig): string => {
-  return item.href.replace('/', '').toLowerCase() || 'home';
+  return item.href.replace("/", "").toLowerCase() || "home";
 };
 
-export const isNavigationItemActive = (item: NavigationItemConfig, currentPath: string): boolean => {
-  if (item.href === '/') {
-    return currentPath === '/';
+export const isNavigationItemActive = (
+  item: NavigationItemConfig,
+  currentPath: string,
+): boolean => {
+  if (item.href === "/") {
+    return currentPath === "/";
   }
   return currentPath.startsWith(item.href);
 };
@@ -158,7 +166,7 @@ export const createNavigationItemConfig = (
   href: string,
   icon: LucideIcon,
   description: string,
-  gradient: string
+  gradient: string,
 ): NavigationItemConfig => ({
   name,
   href,
@@ -171,7 +179,7 @@ export const createToolItemConfig = (
   name: string,
   href: string,
   icon: LucideIcon,
-  gradient: string
+  gradient: string,
 ): ToolItemConfig => ({
   name,
   href,
@@ -197,8 +205,8 @@ export const validateNavigationConfig = (config: NavigationConfig): boolean => {
 
 export const validateNavigationState = (state: NavigationState): boolean => {
   return (
-    typeof state.sidebarOpen === 'boolean' &&
-    typeof state.collapsed === 'boolean' &&
-    typeof state.isMobile === 'boolean'
+    typeof state.sidebarOpen === "boolean" &&
+    typeof state.collapsed === "boolean" &&
+    typeof state.isMobile === "boolean"
   );
 };

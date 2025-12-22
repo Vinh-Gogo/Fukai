@@ -72,17 +72,17 @@ export interface PDFDocumentInfo {
  */
 export const loadPDFJS = async () => {
   try {
-    const pdfjs = await import('pdfjs-dist');
+    const pdfjs = await import("pdfjs-dist");
 
     // Set worker path for reliability
-    if (typeof window !== 'undefined') {
-      pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+    if (typeof window !== "undefined") {
+      pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
     }
 
     return pdfjs;
   } catch (error) {
-    console.error('Failed to load PDF.js:', error);
-    throw new Error('PDF.js library failed to load');
+    console.error("Failed to load PDF.js:", error);
+    throw new Error("PDF.js library failed to load");
   }
 };
 
@@ -96,13 +96,13 @@ export const loadPDFDocument = async (url: string) => {
 
     // Add timeout to prevent hanging
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('PDF loading timeout')), 30000);
+      setTimeout(() => reject(new Error("PDF loading timeout")), 30000);
     });
 
     const pdf = await Promise.race([loadingTask.promise, timeoutPromise]);
     return pdf;
   } catch (error) {
-    console.error('Failed to load PDF document:', error);
+    console.error("Failed to load PDF document:", error);
     throw error;
   }
 };
@@ -110,7 +110,9 @@ export const loadPDFDocument = async (url: string) => {
 /**
  * Extract PDF metadata
  */
-export const extractPDFMetadata = async (pdfDoc: PDFDocumentProxy): Promise<PDFDocumentInfo> => {
+export const extractPDFMetadata = async (
+  pdfDoc: PDFDocumentProxy,
+): Promise<PDFDocumentInfo> => {
   try {
     const metadata = await pdfDoc.getMetadata();
     const info = metadata.info;
@@ -122,11 +124,13 @@ export const extractPDFMetadata = async (pdfDoc: PDFDocumentProxy): Promise<PDFD
       subject: info?.Subject,
       creator: info?.Creator,
       producer: info?.Producer,
-      creationDate: info?.CreationDate ? new Date(info.CreationDate) : undefined,
+      creationDate: info?.CreationDate
+        ? new Date(info.CreationDate)
+        : undefined,
       modificationDate: info?.ModDate ? new Date(info.ModDate) : undefined,
     };
   } catch (error) {
-    console.warn('Failed to extract PDF metadata:', error);
+    console.warn("Failed to extract PDF metadata:", error);
     return {
       numPages: pdfDoc.numPages,
     };
@@ -136,13 +140,15 @@ export const extractPDFMetadata = async (pdfDoc: PDFDocumentProxy): Promise<PDFD
 /**
  * Validate PDF document integrity
  */
-export const validatePDFDocument = async (pdfDoc: PDFDocumentProxy): Promise<boolean> => {
+export const validatePDFDocument = async (
+  pdfDoc: PDFDocumentProxy,
+): Promise<boolean> => {
   try {
     // Try to access first page to validate document
     await pdfDoc.getPage(1);
     return true;
   } catch (error) {
-    console.error('PDF document validation failed:', error);
+    console.error("PDF document validation failed:", error);
     return false;
   }
 };
@@ -153,13 +159,13 @@ export const validatePDFDocument = async (pdfDoc: PDFDocumentProxy): Promise<boo
 export const createRenderTask = (
   page: PDFPageProxy,
   canvas: HTMLCanvasElement,
-  scale: number = 1.5
+  scale: number = 1.5,
 ): PDFRenderTask => {
   const viewport = page.getViewport({ scale });
-  const context = canvas.getContext('2d');
+  const context = canvas.getContext("2d");
 
   if (!context) {
-    throw new Error('Failed to get canvas context');
+    throw new Error("Failed to get canvas context");
   }
 
   // Set canvas dimensions
@@ -195,11 +201,11 @@ export const cancelRenderTask = (renderTask: PDFRenderTask): void => {
   try {
     renderTask.cancelled = true;
     const task = renderTask.task as { cancel?: () => void };
-    if (task && typeof task.cancel === 'function') {
+    if (task && typeof task.cancel === "function") {
       task.cancel();
     }
   } catch (error) {
-    console.warn('Failed to cancel render task:', error);
+    console.warn("Failed to cancel render task:", error);
   }
 };
 
@@ -208,12 +214,12 @@ export const cancelRenderTask = (renderTask: PDFRenderTask): void => {
  */
 export const cleanupCanvas = (canvas: HTMLCanvasElement): void => {
   try {
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext("2d");
     if (context) {
       context.clearRect(0, 0, canvas.width, canvas.height);
     }
   } catch (error) {
-    console.warn('Failed to cleanup canvas:', error);
+    console.warn("Failed to cleanup canvas:", error);
   }
 };
 
@@ -223,7 +229,7 @@ export const cleanupCanvas = (canvas: HTMLCanvasElement): void => {
 export const calculateOptimalScale = (
   containerWidth: number,
   pageWidth: number,
-  zoomLevel: number = 1
+  zoomLevel: number = 1,
 ): number => {
   const baseScale = containerWidth / pageWidth;
   const scaled = baseScale * zoomLevel;
@@ -236,10 +242,10 @@ export const calculateOptimalScale = (
  * Check if device supports high DPI rendering
  */
 export const supportsHighDPI = (): boolean => {
-  if (typeof window === 'undefined') return false;
+  if (typeof window === "undefined") return false;
 
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
   const devicePixelRatio = window.devicePixelRatio || 1;
 
   return context !== null && devicePixelRatio > 1;
@@ -249,7 +255,7 @@ export const supportsHighDPI = (): boolean => {
  * Get device pixel ratio for high DPI rendering
  */
 export const getDevicePixelRatio = (): number => {
-  if (typeof window === 'undefined') return 1;
+  if (typeof window === "undefined") return 1;
   return window.devicePixelRatio || 1;
 };
 
@@ -258,7 +264,7 @@ export const getDevicePixelRatio = (): number => {
  */
 export const debounce = <T extends (...args: unknown[]) => unknown>(
   func: T,
-  wait: number
+  wait: number,
 ): ((...args: Parameters<T>) => void) => {
   let timeout: NodeJS.Timeout;
 
@@ -273,7 +279,7 @@ export const debounce = <T extends (...args: unknown[]) => unknown>(
  */
 export const throttle = <T extends (...args: unknown[]) => unknown>(
   func: T,
-  limit: number
+  limit: number,
 ): ((...args: Parameters<T>) => void) => {
   let inThrottle: boolean;
 
@@ -281,7 +287,7 @@ export const throttle = <T extends (...args: unknown[]) => unknown>(
     if (!inThrottle) {
       func(...args);
       inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
+      setTimeout(() => (inThrottle = false), limit);
     }
   };
 };
@@ -295,7 +301,7 @@ export const estimatePDFMemoryUsage = (pdfDoc: PDFDocumentProxy): number => {
   const baseOverhead = 1024 * 1024; // 1MB base
   const perPageOverhead = 50 * 1024; // 50KB per page
 
-  return baseOverhead + (pdfDoc.numPages * perPageOverhead);
+  return baseOverhead + pdfDoc.numPages * perPageOverhead;
 };
 
 /**
@@ -308,14 +314,14 @@ class CanvasPool {
   getCanvas(): HTMLCanvasElement {
     let canvas = this.pool.pop();
     if (!canvas) {
-      canvas = document.createElement('canvas');
+      canvas = document.createElement("canvas");
     }
     return canvas;
   }
 
   returnCanvas(canvas: HTMLCanvasElement): void {
     // Clear canvas before returning to pool
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (ctx) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
@@ -356,7 +362,7 @@ export const returnCanvasToPool = (canvas: HTMLCanvasElement): void => {
  */
 export const cleanupCanvasMemory = (canvas: HTMLCanvasElement): void => {
   try {
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (ctx) {
       // Clear canvas content
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -374,7 +380,7 @@ export const cleanupCanvasMemory = (canvas: HTMLCanvasElement): void => {
     // Return to pool instead of destroying
     returnCanvasToPool(canvas);
   } catch (error) {
-    console.warn('Failed to cleanup canvas memory:', error);
+    console.warn("Failed to cleanup canvas memory:", error);
   }
 };
 
@@ -384,7 +390,7 @@ export const cleanupCanvasMemory = (canvas: HTMLCanvasElement): void => {
 export const preloadAdjacentPages = async (
   pdfDoc: PDFDocumentProxy,
   currentPage: number,
-  preloadRange: number = 2
+  preloadRange: number = 2,
 ): Promise<void> => {
   const pagesToPreload: number[] = [];
 
@@ -396,7 +402,11 @@ export const preloadAdjacentPages = async (
   }
 
   // Preload pages after current page
-  for (let i = currentPage + 1; i <= Math.min(pdfDoc.numPages, currentPage + preloadRange); i++) {
+  for (
+    let i = currentPage + 1;
+    i <= Math.min(pdfDoc.numPages, currentPage + preloadRange);
+    i++
+  ) {
     if (!pagesToPreload.includes(i)) {
       pagesToPreload.push(i);
     }
@@ -419,17 +429,17 @@ export const preloadAdjacentPages = async (
 export const createMemoryManagedRenderTask = (
   page: PDFPageProxy,
   canvas: HTMLCanvasElement,
-  scale: number = 1.5
+  scale: number = 1.5,
 ): PDFRenderTask => {
   // Get canvas from pool
   const renderCanvas = getCanvasFromPool();
 
   const viewport = page.getViewport({ scale });
-  const context = renderCanvas.getContext('2d');
+  const context = renderCanvas.getContext("2d");
 
   if (!context) {
     returnCanvasToPool(renderCanvas);
-    throw new Error('Failed to get canvas context');
+    throw new Error("Failed to get canvas context");
   }
 
   // Set canvas dimensions
@@ -459,20 +469,22 @@ export const createMemoryManagedRenderTask = (
 /**
  * Memory-managed render task cancellation
  */
-export const cancelMemoryManagedRenderTask = (renderTask: PDFRenderTask): void => {
+export const cancelMemoryManagedRenderTask = (
+  renderTask: PDFRenderTask,
+): void => {
   if (renderTask.cancelled) return;
 
   try {
     renderTask.cancelled = true;
     const task = renderTask.task as { cancel?: () => void };
-    if (task && typeof task.cancel === 'function') {
+    if (task && typeof task.cancel === "function") {
       task.cancel();
     }
 
     // Return canvas to pool
     returnCanvasToPool(renderTask.canvas);
   } catch (error) {
-    console.warn('Failed to cancel memory-managed render task:', error);
+    console.warn("Failed to cancel memory-managed render task:", error);
   }
 };
 
@@ -480,14 +492,14 @@ export const cancelMemoryManagedRenderTask = (renderTask: PDFRenderTask): void =
  * Check if browser supports required PDF features
  */
 export const checkPDFSupport = (): boolean => {
-  if (typeof window === 'undefined') return false;
+  if (typeof window === "undefined") return false;
 
   // Check for canvas support
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   if (!canvas.getContext) return false;
 
   // Check for basic canvas 2D support
-  const context = canvas.getContext('2d');
+  const context = canvas.getContext("2d");
   if (!context) return false;
 
   // Check for required methods

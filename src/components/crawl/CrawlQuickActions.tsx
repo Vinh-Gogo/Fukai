@@ -1,8 +1,8 @@
-import React from 'react';
-import { RefreshCw, Download, Settings } from 'lucide-react';
-import { QuickActionCard } from '@/components/features';
-import { useActivityLogger } from '@/hooks';
-import { CrawlJob } from '@/lib/crawl';
+import React from "react";
+import { RefreshCw, Download, Settings } from "lucide-react";
+import { QuickActionCard } from "@/components/features";
+import { useActivityLogger } from "@/hooks";
+import { CrawlJob } from "@/lib/crawl";
 
 interface CrawlQuickActionsProps {
   jobs: CrawlJob[];
@@ -13,7 +13,7 @@ interface CrawlQuickActionsProps {
 export const CrawlQuickActions: React.FC<CrawlQuickActionsProps> = ({
   jobs,
   onDownloadAll,
-  disabled = false
+  disabled = false,
 }) => {
   const { logActivity } = useActivityLogger();
 
@@ -44,9 +44,7 @@ export const CrawlQuickActions: React.FC<CrawlQuickActionsProps> = ({
 
   return (
     <section className="mb-12 animate-fade-in">
-      <h2 className="text-2xl font-bold text-foreground mb-6">
-        Quick Actions
-      </h2>
+      <h2 className="text-2xl font-bold text-foreground mb-6">Quick Actions</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <QuickActionCard
           icon={RefreshCw}

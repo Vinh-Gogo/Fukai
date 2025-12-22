@@ -1,11 +1,13 @@
 # Code Refactoring Plan for RAG Platform
 
 ## Overview
+
 This document outlines a comprehensive refactoring plan for both backend (FastAPI) and frontend (Next.js/React) components of the RAG platform.
 
 ## Backend Refactoring Plan
 
 ### Phase 1: API Layer Improvements
+
 1. **Extract Pydantic Schemas**
    - Create `backend/app/schemas/crawl.py` for request/response models
    - Create `backend/app/schemas/common.py` for shared models
@@ -22,6 +24,7 @@ This document outlines a comprehensive refactoring plan for both backend (FastAP
    - Add configuration-based service initialization
 
 ### Phase 2: Service Layer Refactoring
+
 4. **Crawler Service Abstraction**
    - Create abstract base crawler class
    - Support multiple website configurations
@@ -38,6 +41,7 @@ This document outlines a comprehensive refactoring plan for both backend (FastAP
    - Add data validation and sanitization
 
 ### Phase 3: Infrastructure Improvements
+
 7. **Configuration Management**
    - Centralize all configuration validation
    - Add environment-specific configs
@@ -56,6 +60,7 @@ This document outlines a comprehensive refactoring plan for both backend (FastAP
 ## Frontend Refactoring Plan
 
 ### Phase 1: Component Architecture
+
 1. **Design System Creation**
    - Extract common UI components to `src/components/ui/`
    - Create consistent design tokens
@@ -72,6 +77,7 @@ This document outlines a comprehensive refactoring plan for both backend (FastAP
    - Optimize bundle splitting
 
 ### Phase 2: State Management
+
 4. **Global State Implementation**
    - Evaluate and implement Zustand for global state
    - Migrate local storage logic to proper state management
@@ -88,6 +94,7 @@ This document outlines a comprehensive refactoring plan for both backend (FastAP
    - Implement proper generic types
 
 ### Phase 3: Code Organization
+
 7. **File Structure Standardization**
    - Implement consistent file naming conventions
    - Organize imports and exports
@@ -106,24 +113,28 @@ This document outlines a comprehensive refactoring plan for both backend (FastAP
 ## Implementation Priority
 
 ### High Priority (Immediate)
+
 1. Backend: Extract Pydantic schemas
 2. Backend: Standardize error handling
 3. Frontend: Design system creation
 4. Frontend: Component error boundaries
 
 ### Medium Priority (Next Sprint)
+
 5. Backend: Dependency injection
 6. Backend: Repository pattern
 7. Frontend: Global state management
 8. Frontend: TypeScript strict mode
 
 ### Low Priority (Future)
+
 9. Backend: Advanced caching
 10. Frontend: E2E testing
 11. Performance optimizations
 12. Advanced monitoring
 
 ## Success Metrics
+
 - Reduced code duplication by 40%
 - Improved test coverage to 80%
 - Reduced bundle size by 20%
@@ -131,11 +142,13 @@ This document outlines a comprehensive refactoring plan for both backend (FastAP
 - Enhanced developer experience (faster builds, better DX)
 
 ## Risk Assessment
+
 - **High Risk**: State management migration - extensive testing required
 - **Medium Risk**: API changes - may break existing integrations
 - **Low Risk**: Component refactoring - mostly isolated changes
 
 ## Rollback Strategy
+
 - Feature flags for major changes
 - Gradual rollout with canary deployments
 - Comprehensive testing before production deployment

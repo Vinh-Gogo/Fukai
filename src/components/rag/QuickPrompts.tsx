@@ -1,7 +1,7 @@
-import React from 'react';
-import { FileText, Lightbulb, Search, Target } from 'lucide-react';
-import { QUICK_PROMPTS } from '@/lib/chat';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { FileText, Lightbulb, Search, Target } from "lucide-react";
+import { QUICK_PROMPTS } from "@/lib/chat";
+import { cn } from "@/lib/utils";
 
 interface QuickPromptsProps {
   onPromptSelect: (promptId: string, enhancedQuery: string) => void;
@@ -14,9 +14,9 @@ export const QuickPrompts: React.FC<QuickPromptsProps> = ({
   onPromptSelect,
   currentInputValue,
   selectedPrompt,
-  disabled = false
+  disabled = false,
 }) => {
-  const handlePromptClick = (prompt: typeof QUICK_PROMPTS[0]) => {
+  const handlePromptClick = (prompt: (typeof QUICK_PROMPTS)[0]) => {
     if (disabled) return;
     const enhancedQuery = `${prompt.query} ${currentInputValue}`.trim();
     onPromptSelect(prompt.id, enhancedQuery);
@@ -36,7 +36,7 @@ export const QuickPrompts: React.FC<QuickPromptsProps> = ({
               selectedPrompt === prompt.id
                 ? "bg-blue-100 text-blue-700 border-2 border-blue-300"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200",
-              disabled && "opacity-50 cursor-not-allowed"
+              disabled && "opacity-50 cursor-not-allowed",
             )}
           >
             <IconComponent className="w-4 h-4" />
@@ -51,13 +51,13 @@ export const QuickPrompts: React.FC<QuickPromptsProps> = ({
 // Helper function to get icon for prompt
 const getIconForPrompt = (promptId: string) => {
   switch (promptId) {
-    case 'summary':
+    case "summary":
       return FileText;
-    case 'explain':
+    case "explain":
       return Lightbulb;
-    case 'find':
+    case "find":
       return Search;
-    case 'analyze':
+    case "analyze":
       return Target;
     default:
       return FileText;

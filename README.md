@@ -1,6 +1,7 @@
 # Web RAG Application
 
 ## 🎥 Demo Video
+
 [Watch the Demo](Demo.mp4)
 
 A comprehensive Retrieval-Augmented Generation (RAG) application for processing, indexing, and searching PDF documents. Features web crawling, PDF text extraction, semantic search, vector embeddings, and an intuitive web interface with real-time progress tracking.
@@ -99,9 +100,9 @@ search_rag/
    ```
 
 4. **Access the application**:
-   - **Web Interface**: *`http://localhost:3000`*
-   - **API Documentation**: *`http://localhost:8000/docs`*
-   - **API Health Check**: *`http://localhost:8000/health`*
+   - **Web Interface**: _`http://localhost:3000`_
+   - **API Documentation**: _`http://localhost:8000/docs`_
+   - **API Health Check**: _`http://localhost:8000/health`_
 
 ## 📋 Detailed Setup
 
@@ -130,6 +131,7 @@ search_rag/
 ### Frontend Setup
 
 1. **Install Node.js dependencies**:
+
    ```bash
    # Using pnpm (recommended)
    pnpm install
@@ -190,6 +192,7 @@ cd ../frontend && npm run build && npm start
 See [README_CRAWL_API.md](README_CRAWL_API.md) for detailed crawling API documentation.
 
 **Key endpoints**:
+
 - `POST /api/v1/crawl/start` - Start crawling operation
 - `GET /api/v1/crawl/status/{task_id}` - Check crawl progress
 - `GET /api/v1/crawl/history` - View crawl history
@@ -347,6 +350,7 @@ docker-compose up -d --scale frontend=3
 ### Environment Variables
 
 **Backend (.env)**:
+
 ```bash
 # Database
 DATABASE_URL=sqlite:///./app.db
@@ -370,6 +374,7 @@ CHUNK_OVERLAP=200
 ```
 
 **Frontend (.env.local)**:
+
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
 NEXT_PUBLIC_FASTAPI_URL=http://localhost:8000

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Search, Filter, Calendar, X } from 'lucide-react';
+import React from "react";
+import { Search, Filter, Calendar, X } from "lucide-react";
 
 interface ActivityFiltersProps {
   filters: {
@@ -7,12 +7,12 @@ interface ActivityFiltersProps {
     activityType: string;
     searchQuery: string;
   };
-  onFiltersChange: (filters: ActivityFiltersProps['filters']) => void;
+  onFiltersChange: (filters: ActivityFiltersProps["filters"]) => void;
 }
 
 export const ActivityFilters: React.FC<ActivityFiltersProps> = ({
   filters,
-  onFiltersChange
+  onFiltersChange,
 }) => {
   const handleTimeRangeChange = (timeRange: string) => {
     onFiltersChange({ ...filters, timeRange });
@@ -28,15 +28,16 @@ export const ActivityFilters: React.FC<ActivityFiltersProps> = ({
 
   const clearFilters = () => {
     onFiltersChange({
-      timeRange: '7d',
-      activityType: 'all',
-      searchQuery: ''
+      timeRange: "7d",
+      activityType: "all",
+      searchQuery: "",
     });
   };
 
-  const hasActiveFilters = filters.timeRange !== '7d' ||
-                          filters.activityType !== 'all' ||
-                          filters.searchQuery !== '';
+  const hasActiveFilters =
+    filters.timeRange !== "7d" ||
+    filters.activityType !== "all" ||
+    filters.searchQuery !== "";
 
   return (
     <div className="bg-white/80 backdrop-blur-sm border border-border rounded-xl p-6">
@@ -112,7 +113,7 @@ export const ActivityFilters: React.FC<ActivityFiltersProps> = ({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             {filters.searchQuery && (
               <button
-                onClick={() => handleSearchChange('')}
+                onClick={() => handleSearchChange("")}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground hover:text-foreground"
               >
                 <X className="w-4 h-4" />
@@ -126,14 +127,14 @@ export const ActivityFilters: React.FC<ActivityFiltersProps> = ({
       {hasActiveFilters && (
         <div className="mt-4 pt-4 border-t border-border">
           <div className="flex flex-wrap gap-2">
-            {filters.timeRange !== '7d' && (
+            {filters.timeRange !== "7d" && (
               <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded-full">
                 Time: {filters.timeRange}
               </span>
             )}
-            {filters.activityType !== 'all' && (
+            {filters.activityType !== "all" && (
               <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-green-50 text-green-600 rounded-full">
-                Type: {filters.activityType.replace(/_/g, ' ')}
+                Type: {filters.activityType.replace(/_/g, " ")}
               </span>
             )}
             {filters.searchQuery && (

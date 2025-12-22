@@ -1,5 +1,5 @@
 // Enhanced state management with persistence and synchronization
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from "react";
 
 // Storage interface for persistence
 export interface StorageAdapter {
@@ -12,8 +12,8 @@ export interface StorageAdapter {
 // LocalStorage adapter
 class LocalStorageAdapter implements StorageAdapter {
   get<T>(key: string): T | null {
-    if (typeof window === 'undefined') return null;
-    
+    if (typeof window === "undefined") return null;
+
     try {
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : null;
@@ -23,8 +23,8 @@ class LocalStorageAdapter implements StorageAdapter {
   }
 
   set<T>(key: string, value: T): void {
-    if (typeof window === 'undefined') return;
-    
+    if (typeof window === "undefined") return;
+
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch {
@@ -34,12 +34,12 @@ class LocalStorageAdapter implements StorageAdapter {
   }
 
   remove(key: string): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     localStorage.removeItem(key);
   }
 
   clear(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     localStorage.clear();
   }
 }
@@ -80,7 +80,7 @@ interface UseStateOptions<T> {
 // Enhanced useState hook with persistence and validation
 export function useEnhancedState<T>(
   initialValue: T,
-  options: UseStateOptions<T> = {}
+  options: UseStateOptions<T> = {},
 ) {
   const {
     key,
@@ -89,7 +89,7 @@ export function useEnhancedState<T>(
     persist = false,
     syncAcrossTabs = false,
     validate,
-    onError
+    onError,
   } = options;
 
   // Initialize with default value to avoid hydration mismatch
@@ -155,27 +155,31 @@ export function useEnhancedState<T>(
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, [key, syncAcrossTabs, persist, validate, onError]);
 
   // Enhanced setState with validation
-  const enhancedSetState = useCallback((updater: T | ((prev: T) => T)) => {
-    setState(prevState => {
-      const newValue = typeof updater === 'function' 
-        ? (updater as (prev: T) => T)(prevState)
-        : updater;
+  const enhancedSetState = useCallback(
+    (updater: T | ((prev: T) => T)) => {
+      setState((prevState) => {
+        const newValue =
+          typeof updater === "function"
+            ? (updater as (prev: T) => T)(prevState)
+            : updater;
 
-      // Validate if validator provided
-      if (validate && !validate(newValue)) {
-        console.warn('Invalid state update, rejecting');
-        onError?.(new Error('Invalid state update'));
-        return prevState;
-      }
+        // Validate if validator provided
+        if (validate && !validate(newValue)) {
+          console.warn("Invalid state update, rejecting");
+          onError?.(new Error("Invalid state update"));
+          return prevState;
+        }
 
-      return newValue;
-    });
-  }, [validate, onError]);
+        return newValue;
+      });
+    },
+    [validate, onError],
+  );
 
   return [state, enhancedSetState] as const;
 }
@@ -187,7 +191,9 @@ interface StateManagerConfig<T> {
   storage?: StorageAdapter;
   persist?: boolean;
   actions?: Record<string, (state: T, ...args: unknown[]) => T>;
-  middleware?: Array<(next: () => T, state: T, action: string, args: unknown[]) => T>;
+  middleware?: Array<
+    (next: () => T, state: T, action: string, args: unknown[]) => T
+  >;
 }
 
 export function createStateManager<T>(config: StateManagerConfig<T>) {
@@ -197,7 +203,7 @@ export function createStateManager<T>(config: StateManagerConfig<T>) {
     storage = new LocalStorageAdapter(),
     persist = false,
     actions = {},
-    middleware = []
+    middleware = [],
   } = config;
 
   let currentState = initialState;
@@ -232,17 +238,17 @@ export function createStateManager<T>(config: StateManagerConfig<T>) {
 
     const executeAction = () => {
       const newState = action(currentState, ...args);
-      
+
       if (newState !== currentState) {
         currentState = newState;
-        
+
         // Persist if enabled
         if (persist && key) {
           storage.set(key, newState);
         }
 
         // Notify listeners
-        listeners.forEach(listener => listener(newState));
+        listeners.forEach((listener) => listener(newState));
       }
 
       return newState;
@@ -251,9 +257,9 @@ export function createStateManager<T>(config: StateManagerConfig<T>) {
     // Apply middleware
     if (middleware.length > 0) {
       const chain = middleware.reduceRight(
-        (next: () => T, middlewareFn) => 
-          () => middlewareFn(next, currentState, actionName, args),
-        executeAction
+        (next: () => T, middlewareFn) => () =>
+          middlewareFn(next, currentState, actionName, args),
+        executeAction,
       );
       chain();
     } else {
@@ -264,24 +270,26 @@ export function createStateManager<T>(config: StateManagerConfig<T>) {
   // Reset to initial state
   const reset = () => {
     currentState = initialState;
-    
+
     if (persist && key) {
       storage.set(key, initialState);
     }
 
-    listeners.forEach(listener => listener(initialState));
+    listeners.forEach((listener) => listener(initialState));
   };
 
   return {
     getState,
     dispatch,
     subscribe,
-    reset
+    reset,
   };
 }
 
 // Hook to use state manager in React components
-export function useStateManager<T>(manager: ReturnType<typeof createStateManager<T>>) {
+export function useStateManager<T>(
+  manager: ReturnType<typeof createStateManager<T>>,
+) {
   const [state, setState] = useState<T>(manager.getState());
 
   useEffect(() => {
@@ -289,9 +297,12 @@ export function useStateManager<T>(manager: ReturnType<typeof createStateManager
     return unsubscribe;
   }, [manager]);
 
-  const dispatch = useCallback((action: string, ...args: unknown[]) => {
-    manager.dispatch(action, ...args);
-  }, [manager]);
+  const dispatch = useCallback(
+    (action: string, ...args: unknown[]) => {
+      manager.dispatch(action, ...args);
+    },
+    [manager],
+  );
 
   const reset = useCallback(() => {
     manager.reset();
@@ -300,36 +311,46 @@ export function useStateManager<T>(manager: ReturnType<typeof createStateManager
   return {
     state,
     dispatch,
-    reset
+    reset,
   };
 }
 
 // Utility functions for common state patterns
 export const createValidationRules = {
   required: (value: unknown) => value !== null && value !== undefined,
-  minLength: (min: number) => (value: string | unknown[]) => Array.isArray(value) && value.length >= min,
-  maxLength: (max: number) => (value: string | unknown[]) => Array.isArray(value) && value.length <= max,
-  pattern: (regex: RegExp) => (value: string) => typeof value === 'string' && regex.test(value),
-  range: (min: number, max: number) => (value: number) => typeof value === 'number' && value >= min && value <= max,
-  email: (value: string) => typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+  minLength: (min: number) => (value: string | unknown[]) =>
+    Array.isArray(value) && value.length >= min,
+  maxLength: (max: number) => (value: string | unknown[]) =>
+    Array.isArray(value) && value.length <= max,
+  pattern: (regex: RegExp) => (value: string) =>
+    typeof value === "string" && regex.test(value),
+  range: (min: number, max: number) => (value: number) =>
+    typeof value === "number" && value >= min && value <= max,
+  email: (value: string) =>
+    typeof value === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
   url: (value: string) => {
-    if (typeof value !== 'string') return false;
+    if (typeof value !== "string") return false;
     try {
       new URL(value);
       return true;
     } catch {
       return false;
     }
-  }
+  },
 };
 
 // Common middleware
-export const loggerMiddleware = <T>(next: () => T, state: T, action: string, args: unknown[]) => {
+export const loggerMiddleware = <T>(
+  next: () => T,
+  state: T,
+  action: string,
+  args: unknown[],
+) => {
   console.group(`State Action: ${action}`);
-  console.log('Previous state:', state);
-  console.log('Action args:', args);
+  console.log("Previous state:", state);
+  console.log("Action args:", args);
   const result = next();
-  console.log('New state:', result);
+  console.log("New state:", result);
   console.groupEnd();
   return result;
 };

@@ -1,6 +1,12 @@
-import React from 'react';
-import { Search, ChevronLeft, ChevronRight, X as CloseIcon, RefreshCw } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React from "react";
+import {
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  X as CloseIcon,
+  RefreshCw,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface SearchResult {
   page: number;
@@ -14,7 +20,7 @@ interface PDFSearchPanelProps {
   currentSearchIndex: number;
   isSearching: boolean;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onNavigateResult: (direction: 'next' | 'prev') => void;
+  onNavigateResult: (direction: "next" | "prev") => void;
   onGoToPage: (page: number) => void;
   onClearSearch: () => void;
 }
@@ -53,7 +59,7 @@ export const PDFSearchPanel: React.FC<PDFSearchPanelProps> = ({
               {currentSearchIndex + 1} of {searchResults.length}
             </span>
             <button
-              onClick={() => onNavigateResult('prev')}
+              onClick={() => onNavigateResult("prev")}
               disabled={searchResults.length <= 1}
               className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50"
               aria-label="Previous search result"
@@ -61,7 +67,7 @@ export const PDFSearchPanel: React.FC<PDFSearchPanelProps> = ({
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
-              onClick={() => onNavigateResult('next')}
+              onClick={() => onNavigateResult("next")}
               disabled={searchResults.length <= 1}
               className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50"
               aria-label="Next search result"
@@ -84,7 +90,8 @@ export const PDFSearchPanel: React.FC<PDFSearchPanelProps> = ({
       {searchResults.length > 0 && (
         <div className="mt-4 max-h-32 overflow-y-auto">
           <div className="text-sm text-gray-600 mb-2">
-            Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+            Found {searchResults.length} result
+            {searchResults.length !== 1 ? "s" : ""}
           </div>
           <div className="space-y-1">
             {searchResults.slice(0, 5).map((result, index) => (
@@ -96,12 +103,17 @@ export const PDFSearchPanel: React.FC<PDFSearchPanelProps> = ({
                 }}
                 className={cn(
                   "w-full text-left p-2 rounded hover:bg-gray-50 transition-colors",
-                  currentSearchIndex === result.index && "bg-blue-50 border border-blue-200"
+                  currentSearchIndex === result.index &&
+                    "bg-blue-50 border border-blue-200",
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Page {result.page}</span>
-                  <span className="text-xs text-gray-500">#{result.index + 1}</span>
+                  <span className="text-sm font-medium">
+                    Page {result.page}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    #{result.index + 1}
+                  </span>
                 </div>
                 <div className="text-xs text-gray-600 truncate mt-1">
                   {result.text}

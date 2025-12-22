@@ -117,24 +117,27 @@ export const CRAWL_STAGES = {
 export const isCrawlJob = (obj: unknown): obj is CrawlJob => {
   const job = obj as Record<string, unknown>;
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
-    typeof job.id === 'string' &&
-    typeof job.url === 'string' &&
-    typeof job.status === 'string' &&
-    ['idle', 'running', 'completed', 'error'].includes(job.status) &&
-    typeof job.progress === 'number' &&
-    typeof job.pagesFound === 'number' &&
-    typeof job.pdfsFound === 'number' &&
-    typeof job.lastRun === 'string'
+    typeof job.id === "string" &&
+    typeof job.url === "string" &&
+    typeof job.status === "string" &&
+    ["idle", "running", "completed", "error"].includes(job.status) &&
+    typeof job.progress === "number" &&
+    typeof job.pagesFound === "number" &&
+    typeof job.pdfsFound === "number" &&
+    typeof job.lastRun === "string"
   );
 };
 
 export const isValidCrawlUrl = (url: string): UrlValidationResult => {
   try {
     const urlObj = new URL(url);
-    if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
-      return { isValid: false, error: "URL must start with http:// or https://" };
+    if (urlObj.protocol !== "http:" && urlObj.protocol !== "https:") {
+      return {
+        isValid: false,
+        error: "URL must start with http:// or https://",
+      };
     }
     return { isValid: true };
   } catch {

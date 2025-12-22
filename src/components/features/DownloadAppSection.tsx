@@ -43,7 +43,8 @@ export const DownloadAppSection = React.memo(() => {
             Download Mobile App
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Designed for mobile devices, offering better experience and more features
+            Designed for mobile devices, offering better experience and more
+            features
           </p>
         </div>
 
@@ -82,7 +83,8 @@ export const DownloadAppSection = React.memo(() => {
                     Easy Installation
                   </h3>
                   <p className="text-muted-foreground">
-                    Press and hold to scan the QR code for instant download on your mobile device.
+                    Press and hold to scan the QR code for instant download on
+                    your mobile device.
                   </p>
                 </div>
               </div>
@@ -98,7 +100,8 @@ export const DownloadAppSection = React.memo(() => {
                     Instant Access
                   </h3>
                   <p className="text-muted-foreground">
-                    Get push notifications when crawls complete and access your data offline anytime.
+                    Get push notifications when crawls complete and access your
+                    data offline anytime.
                   </p>
                 </div>
               </div>
@@ -130,18 +133,18 @@ export const DownloadAppSection = React.memo(() => {
             {
               title: "Push Notifications",
               description: "Get instant alerts when crawls complete",
-              icon: "🔔"
+              icon: "🔔",
             },
             {
               title: "Offline Access",
               description: "View crawled content without internet",
-              icon: "📱"
+              icon: "📱",
             },
             {
               title: "Gesture Controls",
               description: "Swipe to archive or favorite content",
-              icon: "👆"
-            }
+              icon: "👆",
+            },
           ].map((feature, index) => (
             <motion.div
               key={index}
@@ -153,8 +156,12 @@ export const DownloadAppSection = React.memo(() => {
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">
                 {feature.icon}
               </div>
-              <h4 className="font-semibold text-foreground mb-1">{feature.title}</h4>
-              <p className="text-sm text-muted-foreground">{feature.description}</p>
+              <h4 className="font-semibold text-foreground mb-1">
+                {feature.title}
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                {feature.description}
+              </p>
             </motion.div>
           ))}
         </div>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Bot } from 'lucide-react';
+import React from "react";
+import { Bot } from "lucide-react";
 
 export const TypingIndicator: React.FC = () => {
   return (
@@ -10,9 +10,18 @@ export const TypingIndicator: React.FC = () => {
       <div className="bg-white border border-gray-200 rounded-3xl px-6 py-4 shadow-sm">
         <div className="flex items-center gap-2">
           <div className="flex gap-1">
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            <div
+              className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0ms" }}
+            />
+            <div
+              className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+              style={{ animationDelay: "150ms" }}
+            />
+            <div
+              className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+              style={{ animationDelay: "300ms" }}
+            />
           </div>
           <span className="text-sm text-gray-500">AI is thinking...</span>
         </div>

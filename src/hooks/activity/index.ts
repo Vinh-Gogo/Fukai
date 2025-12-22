@@ -3,10 +3,10 @@
  */
 
 // Activity data and analytics hooks
-export { useActivityData } from './useActivityData';
+export { useActivityData } from "./useActivityData";
 
 // Activity logging hooks
-export { useActivityLogger } from './useActivityLogger';
+export { useActivityLogger } from "./useActivityLogger";
 
 // Re-export types for convenience
 export type {
@@ -16,4 +16,4 @@ export type {
   ActivityFilters,
   TimeRange,
   ActivityType,
-} from '@/types/activity';
+} from "@/types/activity";

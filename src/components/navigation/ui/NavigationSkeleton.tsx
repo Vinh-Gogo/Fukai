@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 /**
  * Loading skeleton for the Navigation sidebar
@@ -17,4 +17,4 @@ export const NavigationSkeleton: React.FC = () => {
   );
 };
 
-NavigationSkeleton.displayName = 'NavigationSkeleton';
+NavigationSkeleton.displayName = "NavigationSkeleton";

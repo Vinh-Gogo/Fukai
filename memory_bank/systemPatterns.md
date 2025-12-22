@@ -60,21 +60,25 @@ src/
 ## Key Design Patterns
 
 ### 1. Barrel Exports
+
 All directories use `index.ts` for clean imports:
+
 ```typescript
 // Instead of: import { useCrawlJobs } from '@/hooks/crawl/useCrawlJobs'
-import { useCrawlJobs } from '@/hooks';
+import { useCrawlJobs } from "@/hooks";
 
 // Instead of: import { CrawlJob } from '@/lib/crawl/index'
-import { CrawlJob } from '@/types';
+import { CrawlJob } from "@/types";
 ```
 
 ### 2. Type Source of Truth
+
 - All types defined in `src/types/` directory
 - `lib/` files import types from `@/types` and re-export for backwards compatibility
 - Never duplicate type definitions across files
 
 ### 3. Dynamic Imports for SSR Safety
+
 ```typescript
 const Navigation = dynamic(
   () => import('@/components/navigation').then(mod => ({ default: mod.Navigation })),
@@ -83,12 +87,14 @@ const Navigation = dynamic(
 ```
 
 ### 4. Custom Hooks Pattern
+
 - Hooks organized by feature domain
 - Each hook returns a typed result interface
 - Hooks handle state, side effects, and derived computations
 - **Hydration-safe**: Initialize with default values, load from storage in useEffect
 
 ### 5. Component Organization
+
 - Feature components in `components/{feature}/`
 - Shared UI primitives in `components/ui/`
 - Each folder has `index.ts` barrel export
@@ -96,14 +102,16 @@ const Navigation = dynamic(
 - **Extract custom hooks** when logic is reusable or complex
 
 ### 6. Service Layer
+
 - API calls abstracted in `lib/{feature}/`
 - `CrawlService` class for crawl API
 - `StorageService` for localStorage operations
 
 ### 7. SSR/Edge Runtime Safety
+
 ```typescript
 // Guard browser APIs at module level
-if (typeof document !== 'undefined') {
+if (typeof document !== "undefined") {
   // Safe to use document
 }
 
@@ -117,21 +125,25 @@ useEffect(() => {
 ## Critical Implementation Details
 
 ### Navigation
+
 - Dynamically imported to avoid SSR issues
 - `NavigationSkeleton` component for loading state
 - Controlled via `useNavigationState` hook
 
 ### PDF Viewer
+
 - Uses pdf.js library (dynamically loaded)
 - Virtualized rendering for performance
 - Custom hooks: `usePDFLoader`, `usePDFRenderer`
 
 ### Crawl Jobs
+
 - Multi-stage: pages → articles → pdfs
 - State persisted in localStorage
 - Real-time progress updates
 
 ### File Upload
+
 - Drag-and-drop zone component
 - Progress tracking per file
 - Supports batch uploads

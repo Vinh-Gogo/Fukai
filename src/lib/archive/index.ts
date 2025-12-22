@@ -1,8 +1,8 @@
 // Utility functions for archive file management
-import type { ArchiveFile, CategoryInfo, StorageStats } from '@/types/archive';
+import type { ArchiveFile, CategoryInfo, StorageStats } from "@/types/archive";
 
 // Re-export types for backwards compatibility
-export type { ArchiveFile, CategoryInfo, StorageStats } from '@/types/archive';
+export type { ArchiveFile, CategoryInfo, StorageStats } from "@/types/archive";
 
 /**
  * Parse file size string to bytes
@@ -14,9 +14,14 @@ export const parseSize = (sizeStr: string): number => {
   const value = parseFloat(match[1]);
   const unit = match[2];
 
-  const multiplier = unit === 'GB' ? 1024 * 1024 * 1024 :
-                    unit === 'MB' ? 1024 * 1024 :
-                    unit === 'KB' ? 1024 : 1;
+  const multiplier =
+    unit === "GB"
+      ? 1024 * 1024 * 1024
+      : unit === "MB"
+        ? 1024 * 1024
+        : unit === "KB"
+          ? 1024
+          : 1;
 
   return value * multiplier;
 };
@@ -25,23 +30,23 @@ export const parseSize = (sizeStr: string): number => {
  * Format bytes to human readable size
  */
 export const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 B';
+  if (bytes === 0) return "0 B";
 
   const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
 /**
  * Format date string to localized date
  */
 export const formatDate = (dateStr: string): string => {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   });
 };
 
@@ -50,9 +55,11 @@ export const formatDate = (dateStr: string): string => {
  */
 export const categorizeFile = (filename: string): string => {
   const lowerName = filename.toLowerCase();
-  if (lowerName.includes('report') || lowerName.includes('annual')) return 'reports';
-  if (lowerName.includes('manual') || lowerName.includes('guide')) return 'manuals';
-  return 'documents';
+  if (lowerName.includes("report") || lowerName.includes("annual"))
+    return "reports";
+  if (lowerName.includes("manual") || lowerName.includes("guide"))
+    return "manuals";
+  return "documents";
 };
 
 /**
@@ -62,10 +69,11 @@ export const extractTags = (filename: string): string[] => {
   const tags: string[] = [];
   const lowerName = filename.toLowerCase();
 
-  if (lowerName.includes('2024') || lowerName.includes('2025')) tags.push('current');
-  if (lowerName.includes('report')) tags.push('report');
-  if (lowerName.includes('manual')) tags.push('manual');
-  if (lowerName.includes('technical')) tags.push('technical');
+  if (lowerName.includes("2024") || lowerName.includes("2025"))
+    tags.push("current");
+  if (lowerName.includes("report")) tags.push("report");
+  if (lowerName.includes("manual")) tags.push("manual");
+  if (lowerName.includes("technical")) tags.push("technical");
 
   return tags;
 };
@@ -81,7 +89,7 @@ export const calculateStorageStats = (files: ArchiveFile[]): StorageStats => {
     totalFiles,
     totalSize,
     totalSizeFormatted: formatBytes(totalSize),
-    averageSize: totalFiles > 0 ? totalSize / totalFiles : 0
+    averageSize: totalFiles > 0 ? totalSize / totalFiles : 0,
   };
 };
 
@@ -91,30 +99,31 @@ export const calculateStorageStats = (files: ArchiveFile[]): StorageStats => {
 export const filterFiles = (
   files: ArchiveFile[],
   category: string,
-  searchQuery: string
+  searchQuery: string,
 ): ArchiveFile[] => {
   let filtered = files;
 
   // Category filter
-  if (category !== 'all') {
-    if (category === 'recent') {
+  if (category !== "all") {
+    if (category === "recent") {
       // Show files from last 7 days
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      filtered = filtered.filter(file =>
-        new Date(file.downloadDate) > sevenDaysAgo
+      filtered = filtered.filter(
+        (file) => new Date(file.downloadDate) > sevenDaysAgo,
       );
     } else {
-      filtered = filtered.filter(file => file.category === category);
+      filtered = filtered.filter((file) => file.category === category);
     }
   }
 
   // Search filter
   if (searchQuery) {
     const query = searchQuery.toLowerCase();
-    filtered = filtered.filter(file =>
-      file.name.toLowerCase().includes(query) ||
-      file.tags.some(tag => tag.toLowerCase().includes(query))
+    filtered = filtered.filter(
+      (file) =>
+        file.name.toLowerCase().includes(query) ||
+        file.tags.some((tag) => tag.toLowerCase().includes(query)),
     );
   }
 
@@ -126,22 +135,22 @@ export const filterFiles = (
  */
 export const sortFiles = (
   files: ArchiveFile[],
-  sortBy: 'name' | 'date' | 'size',
-  sortOrder: 'asc' | 'desc'
+  sortBy: "name" | "date" | "size",
+  sortOrder: "asc" | "desc",
 ): ArchiveFile[] => {
   return [...files].sort((a, b) => {
     let aValue: string | number | Date, bValue: string | number | Date;
 
     switch (sortBy) {
-      case 'name':
+      case "name":
         aValue = a.name.toLowerCase();
         bValue = b.name.toLowerCase();
         break;
-      case 'date':
+      case "date":
         aValue = new Date(a.downloadDate);
         bValue = new Date(b.downloadDate);
         break;
-      case 'size':
+      case "size":
         aValue = parseSize(a.size);
         bValue = parseSize(b.size);
         break;
@@ -149,7 +158,7 @@ export const sortFiles = (
         return 0;
     }
 
-    if (sortOrder === 'asc') {
+    if (sortOrder === "asc") {
       return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
     } else {
       return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
@@ -162,27 +171,27 @@ export const sortFiles = (
  */
 export const updateCategoryCounts = (
   categories: CategoryInfo[],
-  files: ArchiveFile[]
+  files: ArchiveFile[],
 ): CategoryInfo[] => {
-  const counts = categories.map(cat => ({ ...cat, count: 0 }));
+  const counts = categories.map((cat) => ({ ...cat, count: 0 }));
 
-  files.forEach(file => {
-    const index = counts.findIndex(c => c.id === file.category);
+  files.forEach((file) => {
+    const index = counts.findIndex((c) => c.id === file.category);
     if (index !== -1) counts[index].count++;
   });
 
   // Recent files (last 7 days)
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const recentIndex = counts.findIndex(c => c.id === 'recent');
+  const recentIndex = counts.findIndex((c) => c.id === "recent");
   if (recentIndex !== -1) {
-    counts[recentIndex].count = files.filter(file =>
-      new Date(file.downloadDate) > sevenDaysAgo
+    counts[recentIndex].count = files.filter(
+      (file) => new Date(file.downloadDate) > sevenDaysAgo,
     ).length;
   }
 
   // All files
-  const allIndex = counts.findIndex(c => c.id === 'all');
+  const allIndex = counts.findIndex((c) => c.id === "all");
   if (allIndex !== -1) {
     counts[allIndex].count = files.length;
   }

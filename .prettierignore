@@ -1,0 +1,81 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+dist/
+build/
+out/
+backend/.venv/
+
+# Generated files
+*.tsbuildinfo
+*.d.ts
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Package manager files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Docker
+.dockerignore
+
+# Database
+*.db
+*.sqlite
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Temporary files
+*.tmp
+*.temp
+
+# Documentation
+docs/
+
+# Python files (if any)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Backend specific
+backend/logs/
+backend/__pycache__/
+backend/*.pyc
+backend/store_pdfs/
+backend/processed_pdfs/
+backend/markdown_output/
+backend/downloads/
+
+# Uploads and public assets
+public/uploaded/
+public/demo-files/
+
+# Memory bank (keep formatted for readability)
+# memory_bank/

@@ -1,5 +1,11 @@
 // Performance optimization utilities and patterns
-import React, { useEffect, useRef, useCallback, useMemo, useState } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 
 // Types for performance utilities
 interface VirtualListOptions<T> {
@@ -10,7 +16,7 @@ interface VirtualListOptions<T> {
   getItemKey?: (item: T, index: number) => string | number;
   enableSmoothScrolling?: boolean;
   scrollThreshold?: number;
-  onScrollDirectionChange?: (direction: 'up' | 'down') => void;
+  onScrollDirectionChange?: (direction: "up" | "down") => void;
 }
 
 interface VirtualListResult<T> {
@@ -20,7 +26,7 @@ interface VirtualListResult<T> {
   offsetY: number;
   totalHeight: number;
   onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
-  scrollToIndex: (index: number, align?: 'start' | 'center' | 'end') => void;
+  scrollToIndex: (index: number, align?: "start" | "center" | "end") => void;
   getItemOffset: (index: number) => number;
   isScrolling: boolean;
 }
@@ -78,11 +84,11 @@ export function useVirtualList<T>({
   overscan = 5,
   enableSmoothScrolling = false,
   scrollThreshold = 100,
-  onScrollDirectionChange
+  onScrollDirectionChange,
 }: VirtualListOptions<T>): VirtualListResult<T> {
   const [scrollTop, setScrollTop] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
-  const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('down');
+  const [scrollDirection, setScrollDirection] = useState<"up" | "down">("down");
   const containerRef = useRef<HTMLDivElement>(null);
   const lastScrollTop = useRef(0);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -90,7 +96,7 @@ export function useVirtualList<T>({
   // Calculate item heights and offsets
   const itemHeights = useMemo(() => {
     return items.map((item, index) =>
-      typeof itemHeight === 'function' ? itemHeight(item, index) : itemHeight
+      typeof itemHeight === "function" ? itemHeight(item, index) : itemHeight,
     );
   }, [items, itemHeight]);
 
@@ -107,26 +113,29 @@ export function useVirtualList<T>({
   const totalHeight = itemOffsets[items.length] || 0;
 
   // Find item index by scroll position using binary search for performance
-  const findItemIndex = useCallback((scrollY: number): number => {
-    let low = 0;
-    let high = items.length - 1;
+  const findItemIndex = useCallback(
+    (scrollY: number): number => {
+      let low = 0;
+      let high = items.length - 1;
 
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2);
-      const itemTop = itemOffsets[mid];
-      const itemBottom = itemTop + itemHeights[mid];
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+        const itemTop = itemOffsets[mid];
+        const itemBottom = itemTop + itemHeights[mid];
 
-      if (scrollY >= itemTop && scrollY < itemBottom) {
-        return mid;
-      } else if (scrollY < itemTop) {
-        high = mid - 1;
-      } else {
-        low = mid + 1;
+        if (scrollY >= itemTop && scrollY < itemBottom) {
+          return mid;
+        } else if (scrollY < itemTop) {
+          high = mid - 1;
+        } else {
+          low = mid + 1;
+        }
       }
-    }
 
-    return Math.max(0, Math.min(items.length - 1, low));
-  }, [itemOffsets, itemHeights, items.length]);
+      return Math.max(0, Math.min(items.length - 1, low));
+    },
+    [itemOffsets, itemHeights, items.length],
+  );
 
   // Calculate visible range with overscan
   const visibleRange = useMemo(() => {
@@ -136,7 +145,10 @@ export function useVirtualList<T>({
     let currentOffset = itemOffsets[startIndex];
     const maxVisibleOffset = scrollTop + containerHeight;
 
-    while (endIndex < items.length && currentOffset < maxVisibleOffset + (overscan * 50)) {
+    while (
+      endIndex < items.length &&
+      currentOffset < maxVisibleOffset + overscan * 50
+    ) {
       currentOffset += itemHeights[endIndex];
       endIndex++;
     }
@@ -144,7 +156,15 @@ export function useVirtualList<T>({
     endIndex = Math.min(items.length - 1, endIndex + overscan);
 
     return { startIndex, endIndex };
-  }, [scrollTop, containerHeight, overscan, findItemIndex, itemOffsets, itemHeights, items.length]);
+  }, [
+    scrollTop,
+    containerHeight,
+    overscan,
+    findItemIndex,
+    itemOffsets,
+    itemHeights,
+    items.length,
+  ]);
 
   // Get visible items slice
   const visibleItems = useMemo(() => {
@@ -157,71 +177,95 @@ export function useVirtualList<T>({
   }, [itemOffsets, visibleRange.startIndex]);
 
   // Enhanced scroll handler with direction detection and smooth scrolling
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const currentScrollTop = e.currentTarget.scrollTop;
-    const newDirection = currentScrollTop > lastScrollTop.current ? 'down' : 'up';
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const currentScrollTop = e.currentTarget.scrollTop;
+      const newDirection =
+        currentScrollTop > lastScrollTop.current ? "down" : "up";
 
-    // Update scroll direction if changed
-    if (newDirection !== scrollDirection) {
-      setScrollDirection(newDirection);
-      onScrollDirectionChange?.(newDirection);
-    }
+      // Update scroll direction if changed
+      if (newDirection !== scrollDirection) {
+        setScrollDirection(newDirection);
+        onScrollDirectionChange?.(newDirection);
+      }
 
-    setScrollTop(currentScrollTop);
-    lastScrollTop.current = currentScrollTop;
+      setScrollTop(currentScrollTop);
+      lastScrollTop.current = currentScrollTop;
 
-    // Set scrolling state
-    setIsScrolling(true);
+      // Set scrolling state
+      setIsScrolling(true);
 
-    // Clear existing timeout
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
+      // Clear existing timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
 
-    // Reset scrolling state after threshold
-    scrollTimeoutRef.current = setTimeout(() => {
-      setIsScrolling(false);
-    }, scrollThreshold);
-  }, [scrollDirection, scrollThreshold, onScrollDirectionChange]);
+      // Reset scrolling state after threshold
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsScrolling(false);
+      }, scrollThreshold);
+    },
+    [scrollDirection, scrollThreshold, onScrollDirectionChange],
+  );
 
   // Scroll to specific index with alignment
-  const scrollToIndex = useCallback((index: number, align: 'start' | 'center' | 'end' = 'start') => {
-    if (!containerRef.current || index < 0 || index >= items.length) return;
+  const scrollToIndex = useCallback(
+    (index: number, align: "start" | "center" | "end" = "start") => {
+      if (!containerRef.current || index < 0 || index >= items.length) return;
 
-    const itemOffset = itemOffsets[index];
-    const itemHeightValue = itemHeights[index];
+      const itemOffset = itemOffsets[index];
+      const itemHeightValue = itemHeights[index];
 
-    let targetScrollTop: number;
+      let targetScrollTop: number;
 
-    switch (align) {
-      case 'center':
-        targetScrollTop = itemOffset - (containerHeight / 2) + (itemHeightValue / 2);
-        break;
-      case 'end':
-        targetScrollTop = itemOffset - containerHeight + itemHeightValue;
-        break;
-      case 'start':
-      default:
-        targetScrollTop = itemOffset;
-        break;
-    }
+      switch (align) {
+        case "center":
+          targetScrollTop =
+            itemOffset - containerHeight / 2 + itemHeightValue / 2;
+          break;
+        case "end":
+          targetScrollTop = itemOffset - containerHeight + itemHeightValue;
+          break;
+        case "start":
+        default:
+          targetScrollTop = itemOffset;
+          break;
+      }
 
-    targetScrollTop = Math.max(0, Math.min(targetScrollTop, totalHeight - containerHeight));
+      targetScrollTop = Math.max(
+        0,
+        Math.min(targetScrollTop, totalHeight - containerHeight),
+      );
 
-    if (enableSmoothScrolling && 'scrollBehavior' in containerRef.current.style) {
-      containerRef.current.scrollTo({
-        top: targetScrollTop,
-        behavior: 'smooth'
-      });
-    } else {
-      containerRef.current.scrollTop = targetScrollTop;
-    }
-  }, [itemOffsets, itemHeights, items.length, containerHeight, totalHeight, enableSmoothScrolling]);
+      if (
+        enableSmoothScrolling &&
+        "scrollBehavior" in containerRef.current.style
+      ) {
+        containerRef.current.scrollTo({
+          top: targetScrollTop,
+          behavior: "smooth",
+        });
+      } else {
+        containerRef.current.scrollTop = targetScrollTop;
+      }
+    },
+    [
+      itemOffsets,
+      itemHeights,
+      items.length,
+      containerHeight,
+      totalHeight,
+      enableSmoothScrolling,
+    ],
+  );
 
   // Get offset for specific item index
-  const getItemOffset = useCallback((index: number): number => {
-    return itemOffsets[index] || 0;
-  }, [itemOffsets]);
+  const getItemOffset = useCallback(
+    (index: number): number => {
+      return itemOffsets[index] || 0;
+    },
+    [itemOffsets],
+  );
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -241,19 +285,19 @@ export function useVirtualList<T>({
     onScroll: handleScroll,
     scrollToIndex,
     getItemOffset,
-    isScrolling
+    isScrolling,
   };
 }
 
 // Image lazy loading hook with enhanced error handling
 export function useLazyImage(
   src: string,
-  options: LazyImageOptions = {}
+  options: LazyImageOptions = {},
 ): LazyImageResult {
-  const { threshold = 0.1, rootMargin = '50px' } = options;
-  const [imageSrc, setImageSrc] = useState<string>('');
+  const { threshold = 0.1, rootMargin = "50px" } = options;
+  const [imageSrc, setImageSrc] = useState<string>("");
   const [isLoaded, setIsLoaded] = useState(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
   const imgRef = useRef<HTMLImageElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -271,11 +315,11 @@ export function useLazyImage(
             if (entry.isIntersecting && !isLoaded) {
               setImageSrc(src);
               setIsLoaded(true);
-              setError('');
+              setError("");
             }
           });
         },
-        { threshold, rootMargin }
+        { threshold, rootMargin },
       );
 
       observer.observe(imgElement);
@@ -298,7 +342,7 @@ export function useLazyImage(
     ref: imgRef,
     src: imageSrc,
     isLoaded,
-    error
+    error,
   };
 }
 
@@ -306,7 +350,7 @@ export function useLazyImage(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useDebounce<T extends (...args: any[]) => any>(
   callback: T,
-  delay: number
+  delay: number,
 ): T {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const callbackRef = useRef(callback);
@@ -317,21 +361,24 @@ export function useDebounce<T extends (...args: any[]) => any>(
   }, [callback]);
 
   // Return properly typed debounced function
-  return useCallback((...args: Parameters<T>) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+  return useCallback(
+    (...args: Parameters<T>) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
 
-    timeoutRef.current = setTimeout(() => {
-      callbackRef.current(...args);
-    }, delay);
-  }, [delay]) as T;
+      timeoutRef.current = setTimeout(() => {
+        callbackRef.current(...args);
+      }, delay);
+    },
+    [delay],
+  ) as T;
 }
 
 // Throttle hook with improved implementation
 export function useThrottle<T extends (...args: unknown[]) => void>(
   callback: T,
-  delay: number
+  delay: number,
 ): T {
   const lastCallRef = useRef<number>(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -343,29 +390,35 @@ export function useThrottle<T extends (...args: unknown[]) => void>(
   }, [callback]);
 
   // Return throttled function with proper timing
-  return useCallback((...args: Parameters<T>) => {
-    const now = Date.now();
+  return useCallback(
+    (...args: Parameters<T>) => {
+      const now = Date.now();
 
-    if (now - lastCallRef.current >= delay) {
-      lastCallRef.current = now;
-      callbackRef.current(...args);
-    } else {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-
-      timeoutRef.current = setTimeout(() => {
-        lastCallRef.current = Date.now();
+      if (now - lastCallRef.current >= delay) {
+        lastCallRef.current = now;
         callbackRef.current(...args);
-      }, delay - (now - lastCallRef.current));
-    }
-  }, [delay]) as T;
+      } else {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+
+        timeoutRef.current = setTimeout(
+          () => {
+            lastCallRef.current = Date.now();
+            callbackRef.current(...args);
+          },
+          delay - (now - lastCallRef.current),
+        );
+      }
+    },
+    [delay],
+  ) as T;
 }
 
 // Enhanced memo wrapper with better type safety
 export function memo<P extends object>(
   Component: React.ComponentType<P>,
-  areEqual?: (prevProps: P, nextProps: P) => boolean
+  areEqual?: (prevProps: P, nextProps: P) => boolean,
 ): React.ComponentType<P> {
   return React.memo(Component, areEqual);
 }
@@ -419,7 +472,7 @@ export class PerformanceMonitor {
       average,
       min,
       max,
-      p95
+      p95,
     };
   }
 
@@ -444,14 +497,14 @@ export class PerformanceMonitor {
 
   // Enhanced logging with development checks
   static logMetrics(): void {
-    if (process.env.NODE_ENV === 'development') {
-      console.group('🚀 Performance Metrics');
+    if (process.env.NODE_ENV === "development") {
+      console.group("🚀 Performance Metrics");
 
       const allMetrics = this.getAllMetrics();
       const entries = Object.entries(allMetrics);
 
       if (entries.length === 0) {
-        console.log('No metrics recorded yet');
+        console.log("No metrics recorded yet");
       } else {
         entries.forEach(([key, metrics]) => {
           console.group(`📊 ${key}`);
@@ -480,13 +533,13 @@ export class ResourceLoader {
   static async load<T>(
     key: string,
     loader: () => Promise<T>,
-    ttl: number = this.CACHE_TTL
+    ttl: number = this.CACHE_TTL,
   ): Promise<T> {
     const now = Date.now();
     const cachedTimestamp = this.cacheTimestamps.get(key);
 
     // Check if cached version is still valid
-    if (this.cache.has(key) && cachedTimestamp && (now - cachedTimestamp) < ttl) {
+    if (this.cache.has(key) && cachedTimestamp && now - cachedTimestamp < ttl) {
       return this.cache.get(key)! as Promise<T>;
     }
 
@@ -513,12 +566,12 @@ export class ResourceLoader {
   static async preload(
     keys: string[],
     loader: (key: string) => Promise<void>,
-    ttl?: number
+    ttl?: number,
   ): Promise<void> {
-    const promises = keys.map(key =>
+    const promises = keys.map((key) =>
       this.load(key, () => loader(key), ttl).catch((error) => {
         console.warn(`Failed to preload resource ${key}:`, error);
-      })
+      }),
     );
 
     await Promise.all(promises);
@@ -529,7 +582,7 @@ export class ResourceLoader {
     const now = Date.now();
 
     for (const [key, timestamp] of this.cacheTimestamps.entries()) {
-      if ((now - timestamp) >= this.CACHE_TTL) {
+      if (now - timestamp >= this.CACHE_TTL) {
         this.cache.delete(key);
         this.cacheTimestamps.delete(key);
       }
@@ -549,7 +602,7 @@ export class ResourceLoader {
 
     return {
       cached: this.cache.size,
-      loading: this.loadingPromises.size
+      loading: this.loadingPromises.size,
     };
   }
 }
@@ -561,27 +614,33 @@ export class BundleAnalyzer {
     const recommendations: string[] = [];
 
     // Mock data - would integrate with webpack-bundle-analyzer
-    const jsSize = '256 KB';
-    const cssSize = '64 KB';
-    const imageSize = '128 KB';
+    const jsSize = "256 KB";
+    const cssSize = "64 KB";
+    const imageSize = "128 KB";
 
     const jsKb = parseFloat(jsSize);
     const cssKb = parseFloat(cssSize);
     const imageKb = parseFloat(imageSize);
 
     if (jsKb > 300) {
-      recommendations.push('Consider code splitting for large JavaScript bundles');
-      recommendations.push('Use dynamic imports for route-based code splitting');
+      recommendations.push(
+        "Consider code splitting for large JavaScript bundles",
+      );
+      recommendations.push(
+        "Use dynamic imports for route-based code splitting",
+      );
     }
 
     if (cssKb > 100) {
-      recommendations.push('Optimize CSS with purging and minification');
-      recommendations.push('Consider CSS-in-JS for component-scoped styles');
+      recommendations.push("Optimize CSS with purging and minification");
+      recommendations.push("Consider CSS-in-JS for component-scoped styles");
     }
 
     if (imageKb > 200) {
-      recommendations.push('Optimize images with compression and next-gen formats');
-      recommendations.push('Implement responsive images with srcset');
+      recommendations.push(
+        "Optimize images with compression and next-gen formats",
+      );
+      recommendations.push("Implement responsive images with srcset");
     }
 
     const totalKb = jsKb + cssKb + imageKb;
@@ -592,29 +651,36 @@ export class BundleAnalyzer {
       cssSize,
       imageSize,
       totalSize,
-      recommendations
+      recommendations,
     };
   }
 
   // Enhanced bundle monitoring
   static startBundleMonitoring(): void {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('📦 Bundle monitoring started - integrate with webpack-bundle-analyzer for detailed analysis');
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        "📦 Bundle monitoring started - integrate with webpack-bundle-analyzer for detailed analysis",
+      );
 
       // Monitor performance impact of bundle loading
-      if ('PerformanceObserver' in window) {
+      if ("PerformanceObserver" in window) {
         try {
           const observer = new PerformanceObserver((list) => {
             for (const entry of list.getEntries()) {
-              if (entry.name.includes('bundle') || entry.name.includes('chunk')) {
-                console.log(`Bundle loaded: ${entry.name} (${entry.duration.toFixed(2)}ms)`);
+              if (
+                entry.name.includes("bundle") ||
+                entry.name.includes("chunk")
+              ) {
+                console.log(
+                  `Bundle loaded: ${entry.name} (${entry.duration.toFixed(2)}ms)`,
+                );
               }
             }
           });
 
-          observer.observe({ entryTypes: ['measure'] });
+          observer.observe({ entryTypes: ["measure"] });
         } catch (error) {
-          console.warn('PerformanceObserver not supported:', error);
+          console.warn("PerformanceObserver not supported:", error);
         }
       }
     }
@@ -633,7 +699,7 @@ export class MemoryLeakDetector {
     element: Element,
     event: string,
     add: () => void,
-    remove: () => void
+    remove: () => void,
   ): () => void {
     add();
 
@@ -684,13 +750,13 @@ export class MemoryLeakDetector {
     return {
       leakedListeners: this.observers.size,
       leakedTimers: this.timers.size,
-      leakedIntervals: this.intervals.size
+      leakedIntervals: this.intervals.size,
     };
   }
 
   // Enhanced cleanup with detailed logging
   static cleanup(): void {
-    console.group('🧹 Memory Leak Cleanup');
+    console.group("🧹 Memory Leak Cleanup");
 
     // Clean up event listeners
     let listenerIndex = 1;
@@ -700,7 +766,10 @@ export class MemoryLeakDetector {
         console.log(`Cleaned up event listener ${listenerIndex}`);
         listenerIndex++;
       } catch (error) {
-        console.warn(`Failed to cleanup event listener ${listenerIndex}:`, error);
+        console.warn(
+          `Failed to cleanup event listener ${listenerIndex}:`,
+          error,
+        );
         listenerIndex++;
       }
     });
@@ -735,7 +804,7 @@ export class MemoryLeakDetector {
     this.intervals.clear();
 
     this.eventListeners.clear();
-    console.log('Memory cleanup completed');
+    console.log("Memory cleanup completed");
     console.groupEnd();
   }
 }
@@ -743,9 +812,19 @@ export class MemoryLeakDetector {
 // Enhanced performance utilities with better device detection
 export const performanceUtils = {
   // Request idle callback with proper fallback
-  requestIdleCallback: (callback: () => void, options?: { timeout?: number }): number => {
-    if ('requestIdleCallback' in globalThis) {
-      return (globalThis as { requestIdleCallback: (callback: () => void, options?: { timeout?: number }) => number }).requestIdleCallback(callback, options);
+  requestIdleCallback: (
+    callback: () => void,
+    options?: { timeout?: number },
+  ): number => {
+    if ("requestIdleCallback" in globalThis) {
+      return (
+        globalThis as {
+          requestIdleCallback: (
+            callback: () => void,
+            options?: { timeout?: number },
+          ) => number;
+        }
+      ).requestIdleCallback(callback, options);
     } else {
       // Fallback for browsers that don't support requestIdleCallback
       return globalThis.setTimeout(callback, 1) as unknown as number;
@@ -754,8 +833,10 @@ export const performanceUtils = {
 
   // Cancel idle callback with proper handling
   cancelIdleCallback: (id: number): void => {
-    if ('cancelIdleCallback' in globalThis) {
-      (globalThis as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(id);
+    if ("cancelIdleCallback" in globalThis) {
+      (
+        globalThis as { cancelIdleCallback: (id: number) => void }
+      ).cancelIdleCallback(id);
     } else {
       globalThis.clearTimeout(id as unknown as NodeJS.Timeout);
     }
@@ -763,23 +844,66 @@ export const performanceUtils = {
 
   // Enhanced slow connection detection
   isSlowConnection: (): boolean => {
-    if (typeof navigator === 'undefined') return false;
+    if (typeof navigator === "undefined") return false;
 
-    const connection = (navigator as unknown as {
-      connection?: { effectiveType?: string; type?: string; downlink?: number };
-      mozConnection?: { effectiveType?: string; type?: string; downlink?: number };
-      webkitConnection?: { effectiveType?: string; type?: string; downlink?: number };
-    }).connection ||
-    (navigator as unknown as {
-      connection?: { effectiveType?: string; type?: string; downlink?: number };
-      mozConnection?: { effectiveType?: string; type?: string; downlink?: number };
-      webkitConnection?: { effectiveType?: string; type?: string; downlink?: number };
-    }).mozConnection ||
-    (navigator as unknown as {
-      connection?: { effectiveType?: string; type?: string; downlink?: number };
-      mozConnection?: { effectiveType?: string; type?: string; downlink?: number };
-      webkitConnection?: { effectiveType?: string; type?: string; downlink?: number };
-    }).webkitConnection;
+    const connection =
+      (
+        navigator as unknown as {
+          connection?: {
+            effectiveType?: string;
+            type?: string;
+            downlink?: number;
+          };
+          mozConnection?: {
+            effectiveType?: string;
+            type?: string;
+            downlink?: number;
+          };
+          webkitConnection?: {
+            effectiveType?: string;
+            type?: string;
+            downlink?: number;
+          };
+        }
+      ).connection ||
+      (
+        navigator as unknown as {
+          connection?: {
+            effectiveType?: string;
+            type?: string;
+            downlink?: number;
+          };
+          mozConnection?: {
+            effectiveType?: string;
+            type?: string;
+            downlink?: number;
+          };
+          webkitConnection?: {
+            effectiveType?: string;
+            type?: string;
+            downlink?: number;
+          };
+        }
+      ).mozConnection ||
+      (
+        navigator as unknown as {
+          connection?: {
+            effectiveType?: string;
+            type?: string;
+            downlink?: number;
+          };
+          mozConnection?: {
+            effectiveType?: string;
+            type?: string;
+            downlink?: number;
+          };
+          webkitConnection?: {
+            effectiveType?: string;
+            type?: string;
+            downlink?: number;
+          };
+        }
+      ).webkitConnection;
 
     if (!connection) return false;
 
@@ -787,47 +911,55 @@ export const performanceUtils = {
     const downlink = connection.downlink;
 
     return (
-      effectiveType === 'slow-2g' ||
-      effectiveType === '2g' ||
-      effectiveType === '3g' ||
+      effectiveType === "slow-2g" ||
+      effectiveType === "2g" ||
+      effectiveType === "3g" ||
       (downlink !== undefined && downlink < 1)
     );
   },
 
   // Get device memory info with better typing
   getMemoryInfo: (): MemoryInfo | null => {
-    if (typeof performance === 'undefined' || !('memory' in performance)) {
+    if (typeof performance === "undefined" || !("memory" in performance)) {
       return null;
     }
 
-    const memory = (performance as unknown as {
-      memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number }
-    }).memory;
+    const memory = (
+      performance as unknown as {
+        memory?: {
+          usedJSHeapSize: number;
+          totalJSHeapSize: number;
+          jsHeapSizeLimit: number;
+        };
+      }
+    ).memory;
 
-    return memory ? {
-      used: memory.usedJSHeapSize,
-      total: memory.totalJSHeapSize,
-      limit: memory.jsHeapSizeLimit
-    } : null;
+    return memory
+      ? {
+          used: memory.usedJSHeapSize,
+          total: memory.totalJSHeapSize,
+          limit: memory.jsHeapSizeLimit,
+        }
+      : null;
   },
 
   // Enhanced device-specific image optimization
   optimizeImageForDevice: (imageUrl: string): string => {
-    if (typeof window === 'undefined') return imageUrl;
+    if (typeof window === "undefined") return imageUrl;
 
     const isSlow = performanceUtils.isSlowConnection();
     const memoryInfo = performanceUtils.getMemoryInfo();
-    const isLowMemory = memoryInfo && (memoryInfo.used / memoryInfo.limit) > 0.8;
+    const isLowMemory = memoryInfo && memoryInfo.used / memoryInfo.limit > 0.8;
 
     if (isSlow || isLowMemory) {
       // Return lower quality image for slow connections or low memory
       return imageUrl.replace(/(\.jpg|\.jpeg|\.png)$/i, (match) =>
-        match.replace('.', '-low-quality.')
+        match.replace(".", "-low-quality."),
       );
     }
 
     return imageUrl;
-  }
+  },
 };
 
 // Main performance module export with comprehensive types
@@ -841,7 +973,7 @@ const performanceModule = {
   ResourceLoader,
   BundleAnalyzer,
   MemoryLeakDetector,
-  performanceUtils
+  performanceUtils,
 };
 
 export default performanceModule;

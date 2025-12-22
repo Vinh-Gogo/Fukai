@@ -5,7 +5,7 @@ export function useMouseTracking() {
 
   useEffect(() => {
     // Only add event listeners on the client side
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({

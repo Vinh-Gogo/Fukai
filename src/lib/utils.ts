@@ -1,8 +1,8 @@
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 // Design System Utilities
@@ -38,23 +38,23 @@ export const designSystem = {
 
   // Spacing
   spacing: {
-    xs: "0.25rem",    // 4px
-    sm: "0.5rem",     // 8px
-    md: "1rem",       // 16px
-    lg: "1.5rem",     // 24px
-    xl: "2rem",       // 32px
-    "2xl": "3rem",    // 48px
-    "3xl": "4rem",    // 64px
+    xs: "0.25rem", // 4px
+    sm: "0.5rem", // 8px
+    md: "1rem", // 16px
+    lg: "1.5rem", // 24px
+    xl: "2rem", // 32px
+    "2xl": "3rem", // 48px
+    "3xl": "4rem", // 64px
   },
 
   // Border radius
   radius: {
     none: "0",
-    sm: "0.125rem",   // 2px
-    md: "0.375rem",   // 6px
-    lg: "0.5rem",     // 8px
-    xl: "0.75rem",    // 12px
-    "2xl": "1rem",    // 16px
+    sm: "0.125rem", // 2px
+    md: "0.375rem", // 6px
+    lg: "0.5rem", // 8px
+    xl: "0.75rem", // 12px
+    "2xl": "1rem", // 16px
     full: "9999px",
   },
 
@@ -69,12 +69,12 @@ export const designSystem = {
   // Typography
   typography: {
     sizes: {
-      xs: "0.75rem",    // 12px
-      sm: "0.875rem",   // 14px
-      base: "1rem",     // 16px
-      lg: "1.125rem",   // 18px
-      xl: "1.25rem",    // 20px
-      "2xl": "1.5rem",  // 24px
+      xs: "0.75rem", // 12px
+      sm: "0.875rem", // 14px
+      base: "1rem", // 16px
+      lg: "1.125rem", // 18px
+      xl: "1.25rem", // 20px
+      "2xl": "1.5rem", // 24px
       "3xl": "1.875rem", // 30px
       "4xl": "2.25rem", // 36px
     },
@@ -104,27 +104,27 @@ export const designSystem = {
 
 // Utility functions
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return "0 Bytes";
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
 export function formatDate(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
-  return text.substring(0, maxLength) + '...';
+  return text.substring(0, maxLength) + "...";
 }
 
 export function generateId(): string {
@@ -143,7 +143,7 @@ export function isValidUrl(url: string): boolean {
 
 export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
   return (...args: Parameters<T>) => {

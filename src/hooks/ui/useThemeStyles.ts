@@ -46,7 +46,7 @@ export function useThemeStyles() {
   });
 
   const getCollapseButtonStyles = () => ({
-    background: 'white',
+    background: "white",
     border:
       mounted && theme === "dark"
         ? "1px solid rgba(255, 255, 255, 0.1)"
@@ -57,11 +57,10 @@ export function useThemeStyles() {
         : "0 4px 20px rgba(0, 0, 0, 0.1)",
   });
 
-  const getCollapseButtonFilter = () => (
+  const getCollapseButtonFilter = () =>
     mounted && theme === "dark"
-      ? 'brightness(0) invert(1) sepia(1) saturate(5) hue-rotate(180deg) brightness(1.2)'
-      : 'brightness(0) saturate(1) hue-rotate(210deg)'
-  );
+      ? "brightness(0) invert(1) sepia(1) saturate(5) hue-rotate(180deg) brightness(1.2)"
+      : "brightness(0) saturate(1) hue-rotate(210deg)";
 
   return {
     mounted,

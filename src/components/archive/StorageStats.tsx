@@ -1,6 +1,6 @@
-import React, { memo } from 'react';
-import { HardDrive } from 'lucide-react';
-import { StorageStats as StorageStatsType, formatBytes } from '@/lib/archive';
+import React, { memo } from "react";
+import { HardDrive } from "lucide-react";
+import { StorageStats as StorageStatsType, formatBytes } from "@/lib/archive";
 
 interface StorageStatsProps {
   stats: StorageStatsType;
@@ -42,4 +42,4 @@ export const StorageStats = memo(({ stats }: StorageStatsProps) => {
   );
 });
 
-StorageStats.displayName = 'StorageStats';
+StorageStats.displayName = "StorageStats";

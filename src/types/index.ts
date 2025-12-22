@@ -36,13 +36,9 @@ export type {
   VirtualizationResult,
   PDFVirtualizationResult,
   ComponentWithChildren,
-} from './pdf';
+} from "./pdf";
 
-export {
-  isPDFFile,
-  isUploadCompleted,
-  isUploadFailed,
-} from './pdf';
+export { isPDFFile, isUploadCompleted, isUploadFailed } from "./pdf";
 
 // Crawl Types
 export type {
@@ -57,7 +53,7 @@ export type {
   UseCrawlStatsResult,
   UseCrawlOperationsResult,
   UrlValidationResult,
-} from './crawl';
+} from "./crawl";
 
 export {
   DEFAULT_CRAWL_SETTINGS,
@@ -67,7 +63,7 @@ export {
   isValidCrawlUrl,
   createCrawlJob,
   createDefaultCrawlStats,
-} from './crawl';
+} from "./crawl";
 
 // Chat Types
 export type {
@@ -84,7 +80,7 @@ export type {
   WelcomeScreenProps,
   MessageValidationResult,
   ConversationStats,
-} from './chat';
+} from "./chat";
 
 export {
   QUICK_PROMPTS,
@@ -95,7 +91,7 @@ export {
   getConversationStats,
   createUserMessage,
   createAssistantMessage,
-} from './chat';
+} from "./chat";
 
 // Archive Types
 export type {
@@ -115,7 +111,7 @@ export type {
   FileFilterOptions,
   FileSizeInfo,
   ArchiveFileValidation,
-} from './archive';
+} from "./archive";
 
 export {
   ARCHIVE_CATEGORIES,
@@ -130,7 +126,7 @@ export {
   calculateStorageStats,
   createArchiveFile,
   createDefaultCategoryInfo,
-} from './archive';
+} from "./archive";
 
 // Activity Types
 export type {
@@ -144,7 +140,7 @@ export type {
   ActivityChartProps,
   ActivityFeedProps,
   ActivityFiltersProps,
-} from './activity';
+} from "./activity";
 
 export {
   ACTIVITY_TYPES,
@@ -158,7 +154,7 @@ export {
   groupActivitiesByDate,
   createActivityItem,
   createDefaultActivityFilters,
-} from './activity';
+} from "./activity";
 
 // Navigation Types
 export type {
@@ -175,7 +171,7 @@ export type {
   BrandHeaderMiniProps,
   NavigationConfig,
   NavigationContext,
-} from './navigation';
+} from "./navigation";
 
 export {
   NAVIGATION_BREAKPOINTS,
@@ -191,7 +187,7 @@ export {
   createDefaultNavigationState,
   validateNavigationConfig,
   validateNavigationState,
-} from './navigation';
+} from "./navigation";
 
 // Common/Shared Types
 export interface ApiResponse<T = unknown> {
@@ -219,7 +215,7 @@ export interface ComponentBaseProps {
   className?: string;
   children?: React.ReactNode;
   id?: string;
-  'data-testid'?: string;
+  "data-testid"?: string;
 }
 
 export interface LoadingState {
@@ -236,22 +232,24 @@ export interface AsyncOperationState<T = unknown> extends LoadingState {
 export const isApiResponse = <T>(obj: unknown): obj is ApiResponse<T> => {
   const response = obj as Record<string, unknown>;
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
-    typeof response.success === 'boolean'
+    typeof response.success === "boolean"
   );
 };
 
-export const isPaginatedResponse = <T>(obj: unknown): obj is PaginatedResponse<T> => {
+export const isPaginatedResponse = <T>(
+  obj: unknown,
+): obj is PaginatedResponse<T> => {
   const response = obj as Record<string, unknown>;
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
     Array.isArray(response.data) &&
-    typeof response.total === 'number' &&
-    typeof response.page === 'number' &&
-    typeof response.pageSize === 'number' &&
-    typeof response.totalPages === 'number'
+    typeof response.total === "number" &&
+    typeof response.page === "number" &&
+    typeof response.pageSize === "number" &&
+    typeof response.totalPages === "number"
   );
 };
 
@@ -279,13 +277,13 @@ export const createId = (): string => {
 };
 
 export const sleep = (ms: number): Promise<void> => {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
 export const isProduction = (): boolean => {
-  return process.env.NODE_ENV === 'production';
+  return process.env.NODE_ENV === "production";
 };
 
 export const isDevelopment = (): boolean => {
-  return process.env.NODE_ENV === 'development';
+  return process.env.NODE_ENV === "development";
 };

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback } from "react";
 
 interface ActivityData {
   [key: string]: unknown;
@@ -10,19 +10,22 @@ export const useActivityLogger = () => {
       timestamp: new Date().toISOString(),
       action,
       data,
-      userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'server',
-      url: typeof window !== 'undefined' ? window.location.href : '',
+      userAgent:
+        typeof window !== "undefined" ? window.navigator.userAgent : "server",
+      url: typeof window !== "undefined" ? window.location.href : "",
     };
 
     // Log to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Activity logged:', logEntry);
+    if (process.env.NODE_ENV === "development") {
+      console.log("Activity logged:", logEntry);
     }
 
     // Store in localStorage for persistence
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       try {
-        const existingLogs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
+        const existingLogs = JSON.parse(
+          localStorage.getItem("activityLogs") || "[]",
+        );
         existingLogs.push(logEntry);
 
         // Keep only last 100 entries
@@ -30,9 +33,9 @@ export const useActivityLogger = () => {
           existingLogs.splice(0, existingLogs.length - 100);
         }
 
-        localStorage.setItem('activityLogs', JSON.stringify(existingLogs));
+        localStorage.setItem("activityLogs", JSON.stringify(existingLogs));
       } catch (error) {
-        console.error('Failed to store activity log:', error);
+        console.error("Failed to store activity log:", error);
       }
     }
 
@@ -40,16 +43,19 @@ export const useActivityLogger = () => {
     // analytics.track(action, data);
   }, []);
 
-  const logError = useCallback((action: string, error: Error, data: ActivityData = {}) => {
-    logActivity(`error_${action}`, {
-      ...data,
-      error: {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-      },
-    });
-  }, [logActivity]);
+  const logError = useCallback(
+    (action: string, error: Error, data: ActivityData = {}) => {
+      logActivity(`error_${action}`, {
+        ...data,
+        error: {
+          message: error.message,
+          stack: error.stack,
+          name: error.name,
+        },
+      });
+    },
+    [logActivity],
+  );
 
   return {
     logActivity,

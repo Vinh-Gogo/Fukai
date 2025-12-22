@@ -2,7 +2,7 @@
 
 export interface SearchResult {
   id: string;
-  type: 'pdf' | 'chat' | 'metadata';
+  type: "pdf" | "chat" | "metadata";
   title: string;
   subtitle?: string;
   content: string;
@@ -18,7 +18,7 @@ export interface SearchMatch {
   startIndex: number;
   endIndex: number;
   context: string;
-  type: 'title' | 'content' | 'filename' | 'metadata';
+  type: "title" | "content" | "filename" | "metadata";
 }
 
 export interface SearchMetadata {
@@ -34,7 +34,7 @@ export interface SearchMetadata {
 }
 
 export interface SearchFilters {
-  types?: ('pdf' | 'chat' | 'metadata')[];
+  types?: ("pdf" | "chat" | "metadata")[];
   dateRange?: {
     start: Date;
     end: Date;
@@ -54,8 +54,8 @@ export interface SearchQuery {
   filters?: SearchFilters;
   limit?: number;
   offset?: number;
-  sortBy?: 'relevance' | 'date' | 'title' | 'size';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: "relevance" | "date" | "title" | "size";
+  sortOrder?: "asc" | "desc";
 }
 
 export interface SearchHistory {
@@ -77,7 +77,7 @@ export interface SavedSearch {
 
 export interface SearchSuggestion {
   text: string;
-  type: 'query' | 'filter' | 'recent';
+  type: "query" | "filter" | "recent";
   frequency?: number;
   lastUsed?: Date;
 }
@@ -97,7 +97,7 @@ export interface SearchState {
 }
 
 // Theme-related types
-export type ThemeMode = 'light' | 'dark' | 'auto';
+export type ThemeMode = "light" | "dark" | "auto";
 
 export interface ThemeConfig {
   mode: ThemeMode;
@@ -148,13 +148,13 @@ export interface PDFSessionState {
   bookmarks: PDFBookmark[];
   annotations: PDFAnnotation[];
   searchHistory: string[];
-  viewMode: 'single' | 'double' | 'continuous';
+  viewMode: "single" | "double" | "continuous";
 }
 
 export interface PDFAnnotation {
   id: string;
   page: number;
-  type: 'highlight' | 'underline' | 'strike' | 'note';
+  type: "highlight" | "underline" | "strike" | "note";
   position: {
     x: number;
     y: number;
@@ -174,7 +174,7 @@ export interface KeyboardShortcut {
   alt?: boolean;
   action: string;
   description: string;
-  category: 'navigation' | 'search' | 'view' | 'tools';
+  category: "navigation" | "search" | "view" | "tools";
 }
 
 export interface KeyboardShortcutsState {

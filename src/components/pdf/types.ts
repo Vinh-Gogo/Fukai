@@ -191,16 +191,16 @@ export const isPDFFile = (file: unknown): file is PDFFile => {
   const obj = file as Record<string, unknown>;
   return (
     file !== null &&
-    typeof file === 'object' &&
-    typeof obj.id === 'string' &&
-    typeof obj.name === 'string' &&
-    typeof obj.size === 'string' &&
-    typeof obj.status === 'string' &&
-    ['pending', 'processing', 'completed', 'error'].includes(obj.status) &&
-    typeof obj.uploadDate === 'string' &&
-    typeof obj.sourceUrl === 'string' &&
-    typeof obj.pages === 'number' &&
-    typeof obj.language === 'string'
+    typeof file === "object" &&
+    typeof obj.id === "string" &&
+    typeof obj.name === "string" &&
+    typeof obj.size === "string" &&
+    typeof obj.status === "string" &&
+    ["pending", "processing", "completed", "error"].includes(obj.status) &&
+    typeof obj.uploadDate === "string" &&
+    typeof obj.sourceUrl === "string" &&
+    typeof obj.pages === "number" &&
+    typeof obj.language === "string"
   );
 };
 
@@ -208,12 +208,12 @@ export const isPDFFile = (file: unknown): file is PDFFile => {
  * Type guard to check if an upload is completed
  */
 export const isUploadCompleted = (upload: UploadProgress): boolean => {
-  return upload.status === 'completed';
+  return upload.status === "completed";
 };
 
 /**
  * Type guard to check if an upload has failed
  */
 export const isUploadFailed = (upload: UploadProgress): boolean => {
-  return upload.status === 'error';
+  return upload.status === "error";
 };

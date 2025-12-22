@@ -22,6 +22,7 @@ docker/
 ## 🚀 Quick Start
 
 ### Development Environment
+
 ```bash
 # Start development environment with hot reload
 cd docker
@@ -29,6 +30,7 @@ docker-compose -f docker-compose.dev.yml up --build
 ```
 
 ### Production Deployment
+
 ```bash
 # Deploy to production
 cd docker
@@ -36,6 +38,7 @@ cd docker
 ```
 
 ### Build Images Only
+
 ```bash
 # Build all Docker images
 cd docker
@@ -43,6 +46,7 @@ cd docker
 ```
 
 ### Run Tests
+
 ```bash
 # Test the Docker setup
 cd docker
@@ -52,12 +56,14 @@ cd docker
 ## 📋 Environment Configurations
 
 ### Development (`docker-compose.dev.yml`)
+
 - **Hot reload** enabled for both frontend and backend
 - **Source code mounting** for live development
 - **Debug logging** enabled
 - **Volume mounts** for real-time code changes
 
 ### Production (`docker-compose.prod.yml`)
+
 - **Optimized builds** for performance
 - **Multi-stage builds** to reduce image size
 - **Health checks** for service reliability
@@ -69,6 +75,7 @@ cd docker
 ### Environment Variables
 
 #### Frontend (Next.js)
+
 ```bash
 NEXT_PUBLIC_API_URL=http://backend:8000/api/v1    # FastAPI API endpoint
 NEXT_PUBLIC_FASTAPI_URL=http://backend:8000       # Direct FastAPI access
@@ -76,6 +83,7 @@ NODE_ENV=production                                # Environment mode
 ```
 
 #### Backend (FastAPI)
+
 ```bash
 DATABASE_URL=sqlite:///./app.db                    # Database connection
 UPLOAD_DIR=./uploads                               # File upload directory
@@ -89,7 +97,7 @@ DEBUG=false                                        # Debug mode
 ### Port Mapping
 
 | Service  | Development | Production | Internal |
-|----------|-------------|------------|----------|
+| -------- | ----------- | ---------- | -------- |
 | Frontend | 3000        | 80         | 3000     |
 | Backend  | 8000        | 8000       | 8000     |
 
@@ -101,11 +109,13 @@ DEBUG=false                                        # Debug mode
 ## 🐳 Docker Images
 
 ### Frontend Image (`search-rag-frontend`)
+
 - **Base**: Node.js 18 Alpine
 - **Build**: Multi-stage (deps → builder → runner)
 - **Features**: Standalone Next.js build, optimized for production
 
 ### Backend Image (`search-rag-backend`)
+
 - **Base**: Python 3.11 Slim
 - **Build**: Single-stage with system dependencies
 - **Features**: FastAPI with Uvicorn, health checks
@@ -115,11 +125,13 @@ DEBUG=false                                        # Debug mode
 Both services include comprehensive health checks:
 
 ### Frontend Health Check
+
 ```bash
 curl http://localhost:3000/api/health
 ```
 
 ### Backend Health Check
+
 ```bash
 curl http://localhost:8000/health
 ```
@@ -142,6 +154,7 @@ graph TD
 ### Common Issues
 
 #### Services won't start
+
 ```bash
 # Check Docker logs
 docker-compose -f docker/docker-compose.dev.yml logs
@@ -151,6 +164,7 @@ docker ps
 ```
 
 #### Port conflicts
+
 ```bash
 # Check what's using ports
 lsof -i :3000
@@ -162,6 +176,7 @@ sudo fuser -k 8000/tcp
 ```
 
 #### Build failures
+
 ```bash
 # Clean build cache
 docker system prune -f
@@ -186,12 +201,14 @@ docker-compose -f docker/docker-compose.dev.yml exec backend bash
 ## 🔐 Security Considerations
 
 ### Production Deployment
+
 - Use **secrets management** for sensitive environment variables
 - Configure **SSL/TLS** certificates for HTTPS
 - Implement **network security** policies
 - Use **non-root users** in containers (already configured)
 
 ### Development
+
 - Debug mode enabled for detailed logging
 - Source code mounted for hot reload
 - CORS configured for local development
@@ -199,10 +216,12 @@ docker-compose -f docker/docker-compose.dev.yml exec backend bash
 ## 📈 Monitoring
 
 ### Health Endpoints
+
 - `GET /health` - Basic service health
 - `GET /api/health` - Cross-service health check
 
 ### Metrics
+
 - Container resource usage (`docker stats`)
 - Application logs (`docker-compose logs`)
 - Health check status

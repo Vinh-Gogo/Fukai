@@ -8,14 +8,15 @@ import { AIAgentStatus } from "../ui";
 import { useNavigationState } from "@/hooks";
 import { navigationItems, toolItems } from "@/config/navigation.config";
 
-export function Navigation({ isVisible = true, onToggle }: { isVisible?: boolean; onToggle?: () => void }) {
-  const {
-    sidebarOpen,
-    setSidebarOpen,
-    collapsed,
-    isMobile,
-    toggleSidebar,
-  } = useNavigationState();
+export function Navigation({
+  isVisible = true,
+  onToggle,
+}: {
+  isVisible?: boolean;
+  onToggle?: () => void;
+}) {
+  const { sidebarOpen, setSidebarOpen, collapsed, isMobile, toggleSidebar } =
+    useNavigationState();
 
   return (
     <>
@@ -42,13 +43,15 @@ export function Navigation({ isVisible = true, onToggle }: { isVisible?: boolean
               : "-translate-x-full"
             : "",
           !isMobile && collapsed ? "w-22" : "w-66",
-          "block"
+          "block",
         )}
         // Áp dụng cùng gradient như BrandHeader
         style={{
-          background: 'linear-gradient(135deg, #1e40af 0%, #7c3aed 30%, #1d4ed8 100%)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.15)',
+          background:
+            "linear-gradient(135deg, #1e40af 0%, #7c3aed 30%, #1d4ed8 100%)",
+          border: "1px solid rgba(255, 255, 255, 0.2)",
+          boxShadow:
+            "0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.15)",
         }}
       >
         {/* Background overlay giống BrandHeader */}

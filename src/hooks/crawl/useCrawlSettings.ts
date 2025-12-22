@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from "react";
 
 export interface CrawlSettings {
   autoDownloadEnabled: boolean;
@@ -10,7 +10,7 @@ interface UseCrawlSettingsResult {
   resetSettings: () => void;
 }
 
-const STORAGE_KEY = 'crawlSettings';
+const STORAGE_KEY = "crawlSettings";
 const DEFAULT_SETTINGS: CrawlSettings = {
   autoDownloadEnabled: true,
 };
@@ -48,7 +48,9 @@ const saveSettingsToStorage = (settings: CrawlSettings): void => {
 };
 
 export const useCrawlSettings = (): UseCrawlSettingsResult => {
-  const [settings, setSettings] = useState<CrawlSettings>(loadSettingsFromStorage);
+  const [settings, setSettings] = useState<CrawlSettings>(
+    loadSettingsFromStorage,
+  );
 
   // Save settings whenever they change
   useEffect(() => {
@@ -56,7 +58,7 @@ export const useCrawlSettings = (): UseCrawlSettingsResult => {
   }, [settings]);
 
   const updateSettings = useCallback((updates: Partial<CrawlSettings>) => {
-    setSettings(prev => ({ ...prev, ...updates }));
+    setSettings((prev) => ({ ...prev, ...updates }));
   }, []);
 
   const resetSettings = useCallback(() => {

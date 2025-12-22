@@ -5,12 +5,12 @@ import type {
   SearchMatch,
   SearchMetadata,
   SearchQuery,
-  SearchFilters
-} from '@/types/search';
-import { PDFFile } from '@/types/pdf';
-import { ChatMessage } from '@/types/chat';
+  SearchFilters,
+} from "@/types/search";
+import { PDFFile } from "@/types/pdf";
+import { ChatMessage } from "@/types/chat";
 
-import { PerformanceMonitor } from '@/lib/core/Performance';
+import { PerformanceMonitor } from "@/lib/core/Performance";
 
 export class SearchEngine {
   private static instance: SearchEngine;
@@ -30,7 +30,7 @@ export class SearchEngine {
   async initialize(): Promise<void> {
     if (this.isInitialized) return;
 
-    const timer = PerformanceMonitor.startTiming('search-index-initialization');
+    const timer = PerformanceMonitor.startTiming("search-index-initialization");
 
     try {
       // Load existing PDFs
@@ -45,7 +45,7 @@ export class SearchEngine {
       this.isInitialized = true;
       timer();
     } catch (error) {
-      console.error('Failed to initialize search index:', error);
+      console.error("Failed to initialize search index:", error);
       timer();
       throw error;
     }
@@ -57,7 +57,7 @@ export class SearchEngine {
     totalCount: number;
     hasMore: boolean;
   }> {
-    const timer = PerformanceMonitor.startTiming('search-execution');
+    const timer = PerformanceMonitor.startTiming("search-execution");
 
     try {
       if (!this.isInitialized) {
@@ -77,10 +77,12 @@ export class SearchEngine {
       }
 
       // Score and rank results
-      const scoredResults = filteredDocs.map(doc => ({
-        doc,
-        score: this.calculateScore(doc, tokens)
-      })).filter(({ score }) => score > 0)
+      const scoredResults = filteredDocs
+        .map((doc) => ({
+          doc,
+          score: this.calculateScore(doc, tokens),
+        }))
+        .filter(({ score }) => score > 0)
         .sort((a, b) => b.score - a.score);
 
       // Apply pagination
@@ -89,16 +91,15 @@ export class SearchEngine {
 
       // Convert to SearchResult format
       const results = paginatedResults.map(({ doc, score }) =>
-        this.documentToSearchResult(doc, tokens, score)
+        this.documentToSearchResult(doc, tokens, score),
       );
 
       const hasMore = offset + limit < totalCount;
 
       timer();
       return { results, totalCount, hasMore };
-
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error("Search failed:", error);
       timer();
       return { results: [], totalCount: 0, hasMore: false };
     }
@@ -142,8 +143,8 @@ export class SearchEngine {
       const queryWords = queryLower.split(/\s+/);
 
       for (let i = 0; i < contentWords.length - queryWords.length + 1; i++) {
-        const phrase = contentWords.slice(i, i + queryWords.length).join(' ');
-        if (queryWords.every(word => phrase.includes(word))) {
+        const phrase = contentWords.slice(i, i + queryWords.length).join(" ");
+        if (queryWords.every((word) => phrase.includes(word))) {
           suggestions.push(phrase);
         }
       }
@@ -160,22 +161,22 @@ export class SearchEngine {
       // In a real implementation, this would extract text from PDFs
       const mockPDFs: PDFFile[] = [
         {
-          id: 'pdf-1',
-          name: 'Annual Report 2024.pdf',
-          size: '2.3 MB',
-          status: 'completed',
-          uploadDate: '2025-01-15',
-          sourceUrl: 'https://example.com/annual-report-2024.pdf',
+          id: "pdf-1",
+          name: "Annual Report 2024.pdf",
+          size: "2.3 MB",
+          status: "completed",
+          uploadDate: "2025-01-15",
+          sourceUrl: "https://example.com/annual-report-2024.pdf",
           pages: 45,
-          language: 'English',
-          quality: 'high'
-        }
+          language: "English",
+          quality: "high",
+        },
       ];
 
       for (const pdf of mockPDFs) {
         const doc: SearchDocument = {
           id: pdf.id,
-          type: 'pdf',
+          type: "pdf",
           title: pdf.name,
           content: `This is mock content for ${pdf.name}. In a real implementation, this would contain the extracted text from the PDF document.`,
           metadata: {
@@ -183,13 +184,13 @@ export class SearchEngine {
             createdAt: new Date(pdf.uploadDate),
             pages: pdf.pages,
             language: pdf.language,
-            fileType: 'application/pdf'
-          }
+            fileType: "application/pdf",
+          },
         };
         this.index.set(doc.id, doc);
       }
     } catch (error) {
-      console.error('Failed to index PDFs:', error);
+      console.error("Failed to index PDFs:", error);
     }
   }
 
@@ -198,36 +199,37 @@ export class SearchEngine {
     try {
       const mockMessages: ChatMessage[] = [
         {
-          id: 'chat-1',
-          role: 'user',
-          content: 'How do I search for documents?',
-          timestamp: new Date('2025-01-16'),
-          confidence: 1
+          id: "chat-1",
+          role: "user",
+          content: "How do I search for documents?",
+          timestamp: new Date("2025-01-16"),
+          confidence: 1,
         },
         {
-          id: 'chat-2',
-          role: 'assistant',
-          content: 'You can use the search bar at the top of any page to find documents by content, title, or metadata.',
-          timestamp: new Date('2025-01-16'),
-          confidence: 0.95
-        }
+          id: "chat-2",
+          role: "assistant",
+          content:
+            "You can use the search bar at the top of any page to find documents by content, title, or metadata.",
+          timestamp: new Date("2025-01-16"),
+          confidence: 0.95,
+        },
       ];
 
       for (const message of mockMessages) {
         const doc: SearchDocument = {
           id: message.id,
-          type: 'chat',
+          type: "chat",
           title: `Chat Message - ${message.role}`,
           content: message.content,
           metadata: {
             createdAt: message.timestamp,
-            language: 'English'
-          }
+            language: "English",
+          },
         };
         this.index.set(doc.id, doc);
       }
     } catch (error) {
-      console.error('Failed to index chat messages:', error);
+      console.error("Failed to index chat messages:", error);
     }
   }
 
@@ -235,31 +237,36 @@ export class SearchEngine {
     // Index metadata about the system
     try {
       const metadataDoc: SearchDocument = {
-        id: 'metadata-system',
-        type: 'metadata',
-        title: 'Web RAG Backup System',
-        content: 'A Next.js web application for managing web crawling, PDF processing, and RAG queries. Allows users to crawl websites for PDF links, process PDFs, and query them using AI.',
+        id: "metadata-system",
+        type: "metadata",
+        title: "Web RAG Backup System",
+        content:
+          "A Next.js web application for managing web crawling, PDF processing, and RAG queries. Allows users to crawl websites for PDF links, process PDFs, and query them using AI.",
         metadata: {
-          createdAt: new Date('2025-01-01'),
-          language: 'English',
-          tags: ['web-rag', 'pdf-processing', 'ai-search']
-        }
+          createdAt: new Date("2025-01-01"),
+          language: "English",
+          tags: ["web-rag", "pdf-processing", "ai-search"],
+        },
       };
       this.index.set(metadataDoc.id, metadataDoc);
     } catch (error) {
-      console.error('Failed to index metadata:', error);
+      console.error("Failed to index metadata:", error);
     }
   }
 
   private tokenize(text: string): string[] {
-    return text.toLowerCase()
-      .replace(/[^\w\s]/g, ' ')
+    return text
+      .toLowerCase()
+      .replace(/[^\w\s]/g, " ")
       .split(/\s+/)
-      .filter(word => word.length > 2);
+      .filter((word) => word.length > 2);
   }
 
-  private applyFilters(documents: SearchDocument[], filters: SearchFilters): SearchDocument[] {
-    return documents.filter(doc => {
+  private applyFilters(
+    documents: SearchDocument[],
+    filters: SearchFilters,
+  ): SearchDocument[] {
+    return documents.filter((doc) => {
       // Type filter
       if (filters.types && !filters.types.includes(doc.type)) {
         return false;
@@ -269,7 +276,10 @@ export class SearchEngine {
       if (filters.dateRange) {
         const docDate = doc.metadata.createdAt || doc.metadata.modifiedAt;
         if (docDate) {
-          if (docDate < filters.dateRange.start || docDate > filters.dateRange.end) {
+          if (
+            docDate < filters.dateRange.start ||
+            docDate > filters.dateRange.end
+          ) {
             return false;
           }
         }
@@ -277,7 +287,10 @@ export class SearchEngine {
 
       // Category filter
       if (filters.categories && filters.categories.length > 0) {
-        if (!doc.metadata.category || !filters.categories.includes(doc.metadata.category)) {
+        if (
+          !doc.metadata.category ||
+          !filters.categories.includes(doc.metadata.category)
+        ) {
           return false;
         }
       }
@@ -285,7 +298,7 @@ export class SearchEngine {
       // Tags filter
       if (filters.tags && filters.tags.length > 0) {
         const docTags = doc.metadata.tags || [];
-        if (!filters.tags.some(tag => docTags.includes(tag))) {
+        if (!filters.tags.some((tag) => docTags.includes(tag))) {
           return false;
         }
       }
@@ -297,7 +310,10 @@ export class SearchEngine {
 
       // File size filter
       if (filters.fileSize && doc.metadata.size) {
-        if (doc.metadata.size < filters.fileSize.min || doc.metadata.size > filters.fileSize.max) {
+        if (
+          doc.metadata.size < filters.fileSize.min ||
+          doc.metadata.size > filters.fileSize.max
+        ) {
           return false;
         }
       }
@@ -318,25 +334,31 @@ export class SearchEngine {
       }
 
       // Content matches get standard score
-      const contentMatches = (content.match(new RegExp(token, 'g')) || []).length;
+      const contentMatches = (content.match(new RegExp(token, "g")) || [])
+        .length;
       score += contentMatches * 2;
 
       // Exact phrase matches get bonus
-      if (content.includes(tokens.join(' '))) {
+      if (content.includes(tokens.join(" "))) {
         score += 5;
       }
     }
 
     // Boost recent documents
     if (doc.metadata.createdAt) {
-      const daysSinceCreated = (Date.now() - doc.metadata.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+      const daysSinceCreated =
+        (Date.now() - doc.metadata.createdAt.getTime()) / (1000 * 60 * 60 * 24);
       score += Math.max(0, 3 - daysSinceCreated / 30); // Boost for documents created within 30 days
     }
 
     return score;
   }
 
-  private documentToSearchResult(doc: SearchDocument, tokens: string[], score: number): SearchResult {
+  private documentToSearchResult(
+    doc: SearchDocument,
+    tokens: string[],
+    score: number,
+  ): SearchResult {
     const matches = this.findMatches(doc, tokens);
 
     return {
@@ -348,7 +370,7 @@ export class SearchEngine {
       url: doc.url,
       score,
       matches,
-      metadata: doc.metadata
+      metadata: doc.metadata,
     };
   }
 
@@ -368,7 +390,7 @@ export class SearchEngine {
           startIndex: index - startIndex,
           endIndex: index - startIndex + token.length,
           context,
-          type: doc.title.toLowerCase().includes(token) ? 'title' : 'content'
+          type: doc.title.toLowerCase().includes(token) ? "title" : "content",
         });
 
         index = content.indexOf(token, index + 1);
@@ -380,23 +402,25 @@ export class SearchEngine {
 
   private getContentSnippet(content: string, tokens: string[]): string {
     const words = content.split(/\s+/);
-    const relevantWords = words.filter(word =>
-      tokens.some(token => word.toLowerCase().includes(token))
+    const relevantWords = words.filter((word) =>
+      tokens.some((token) => word.toLowerCase().includes(token)),
     );
 
     if (relevantWords.length === 0) {
-      return content.substring(0, 200) + '...';
+      return content.substring(0, 200) + "...";
     }
 
     // Find the first relevant word and get context around it
-    const firstRelevantIndex = words.findIndex(word =>
-      tokens.some(token => word.toLowerCase().includes(token))
+    const firstRelevantIndex = words.findIndex((word) =>
+      tokens.some((token) => word.toLowerCase().includes(token)),
     );
 
     const start = Math.max(0, firstRelevantIndex - 10);
     const end = Math.min(words.length, firstRelevantIndex + 20);
 
-    return words.slice(start, end).join(' ') + (end < words.length ? '...' : '');
+    return (
+      words.slice(start, end).join(" ") + (end < words.length ? "..." : "")
+    );
   }
 
   private parseSize(sizeString: string): number {
@@ -406,14 +430,17 @@ export class SearchEngine {
     const [, size, unit] = match;
     const multipliers = { KB: 1024, MB: 1024 * 1024, GB: 1024 * 1024 * 1024 };
 
-    return parseFloat(size) * (multipliers[unit.toUpperCase() as keyof typeof multipliers] || 1);
+    return (
+      parseFloat(size) *
+      (multipliers[unit.toUpperCase() as keyof typeof multipliers] || 1)
+    );
   }
 }
 
 // Internal document interface for indexing
 interface SearchDocument {
   id: string;
-  type: 'pdf' | 'chat' | 'metadata';
+  type: "pdf" | "chat" | "metadata";
   title: string;
   content: string;
   url?: string;

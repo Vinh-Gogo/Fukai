@@ -1,2 +1,2 @@
-export { PDFViewer } from './PDFViewer';
-export { TableRow } from './TableRow';
+export { PDFViewer } from "./PDFViewer";
+export { TableRow } from "./TableRow";

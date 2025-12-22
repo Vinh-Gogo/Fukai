@@ -1,6 +1,6 @@
 // Security utilities and middleware for the application
-import { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // Rate limiting interface
 interface RateLimitEntry {
@@ -21,7 +21,11 @@ class RateLimiter {
   }
 
   // Check if request is allowed
-  isAllowed(identifier: string): { allowed: boolean; resetTime?: number; remaining?: number } {
+  isAllowed(identifier: string): {
+    allowed: boolean;
+    resetTime?: number;
+    remaining?: number;
+  } {
     const now = Date.now();
     const entry = this.store.get(identifier);
 
@@ -30,14 +34,14 @@ class RateLimiter {
       const newEntry: RateLimitEntry = {
         count: 1,
         resetTime: now + this.windowMs,
-        lastAccess: now
+        lastAccess: now,
       };
       this.store.set(identifier, newEntry);
-      
+
       return {
         allowed: true,
         resetTime: newEntry.resetTime,
-        remaining: this.maxRequests - 1
+        remaining: this.maxRequests - 1,
       };
     }
 
@@ -49,14 +53,14 @@ class RateLimiter {
       return {
         allowed: false,
         resetTime: entry.resetTime,
-        remaining: 0
+        remaining: 0,
       };
     }
 
     return {
       allowed: true,
       resetTime: entry.resetTime,
-      remaining: this.maxRequests - entry.count
+      remaining: this.maxRequests - entry.count,
     };
   }
 
@@ -75,25 +79,25 @@ class RateLimiter {
 export class InputSanitizer {
   // Sanitize string input
   static sanitizeString(input: string, maxLength: number = 1000): string {
-    if (typeof input !== 'string') {
-      throw new Error('Input must be a string');
+    if (typeof input !== "string") {
+      throw new Error("Input must be a string");
     }
 
     // Remove null bytes and control characters
-    let sanitized = input.replace(/[\x00-\x1F\x7F]/g, '');
-    
+    let sanitized = input.replace(/[\x00-\x1F\x7F]/g, "");
+
     // Trim and limit length
     sanitized = sanitized.trim().substring(0, maxLength);
-    
+
     // Escape HTML entities
     sanitized = sanitized
-      .replace(/&/g, '&')
-      .replace(/</g, '<')
-      .replace(/>/g, '>')
+      .replace(/&/g, "&")
+      .replace(/</g, "<")
+      .replace(/>/g, ">")
       .replace(/"/g, '"')
-      .replace(/'/g, '&#x27;')
-      .replace(/\//g, '&#x2F;');
-    
+      .replace(/'/g, "&#x27;")
+      .replace(/\//g, "&#x2F;");
+
     return sanitized;
   }
 
@@ -101,43 +105,43 @@ export class InputSanitizer {
   static sanitizeURL(url: string): string {
     try {
       const parsed = new URL(url);
-      
+
       // Only allow http and https protocols
-      if (!['http:', 'https:'].includes(parsed.protocol)) {
-        throw new Error('Invalid URL protocol');
+      if (!["http:", "https:"].includes(parsed.protocol)) {
+        throw new Error("Invalid URL protocol");
       }
-      
+
       // Remove fragment and some query parameters for security
-      parsed.hash = '';
-      
+      parsed.hash = "";
+
       return parsed.toString();
     } catch {
-      throw new Error('Invalid URL format');
+      throw new Error("Invalid URL format");
     }
   }
 
   // Sanitize email
   static sanitizeEmail(email: string): string {
     const sanitized = this.sanitizeString(email.toLowerCase(), 254);
-    
+
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(sanitized)) {
-      throw new Error('Invalid email format');
+      throw new Error("Invalid email format");
     }
-    
+
     return sanitized;
   }
 
   // Sanitize filename
   static sanitizeFilename(filename: string): string {
     const sanitized = this.sanitizeString(filename, 255);
-    
+
     // Remove path traversal characters and other dangerous chars
     return sanitized
-      .replace(/[<>:"/\\|?*]/g, '')
-      .replace(/\.\./g, '')
-      .replace(/^\./, '');
+      .replace(/[<>:"/\\|?*]/g, "")
+      .replace(/\.\./g, "")
+      .replace(/^\./, "");
   }
 
   // Validate and sanitize JSON input
@@ -147,34 +151,34 @@ export class InputSanitizer {
       this.validateObject(parsed);
       return parsed;
     } catch {
-      throw new Error('Invalid JSON format');
+      throw new Error("Invalid JSON format");
     }
   }
 
   // Recursively validate object structure
   private static validateObject(obj: unknown, depth: number = 0): void {
     if (depth > 10) {
-      throw new Error('Object nesting too deep');
+      throw new Error("Object nesting too deep");
     }
 
-    if (obj === null || typeof obj !== 'object') {
+    if (obj === null || typeof obj !== "object") {
       return;
     }
 
     for (const key in obj) {
       // Validate key names
-      if (typeof key !== 'string' || key.length > 100) {
-        throw new Error('Invalid object key');
+      if (typeof key !== "string" || key.length > 100) {
+        throw new Error("Invalid object key");
       }
 
       const value = (obj as Record<string, unknown>)[key];
-      
+
       // Check for prototype pollution
-      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
-        throw new Error('Prototype pollution detected');
+      if (key === "__proto__" || key === "constructor" || key === "prototype") {
+        throw new Error("Prototype pollution detected");
       }
 
-      if (typeof value === 'object' && value !== null) {
+      if (typeof value === "object" && value !== null) {
         this.validateObject(value, depth + 1);
       }
     }
@@ -187,7 +191,9 @@ export class CSRFProtection {
   static generateToken(): string {
     const array = new Uint8Array(32);
     crypto.getRandomValues(array);
-    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
+      "",
+    );
   }
 
   // Validate CSRF token
@@ -197,68 +203,82 @@ export class CSRFProtection {
 
   // Set CSRF cookie
   static setCSRFCookie(res: NextResponse, token: string): void {
-    res.cookies.set('csrf-token', token, {
+    res.cookies.set("csrf-token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24 // 24 hours
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 24, // 24 hours
     });
   }
 
   // Get CSRF token from cookie
   static getCSRFToken(request: NextRequest): string | undefined {
-    return request.cookies.get('csrf-token')?.value;
+    return request.cookies.get("csrf-token")?.value;
   }
 }
 
 // Content Security Policy utilities
 export class CSPUtils {
   // Generate CSP header
-  static generateCSP(options: {
-    scriptSrc?: string[];
-    styleSrc?: string[];
-    imgSrc?: string[];
-    connectSrc?: string[];
-    fontSrc?: string[];
-    mediaSrc?: string[];
-  } = {}): string {
+  static generateCSP(
+    options: {
+      scriptSrc?: string[];
+      styleSrc?: string[];
+      imgSrc?: string[];
+      connectSrc?: string[];
+      fontSrc?: string[];
+      mediaSrc?: string[];
+    } = {},
+  ): string {
     const directives: string[] = [];
 
     // Default sources
     const defaultSrc = ["'self'"];
-    
-    directives.push(`default-src ${defaultSrc.join(' ')}`);
-    
+
+    directives.push(`default-src ${defaultSrc.join(" ")}`);
+
     if (options.scriptSrc) {
-      directives.push(`script-src ${[...defaultSrc, ...options.scriptSrc].join(' ')}`);
-    }
-    
-    if (options.styleSrc) {
-      directives.push(`style-src ${[...defaultSrc, ...options.styleSrc].join(' ')}`);
-    }
-    
-    if (options.imgSrc) {
-      directives.push(`img-src ${[...defaultSrc, ...options.imgSrc].join(' ')}`);
-    }
-    
-    if (options.connectSrc) {
-      directives.push(`connect-src ${[...defaultSrc, ...options.connectSrc].join(' ')}`);
-    }
-    
-    if (options.fontSrc) {
-      directives.push(`font-src ${[...defaultSrc, ...options.fontSrc].join(' ')}`);
-    }
-    
-    if (options.mediaSrc) {
-      directives.push(`media-src ${[...defaultSrc, ...options.mediaSrc].join(' ')}`);
+      directives.push(
+        `script-src ${[...defaultSrc, ...options.scriptSrc].join(" ")}`,
+      );
     }
 
-    return directives.join('; ');
+    if (options.styleSrc) {
+      directives.push(
+        `style-src ${[...defaultSrc, ...options.styleSrc].join(" ")}`,
+      );
+    }
+
+    if (options.imgSrc) {
+      directives.push(
+        `img-src ${[...defaultSrc, ...options.imgSrc].join(" ")}`,
+      );
+    }
+
+    if (options.connectSrc) {
+      directives.push(
+        `connect-src ${[...defaultSrc, ...options.connectSrc].join(" ")}`,
+      );
+    }
+
+    if (options.fontSrc) {
+      directives.push(
+        `font-src ${[...defaultSrc, ...options.fontSrc].join(" ")}`,
+      );
+    }
+
+    if (options.mediaSrc) {
+      directives.push(
+        `media-src ${[...defaultSrc, ...options.mediaSrc].join(" ")}`,
+      );
+    }
+
+    return directives.join("; ");
   }
 
   // Apply CSP to response
   static applyCSP(res: NextResponse, csp: string): void {
-    res.headers.set('Content-Security-Policy', csp);
+    res.headers.set("Content-Security-Policy", csp);
   }
 }
 
@@ -267,26 +287,29 @@ export class SecurityHeaders {
   // Add security headers to response
   static addSecurityHeaders(res: NextResponse): void {
     // Prevent clickjacking
-    res.headers.set('X-Frame-Options', 'DENY');
-    
+    res.headers.set("X-Frame-Options", "DENY");
+
     // Prevent MIME type sniffing
-    res.headers.set('X-Content-Type-Options', 'nosniff');
-    
+    res.headers.set("X-Content-Type-Options", "nosniff");
+
     // Enable XSS protection
-    res.headers.set('X-XSS-Protection', '1; mode=block');
-    
+    res.headers.set("X-XSS-Protection", "1; mode=block");
+
     // Referrer policy
-    res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    
+    res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+
     // HSTS (HTTPS only)
-    if (process.env.NODE_ENV === 'production') {
-      res.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    if (process.env.NODE_ENV === "production") {
+      res.headers.set(
+        "Strict-Transport-Security",
+        "max-age=31536000; includeSubDomains",
+      );
     }
-    
+
     // Permissions policy
     res.headers.set(
-      'Permissions-Policy',
-      'camera=(), microphone=(), geolocation=(), interest-cohort=()'
+      "Permissions-Policy",
+      "camera=(), microphone=(), geolocation=(), interest-cohort=()",
     );
   }
 }
@@ -295,10 +318,10 @@ export class SecurityHeaders {
 export class FileUploadSecurity {
   // Allowed file types
   private static readonly ALLOWED_TYPES = [
-    'application/pdf',
-    'text/plain',
-    'text/csv',
-    'application/json'
+    "application/pdf",
+    "text/plain",
+    "text/csv",
+    "application/json",
   ];
 
   // Maximum file size (50MB)
@@ -310,7 +333,7 @@ export class FileUploadSecurity {
     if (file.size > this.MAX_FILE_SIZE) {
       return {
         valid: false,
-        error: 'File size exceeds maximum limit of 50MB'
+        error: "File size exceeds maximum limit of 50MB",
       };
     }
 
@@ -318,7 +341,7 @@ export class FileUploadSecurity {
     if (!this.ALLOWED_TYPES.includes(file.type)) {
       return {
         valid: false,
-        error: 'File type not allowed'
+        error: "File type not allowed",
       };
     }
 
@@ -327,7 +350,7 @@ export class FileUploadSecurity {
     if (sanitizedName !== file.name) {
       return {
         valid: false,
-        error: 'File name contains invalid characters'
+        error: "File name contains invalid characters",
       };
     }
 
@@ -335,54 +358,60 @@ export class FileUploadSecurity {
   }
 
   // Scan file content for malicious patterns
-  static async scanFile(file: File): Promise<{ safe: boolean; threats?: string[] }> {
+  static async scanFile(
+    file: File,
+  ): Promise<{ safe: boolean; threats?: string[] }> {
     const threats: string[] = [];
-    
+
     try {
       const buffer = await file.arrayBuffer();
       const view = new Uint8Array(buffer);
-      
+
       // Check for common malicious patterns
       const patterns = [
-        new Uint8Array([0x4D, 0x5A]), // PE executable
-        new Uint8Array([0x7F, 0x45, 0x4C, 0x46]), // ELF executable
-        new Uint8Array([0xCA, 0xFE, 0xBA, 0xBE]), // Java class
-        new Uint8Array([0x50, 0x4B, 0x03, 0x04]), // ZIP (could contain executables)
+        new Uint8Array([0x4d, 0x5a]), // PE executable
+        new Uint8Array([0x7f, 0x45, 0x4c, 0x46]), // ELF executable
+        new Uint8Array([0xca, 0xfe, 0xba, 0xbe]), // Java class
+        new Uint8Array([0x50, 0x4b, 0x03, 0x04]), // ZIP (could contain executables)
       ];
 
       for (const pattern of patterns) {
         if (this.matchesPattern(view, pattern)) {
-          threats.push('Executable content detected');
+          threats.push("Executable content detected");
           break;
         }
       }
 
       // Check for script content in non-script files
-      if (file.type !== 'application/json' && file.type !== 'text/plain') {
-        const text = new TextDecoder('utf-8', { fatal: false }).decode(view.slice(0, 1024));
-        if (text.includes('<script') || text.includes('javascript:')) {
-          threats.push('Script content detected');
+      if (file.type !== "application/json" && file.type !== "text/plain") {
+        const text = new TextDecoder("utf-8", { fatal: false }).decode(
+          view.slice(0, 1024),
+        );
+        if (text.includes("<script") || text.includes("javascript:")) {
+          threats.push("Script content detected");
         }
       }
-
     } catch {
-      threats.push('File scan failed');
+      threats.push("File scan failed");
     }
 
     return {
       safe: threats.length === 0,
-      threats: threats.length > 0 ? threats : undefined
+      threats: threats.length > 0 ? threats : undefined,
     };
   }
 
   // Check if bytes match pattern
-  private static matchesPattern(data: Uint8Array, pattern: Uint8Array): boolean {
+  private static matchesPattern(
+    data: Uint8Array,
+    pattern: Uint8Array,
+  ): boolean {
     if (data.length < pattern.length) return false;
-    
+
     for (let i = 0; i < pattern.length; i++) {
       if (data[i] !== pattern[i]) return false;
     }
-    
+
     return true;
   }
 }
@@ -391,21 +420,21 @@ export class FileUploadSecurity {
 export const rateLimiters = {
   // General API rate limiter
   api: new RateLimiter(60000, 100), // 100 requests per minute
-  
+
   // Upload rate limiter
   upload: new RateLimiter(60000, 10), // 10 uploads per minute
-  
+
   // Auth rate limiter
   auth: new RateLimiter(900000, 5), // 5 attempts per 15 minutes
-  
+
   // Crawl rate limiter
   crawl: new RateLimiter(3600000, 20), // 20 crawls per hour
 };
 
 // Cleanup expired rate limit entries periodically
-if (typeof window === 'undefined') {
+if (typeof window === "undefined") {
   setInterval(() => {
-    Object.values(rateLimiters).forEach(limiter => limiter.cleanup());
+    Object.values(rateLimiters).forEach((limiter) => limiter.cleanup());
   }, 60000); // Clean up every minute
 }
 
@@ -415,7 +444,7 @@ const securityUtils = {
   CSPUtils,
   SecurityHeaders,
   FileUploadSecurity,
-  rateLimiters
+  rateLimiters,
 };
 
 export default securityUtils;

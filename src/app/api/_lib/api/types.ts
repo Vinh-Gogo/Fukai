@@ -1,6 +1,6 @@
 // Shared API types and interfaces for consistent responses and requests
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 // API Response types
 export interface APIResponse<T = unknown> {
@@ -47,20 +47,20 @@ export const HTTP_STATUS = {
 
 // Common error codes
 export const ERROR_CODES = {
-  VALIDATION_ERROR: 'VALIDATION_ERROR',
-  FILE_TOO_LARGE: 'FILE_TOO_LARGE',
-  INVALID_FILE_TYPE: 'INVALID_FILE_TYPE',
-  FILE_NOT_FOUND: 'FILE_NOT_FOUND',
-  STORAGE_ERROR: 'STORAGE_ERROR',
-  RATE_LIMITED: 'RATE_LIMITED',
-  UNAUTHORIZED: 'UNAUTHORIZED',
-  INTERNAL_ERROR: 'INTERNAL_ERROR',
+  VALIDATION_ERROR: "VALIDATION_ERROR",
+  FILE_TOO_LARGE: "FILE_TOO_LARGE",
+  INVALID_FILE_TYPE: "INVALID_FILE_TYPE",
+  FILE_NOT_FOUND: "FILE_NOT_FOUND",
+  STORAGE_ERROR: "STORAGE_ERROR",
+  RATE_LIMITED: "RATE_LIMITED",
+  UNAUTHORIZED: "UNAUTHORIZED",
+  INTERNAL_ERROR: "INTERNAL_ERROR",
 } as const;
 
 // Request/Response utility types
 export type RouteHandler = (
   request: NextRequest,
-  context?: { params?: Record<string, string | string[]> }
+  context?: { params?: Record<string, string | string[]> },
 ) => Promise<NextResponse>;
 
 export interface RequestContext {

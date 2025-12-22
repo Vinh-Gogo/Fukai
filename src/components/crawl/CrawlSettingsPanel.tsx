@@ -1,5 +1,5 @@
-import React from 'react';
-import { useActivityLogger } from '@/hooks';
+import React from "react";
+import { useActivityLogger } from "@/hooks";
 
 interface CrawlSettingsPanelProps {
   autoDownloadEnabled: boolean;
@@ -10,7 +10,7 @@ interface CrawlSettingsPanelProps {
 export const CrawlSettingsPanel: React.FC<CrawlSettingsPanelProps> = ({
   autoDownloadEnabled,
   onAutoDownloadChange,
-  disabled = false
+  disabled = false,
 }) => {
   const { logActivity } = useActivityLogger();
 
@@ -42,8 +42,8 @@ export const CrawlSettingsPanel: React.FC<CrawlSettingsPanelProps> = ({
             </span>
           </label>
           <p className="text-sm text-muted-foreground max-w-md">
-            When enabled, re-running a crawl will automatically download
-            any newly discovered PDFs that are not already in storage.
+            When enabled, re-running a crawl will automatically download any
+            newly discovered PDFs that are not already in storage.
           </p>
         </div>
       </div>

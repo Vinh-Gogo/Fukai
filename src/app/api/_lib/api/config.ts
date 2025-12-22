@@ -1,13 +1,13 @@
 // API configuration and constants
-import { mkdirSync } from 'fs';
+import { mkdirSync } from "fs";
 
 // File upload configuration
 export const FILE_CONFIG = {
   MAX_SIZE: 50 * 1024 * 1024, // 50MB
-  MAX_SIZE_FORMATTED: '50MB',
-  ALLOWED_TYPES: ['application/pdf'] as const,
-  ALLOWED_EXTENSIONS: ['.pdf'] as const,
-  UPLOAD_DIR: 'public/uploaded',
+  MAX_SIZE_FORMATTED: "50MB",
+  ALLOWED_TYPES: ["application/pdf"] as const,
+  ALLOWED_EXTENSIONS: [".pdf"] as const,
+  UPLOAD_DIR: "public/uploaded",
 } as const;
 
 // API rate limiting configuration
@@ -29,8 +29,8 @@ export const PAGINATION_CONFIG = {
 export const SEARCH_CONFIG = {
   MAX_QUERY_LENGTH: 500,
   MAX_RESULTS: 100,
-  DEFAULT_SORT_BY: 'relevance' as const,
-  DEFAULT_SORT_ORDER: 'desc' as const,
+  DEFAULT_SORT_BY: "relevance" as const,
+  DEFAULT_SORT_ORDER: "desc" as const,
 } as const;
 
 // Crawl configuration
@@ -67,32 +67,34 @@ export const CACHE_CONFIG = {
 export const LOG_CONFIG = {
   MAX_LOG_ENTRIES: 1000,
   LOG_RETENTION_DAYS: 7,
-  SENSITIVE_FIELDS: ['password', 'token', 'key', 'secret'],
+  SENSITIVE_FIELDS: ["password", "token", "key", "secret"],
 } as const;
 
 // API versioning
-export const API_VERSION = 'v1';
+export const API_VERSION = "v1";
 
 // Environment-specific configuration
 export const ENV_CONFIG = {
-  isDevelopment: process.env.NODE_ENV === 'development',
-  isProduction: process.env.NODE_ENV === 'production',
-  isTest: process.env.NODE_ENV === 'test',
+  isDevelopment: process.env.NODE_ENV === "development",
+  isProduction: process.env.NODE_ENV === "production",
+  isTest: process.env.NODE_ENV === "test",
 } as const;
 
 // Security configuration
 export const SECURITY_CONFIG = {
-  CORS_ORIGINS: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'],
-  TRUSTED_PROXIES: process.env.TRUSTED_PROXIES?.split(',') || [],
-  API_KEY_HEADER: 'x-api-key',
-  AUTH_TOKEN_HEADER: 'authorization',
+  CORS_ORIGINS: process.env.CORS_ORIGINS?.split(",") || [
+    "http://localhost:3000",
+  ],
+  TRUSTED_PROXIES: process.env.TRUSTED_PROXIES?.split(",") || [],
+  API_KEY_HEADER: "x-api-key",
+  AUTH_TOKEN_HEADER: "authorization",
 } as const;
 
 // Database/file system paths
 export const PATHS = {
-  UPLOAD_DIR: process.cwd() + '/' + FILE_CONFIG.UPLOAD_DIR,
-  LOGS_DIR: process.cwd() + '/logs',
-  CACHE_DIR: process.cwd() + '/.cache',
+  UPLOAD_DIR: process.cwd() + "/" + FILE_CONFIG.UPLOAD_DIR,
+  LOGS_DIR: process.cwd() + "/logs",
+  CACHE_DIR: process.cwd() + "/.cache",
 } as const;
 
 // Utility functions for configuration
@@ -119,10 +121,13 @@ export function getEnvVarAsNumber(name: string, defaultValue?: number): number {
   return parsed;
 }
 
-export function getEnvVarAsBoolean(name: string, defaultValue = false): boolean {
+export function getEnvVarAsBoolean(
+  name: string,
+  defaultValue = false,
+): boolean {
   const value = process.env[name];
   if (value === undefined) return defaultValue;
-  return value.toLowerCase() === 'true' || value === '1';
+  return value.toLowerCase() === "true" || value === "1";
 }
 
 // Validate configuration on startup
@@ -137,6 +142,6 @@ export function validateConfiguration(): void {
   }
 
   if (errors.length > 0) {
-    throw new Error(`Configuration validation failed:\n${errors.join('\n')}`);
+    throw new Error(`Configuration validation failed:\n${errors.join("\n")}`);
   }
 }

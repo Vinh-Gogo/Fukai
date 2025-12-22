@@ -119,7 +119,13 @@ export interface PDFRenderTask {
 
 // Error Types
 export interface PDFError {
-  type: 'network' | 'corrupted' | 'unsupported' | 'timeout' | 'permission' | 'unknown';
+  type:
+    | "network"
+    | "corrupted"
+    | "unsupported"
+    | "timeout"
+    | "permission"
+    | "unknown";
   message: string;
   originalError?: Error;
   retryable: boolean;
@@ -132,7 +138,7 @@ export interface PDFLoaderError extends PDFError {
 }
 
 export interface PDFRenderError {
-  type: 'canvas' | 'render' | 'memory' | 'timeout' | 'unknown';
+  type: "canvas" | "render" | "memory" | "timeout" | "unknown";
   message: string;
   originalError?: Error;
   pageNumber?: number;
@@ -154,10 +160,19 @@ export interface UsePDFLoaderResult {
 }
 
 export interface UsePDFRendererResult {
-  renderPage: (pageNumber: number, canvas: HTMLCanvasElement, pdfDoc?: PDFDocumentProxy, scale?: number) => Promise<void>;
+  renderPage: (
+    pageNumber: number,
+    canvas: HTMLCanvasElement,
+    pdfDoc?: PDFDocumentProxy,
+    scale?: number,
+  ) => Promise<void>;
   cancelAllRenders: () => void;
   cleanup: () => void;
-  calculateScale: (containerWidth: number, pageWidth: number, zoomLevel?: number) => number;
+  calculateScale: (
+    containerWidth: number,
+    pageWidth: number,
+    zoomLevel?: number,
+  ) => number;
   activeRenders: PDFRenderTask[];
   isRendering: boolean;
 }
@@ -270,23 +285,23 @@ export const isPDFFile = (file: unknown): file is PDFFile => {
   const obj = file as Record<string, unknown>;
   return (
     file !== null &&
-    typeof file === 'object' &&
-    typeof obj.id === 'string' &&
-    typeof obj.name === 'string' &&
-    typeof obj.size === 'string' &&
-    typeof obj.status === 'string' &&
-    ['pending', 'processing', 'completed', 'error'].includes(obj.status) &&
-    typeof obj.uploadDate === 'string' &&
-    typeof obj.sourceUrl === 'string' &&
-    typeof obj.pages === 'number' &&
-    typeof obj.language === 'string'
+    typeof file === "object" &&
+    typeof obj.id === "string" &&
+    typeof obj.name === "string" &&
+    typeof obj.size === "string" &&
+    typeof obj.status === "string" &&
+    ["pending", "processing", "completed", "error"].includes(obj.status) &&
+    typeof obj.uploadDate === "string" &&
+    typeof obj.sourceUrl === "string" &&
+    typeof obj.pages === "number" &&
+    typeof obj.language === "string"
   );
 };
 
 export const isUploadCompleted = (upload: UploadProgress): boolean => {
-  return upload.status === 'completed';
+  return upload.status === "completed";
 };
 
 export const isUploadFailed = (upload: UploadProgress): boolean => {
-  return upload.status === 'error';
+  return upload.status === "error";
 };

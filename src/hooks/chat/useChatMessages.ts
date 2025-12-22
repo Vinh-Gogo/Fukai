@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from "react";
 
 export interface ChatMessage {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   timestamp: Date;
   confidence?: number;
@@ -11,14 +11,14 @@ export interface ChatMessage {
 
 interface UseChatMessagesResult {
   messages: ChatMessage[];
-  addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
+  addMessage: (message: Omit<ChatMessage, "id" | "timestamp">) => void;
   clearMessages: () => void;
   getLastMessage: () => ChatMessage | undefined;
   getMessageCount: () => number;
   hasMessages: boolean;
 }
 
-const STORAGE_KEY = 'rag-chat-messages';
+const STORAGE_KEY = "rag-chat-messages";
 
 // Load messages from localStorage
 const loadMessagesFromStorage = (): ChatMessage[] => {
@@ -33,8 +33,8 @@ const loadMessagesFromStorage = (): ChatMessage[] => {
 
     return parsed.map((msg: Partial<ChatMessage>) => ({
       id: msg.id || `msg-${Date.now()}`,
-      role: msg.role || 'user',
-      content: msg.content || '',
+      role: msg.role || "user",
+      content: msg.content || "",
       timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
       confidence: msg.confidence,
       sources: msg.sources,
@@ -59,22 +59,27 @@ const saveMessagesToStorage = (messages: ChatMessage[]): void => {
 };
 
 export const useChatMessages = (): UseChatMessagesResult => {
-  const [messages, setMessages] = useState<ChatMessage[]>(loadMessagesFromStorage);
+  const [messages, setMessages] = useState<ChatMessage[]>(
+    loadMessagesFromStorage,
+  );
 
   // Save messages whenever they change
   useEffect(() => {
     saveMessagesToStorage(messages);
   }, [messages]);
 
-  const addMessage = useCallback((messageData: Omit<ChatMessage, 'id' | 'timestamp'>) => {
-    const newMessage: ChatMessage = {
-      ...messageData,
-      id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: new Date(),
-    };
+  const addMessage = useCallback(
+    (messageData: Omit<ChatMessage, "id" | "timestamp">) => {
+      const newMessage: ChatMessage = {
+        ...messageData,
+        id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: new Date(),
+      };
 
-    setMessages(prev => [...prev, newMessage]);
-  }, []);
+      setMessages((prev) => [...prev, newMessage]);
+    },
+    [],
+  );
 
   const clearMessages = useCallback(() => {
     setMessages([]);

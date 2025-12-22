@@ -1,10 +1,20 @@
 // Crawl service for API abstraction and business logic
-import type { CrawlJob, CrawlAPIResponse, DownloadAPIResponse, ExistingPDFResponse } from '@/types/crawl';
-import type { PDFFile } from '@/types/pdf';
+import type {
+  CrawlJob,
+  CrawlAPIResponse,
+  DownloadAPIResponse,
+  ExistingPDFResponse,
+} from "@/types/crawl";
+import type { PDFFile } from "@/types/pdf";
 
 // Re-export types for backwards compatibility
-export type { CrawlJob, CrawlAPIResponse, DownloadAPIResponse, ExistingPDFResponse } from '@/types/crawl';
-export type { PDFFile } from '@/types/pdf';
+export type {
+  CrawlJob,
+  CrawlAPIResponse,
+  DownloadAPIResponse,
+  ExistingPDFResponse,
+} from "@/types/crawl";
+export type { PDFFile } from "@/types/pdf";
 
 // API abstraction layer
 export class CrawlService {
@@ -12,7 +22,7 @@ export class CrawlService {
 
   static async getPages(url: string): Promise<CrawlAPIResponse> {
     const response = await fetch(
-      `${this.API_BASE_URL}/api/crawl/pages?url=${encodeURIComponent(url)}`
+      `${this.API_BASE_URL}/api/crawl/pages?url=${encodeURIComponent(url)}`,
     );
 
     if (!response.ok) {
@@ -23,14 +33,11 @@ export class CrawlService {
   }
 
   static async getArticles(pageUrls: string[]): Promise<CrawlAPIResponse> {
-    const response = await fetch(
-      `${this.API_BASE_URL}/api/crawl/articles`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ page_urls: pageUrls }),
-      }
-    );
+    const response = await fetch(`${this.API_BASE_URL}/api/crawl/articles`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ page_urls: pageUrls }),
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -40,14 +47,11 @@ export class CrawlService {
   }
 
   static async getPDFLinks(articleUrls: string[]): Promise<CrawlAPIResponse> {
-    const response = await fetch(
-      `${this.API_BASE_URL}/api/crawl/pdf-links`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ article_urls: articleUrls }),
-      }
-    );
+    const response = await fetch(`${this.API_BASE_URL}/api/crawl/pdf-links`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ article_urls: articleUrls }),
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -57,9 +61,7 @@ export class CrawlService {
   }
 
   static async checkExistingPDFs(): Promise<ExistingPDFResponse> {
-    const response = await fetch(
-      `${this.API_BASE_URL}/api/pdfs/existing`
-    );
+    const response = await fetch(`${this.API_BASE_URL}/api/pdfs/existing`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -69,14 +71,11 @@ export class CrawlService {
   }
 
   static async downloadPDFs(pdfUrls: string[]): Promise<DownloadAPIResponse> {
-    const response = await fetch(
-      `${this.API_BASE_URL}/api/download-pdfs`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pdf_urls: pdfUrls }),
-      }
-    );
+    const response = await fetch(`${this.API_BASE_URL}/api/download-pdfs`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pdf_urls: pdfUrls }),
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -88,9 +87,9 @@ export class CrawlService {
 
 // Storage service for localStorage operations
 export class StorageService {
-  static readonly CRAWL_JOBS_KEY = 'crawlJobs';
-  static readonly CRAWL_SETTINGS_KEY = 'crawlSettings';
-  static readonly PENDING_PDFS_KEY = 'pendingPDFs';
+  static readonly CRAWL_JOBS_KEY = "crawlJobs";
+  static readonly CRAWL_SETTINGS_KEY = "crawlSettings";
+  static readonly PENDING_PDFS_KEY = "pendingPDFs";
 
   static loadCrawlJobs(): CrawlJob[] {
     if (typeof window === "undefined") return this.getDefaultJobs();
@@ -202,11 +201,16 @@ export class StorageService {
 }
 
 // Utility functions
-export const validateUrl = (url: string): { isValid: boolean; error?: string } => {
+export const validateUrl = (
+  url: string,
+): { isValid: boolean; error?: string } => {
   try {
     const urlObj = new URL(url);
-    if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
-      return { isValid: false, error: "URL must start with http:// or https://" };
+    if (urlObj.protocol !== "http:" && urlObj.protocol !== "https:") {
+      return {
+        isValid: false,
+        error: "URL must start with http:// or https://",
+      };
     }
     return { isValid: true };
   } catch {

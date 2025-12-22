@@ -1,9 +1,9 @@
-import React from 'react';
-import { X, Minus, Plus, Search } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { PDFViewerProps } from './types';
+import React from "react";
+import { X, Minus, Plus, Search } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { PDFViewerProps } from "./types";
 
-interface PDFViewerHeaderProps extends Pick<PDFViewerProps, 'onClose'> {
+interface PDFViewerHeaderProps extends Pick<PDFViewerProps, "onClose"> {
   fileName: string;
   totalPages: number;
   currentPage: number;
@@ -42,7 +42,9 @@ export const PDFViewerHeader: React.FC<PDFViewerHeaderProps> = ({
               <span>{totalPages} pages</span>
             </div>
             <div className="flex items-center gap-1">
-              <span>Page {currentPage} of {totalPages}</span>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
             </div>
           </div>
         </div>
@@ -55,7 +57,7 @@ export const PDFViewerHeader: React.FC<PDFViewerHeaderProps> = ({
             "p-2 rounded-lg transition-colors",
             showSearch
               ? "bg-white/30 text-white"
-              : "text-white/80 hover:bg-white/20"
+              : "text-white/80 hover:bg-white/20",
           )}
           aria-label="Toggle search"
         >
@@ -76,7 +78,7 @@ export const PDFViewerHeader: React.FC<PDFViewerHeaderProps> = ({
             className="bg-transparent text-white text-sm font-medium border-none outline-none cursor-pointer min-w-16"
             aria-label="Zoom level"
           >
-            {zoomPresets.map(preset => (
+            {zoomPresets.map((preset) => (
               <option key={preset} value={preset} className="text-black">
                 {Math.round(preset * 100)}%
               </option>

@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 
 // ============================================================================
 // COMMON PROP INTERFACES
@@ -7,108 +7,110 @@ import React from 'react'
 /**
  * Standard size variants used across components
  */
-export type ComponentSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+export type ComponentSize = "xs" | "sm" | "md" | "lg" | "xl";
 
 /**
  * Standard variant types for components
  */
 export type ComponentVariant =
-  | 'primary'
-  | 'secondary'
-  | 'outline'
-  | 'ghost'
-  | 'destructive'
-  | 'success'
-  | 'warning'
-  | 'info'
+  | "primary"
+  | "secondary"
+  | "outline"
+  | "ghost"
+  | "icon"
+  | "destructive"
+  | "success"
+  | "warning"
+  | "info";
 
 /**
  * Common spacing values
  */
-export type Spacing = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
+export type Spacing = "none" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
 
 /**
  * Common shadow/elevation values
  */
-export type Shadow = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
+export type Shadow = "none" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
 
 /**
  * Common border radius values
  */
-export type BorderRadius = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full'
+export type BorderRadius = "none" | "xs" | "sm" | "md" | "lg" | "xl" | "full";
 
 /**
  * Common loading states
  */
 export interface LoadingStateProps {
-  loading?: boolean
-  disabled?: boolean
+  loading?: boolean;
+  disabled?: boolean;
 }
 
 /**
  * Common error state props
  */
 export interface ErrorStateProps {
-  error?: string
-  helperText?: string
-  hasError?: boolean
+  error?: string;
+  helperText?: string;
+  hasError?: boolean;
 }
 
 /**
  * Common accessibility props
  */
 export interface AccessibilityProps {
-  'aria-label'?: string
-  'aria-describedby'?: string
-  'aria-invalid'?: boolean
-  role?: string
+  "aria-label"?: string;
+  "aria-describedby"?: string;
+  "aria-invalid"?: boolean;
+  role?: string;
 }
 
 /**
  * Base component props that all UI components should extend
  */
-export interface BaseComponentProps extends
-  LoadingStateProps,
-  Partial<AccessibilityProps> {
-
+export interface BaseComponentProps
+  extends LoadingStateProps, Partial<AccessibilityProps> {
   /** Additional CSS classes */
-  className?: string
+  className?: string;
 
   /** Component ID */
-  id?: string
+  id?: string;
 
   /** Test ID for testing */
-  'data-testid'?: string
+  "data-testid"?: string;
 }
 
 // ============================================================================
 // BUTTON COMPONENT PROPS
 // ============================================================================
 
-export interface ButtonProps extends
-  BaseComponentProps,
-  Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof BaseComponentProps> {
-
+export interface ButtonProps
+  extends
+    BaseComponentProps,
+    Omit<
+      React.ButtonHTMLAttributes<HTMLButtonElement>,
+      keyof BaseComponentProps
+    > {
   /** Button variant */
-  variant?: ComponentVariant
+  variant?: ComponentVariant;
 
   /** Button size */
-  size?: ComponentSize
+  size?: ComponentSize;
 
   /** Whether button takes full width */
-  fullWidth?: boolean
+  fullWidth?: boolean;
 
   /** Button content */
-  children: React.ReactNode
+  children: React.ReactNode;
 
   /** Left icon */
-  leftIcon?: React.ReactNode
+  leftIcon?: React.ReactNode;
 
   /** Right icon */
-  rightIcon?: React.ReactNode
+  rightIcon?: React.ReactNode;
 
   /** Button type */
-  type?: 'button' | 'submit' | 'reset'
+  type?: "button" | "submit" | "reset";
 }
 
 // ============================================================================
@@ -117,83 +119,89 @@ export interface ButtonProps extends
 
 export interface CardProps extends BaseComponentProps {
   /** Card padding */
-  padding?: Spacing
+  padding?: Spacing;
 
   /** Card shadow/elevation */
-  shadow?: Shadow
+  shadow?: Shadow;
 
   /** Whether to show border */
-  border?: boolean
+  border?: boolean;
 
   /** Border radius */
-  rounded?: boolean | BorderRadius
+  rounded?: boolean | BorderRadius;
 
   /** Card content */
-  children: React.ReactNode
+  children: React.ReactNode;
 
   /** Whether card is interactive/hoverable */
-  interactive?: boolean
+  interactive?: boolean;
 }
 
 export interface CardSectionProps extends BaseComponentProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
-export type CardHeaderProps = CardSectionProps
-export type CardContentProps = CardSectionProps
-export type CardFooterProps = CardSectionProps
+export type CardHeaderProps = CardSectionProps;
+export type CardContentProps = CardSectionProps;
+export type CardFooterProps = CardSectionProps;
 
 export interface CardTitleProps extends BaseComponentProps {
-  children: React.ReactNode
+  children: React.ReactNode;
   /** Title level for semantic HTML */
-  level?: 1 | 2 | 3 | 4 | 5 | 6
+  level?: 1 | 2 | 3 | 4 | 5 | 6;
 }
 
 export interface CardDescriptionProps extends BaseComponentProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 // ============================================================================
 // INPUT COMPONENT PROPS
 // ============================================================================
 
-export interface InputProps extends
-  BaseComponentProps,
-  ErrorStateProps,
-  Omit<React.InputHTMLAttributes<HTMLInputElement>, keyof BaseComponentProps | keyof ErrorStateProps | 'size'> {
-
+export interface InputProps
+  extends
+    BaseComponentProps,
+    ErrorStateProps,
+    Omit<
+      React.InputHTMLAttributes<HTMLInputElement>,
+      keyof BaseComponentProps | keyof ErrorStateProps | "size"
+    > {
   /** Input type */
-  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search'
+  type?: "text" | "email" | "password" | "number" | "tel" | "url" | "search";
 
   /** Input size */
-  size?: ComponentSize
+  size?: ComponentSize;
 
   /** Left icon/element */
-  leftAddon?: React.ReactNode
+  leftAddon?: React.ReactNode;
 
   /** Right icon/element */
-  rightAddon?: React.ReactNode
+  rightAddon?: React.ReactNode;
 
   /** Whether input is clearable */
-  clearable?: boolean
+  clearable?: boolean;
 }
 
-export interface TextareaProps extends
-  BaseComponentProps,
-  ErrorStateProps,
-  Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, keyof BaseComponentProps | keyof ErrorStateProps> {
-
+export interface TextareaProps
+  extends
+    BaseComponentProps,
+    ErrorStateProps,
+    Omit<
+      React.TextareaHTMLAttributes<HTMLTextAreaElement>,
+      keyof BaseComponentProps | keyof ErrorStateProps
+    > {
   /** Textarea size */
-  size?: ComponentSize
+  size?: ComponentSize;
 
   /** Number of visible rows */
-  rows?: number
+  rows?: number;
 
   /** Whether textarea is resizable */
-  resizable?: boolean
+  resizable?: boolean;
 
   /** Auto-resize based on content */
-  autoResize?: boolean
+  autoResize?: boolean;
 }
 
 // ============================================================================
@@ -202,33 +210,33 @@ export interface TextareaProps extends
 
 export interface FormFieldProps extends BaseComponentProps {
   /** Field label */
-  label?: string
+  label?: string;
 
   /** Field description */
-  description?: string
+  description?: string;
 
   /** Whether field is required */
-  required?: boolean
+  required?: boolean;
 
   /** Field layout direction */
-  layout?: 'vertical' | 'horizontal'
+  layout?: "vertical" | "horizontal";
 
   /** Label width (for horizontal layout) */
-  labelWidth?: string | number
+  labelWidth?: string | number;
 }
 
 export interface FormProps extends BaseComponentProps {
   /** Form submission handler */
-  onSubmit?: (data: Record<string, unknown>) => void | Promise<void>
+  onSubmit?: (data: Record<string, unknown>) => void | Promise<void>;
 
   /** Form validation mode */
-  validationMode?: 'onChange' | 'onBlur' | 'onSubmit'
+  validationMode?: "onChange" | "onBlur" | "onSubmit";
 
   /** Form layout */
-  layout?: 'vertical' | 'horizontal' | 'inline'
+  layout?: "vertical" | "horizontal" | "inline";
 
   /** Form size */
-  size?: ComponentSize
+  size?: ComponentSize;
 }
 
 // ============================================================================
@@ -237,47 +245,47 @@ export interface FormProps extends BaseComponentProps {
 
 export interface ContainerProps extends BaseComponentProps {
   /** Container size constraint */
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
+  size?: "sm" | "md" | "lg" | "xl" | "full";
 
   /** Container padding */
-  padding?: Spacing
+  padding?: Spacing;
 
   /** Center content */
-  center?: boolean
+  center?: boolean;
 
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export interface FlexProps extends BaseComponentProps {
   /** Flex direction */
-  direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse'
+  direction?: "row" | "column" | "row-reverse" | "column-reverse";
 
   /** Justify content */
-  justify?: 'start' | 'end' | 'center' | 'between' | 'around' | 'evenly'
+  justify?: "start" | "end" | "center" | "between" | "around" | "evenly";
 
   /** Align items */
-  align?: 'start' | 'end' | 'center' | 'baseline' | 'stretch'
+  align?: "start" | "end" | "center" | "baseline" | "stretch";
 
   /** Flex wrap */
-  wrap?: boolean | 'wrap' | 'nowrap' | 'wrap-reverse'
+  wrap?: boolean | "wrap" | "nowrap" | "wrap-reverse";
 
   /** Gap between items */
-  gap?: Spacing
+  gap?: Spacing;
 
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export interface GridProps extends BaseComponentProps {
   /** Number of columns */
-  columns?: number | string
+  columns?: number | string;
 
   /** Gap between grid items */
-  gap?: Spacing
+  gap?: Spacing;
 
   /** Minimum item width */
-  minChildWidth?: string | number
+  minChildWidth?: string | number;
 
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 // ============================================================================
@@ -286,62 +294,62 @@ export interface GridProps extends BaseComponentProps {
 
 export interface ModalProps extends BaseComponentProps {
   /** Whether modal is open */
-  isOpen: boolean
+  isOpen: boolean;
 
   /** Modal close handler */
-  onClose: () => void
+  onClose: () => void;
 
   /** Modal title */
-  title?: string
+  title?: string;
 
   /** Modal size */
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
+  size?: "sm" | "md" | "lg" | "xl" | "full";
 
   /** Whether modal is centered */
-  centered?: boolean
+  centered?: boolean;
 
   /** Whether to show close button */
-  closable?: boolean
+  closable?: boolean;
 
   /** Modal content */
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export interface DrawerProps extends BaseComponentProps {
   /** Whether drawer is open */
-  isOpen: boolean
+  isOpen: boolean;
 
   /** Drawer close handler */
-  onClose: () => void
+  onClose: () => void;
 
   /** Drawer title */
-  title?: string
+  title?: string;
 
   /** Drawer position */
-  position?: 'left' | 'right' | 'top' | 'bottom'
+  position?: "left" | "right" | "top" | "bottom";
 
   /** Drawer size */
-  size?: string | number
+  size?: string | number;
 
   /** Whether to show close button */
-  closable?: boolean
+  closable?: boolean;
 
   /** Drawer content */
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export interface TooltipProps extends BaseComponentProps {
   /** Tooltip content */
-  content: React.ReactNode
+  content: React.ReactNode;
 
   /** Tooltip placement */
-  placement?: 'top' | 'bottom' | 'left' | 'right' | 'auto'
+  placement?: "top" | "bottom" | "left" | "right" | "auto";
 
   /** Trigger element */
-  children: React.ReactNode
+  children: React.ReactNode;
 
   /** Whether tooltip is disabled */
-  disabled?: boolean
+  disabled?: boolean;
 }
 
 // ============================================================================
@@ -350,56 +358,56 @@ export interface TooltipProps extends BaseComponentProps {
 
 export interface BadgeProps extends BaseComponentProps {
   /** Badge variant */
-  variant?: ComponentVariant
+  variant?: ComponentVariant;
 
   /** Badge size */
-  size?: ComponentSize
+  size?: ComponentSize;
 
   /** Badge content */
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export interface AvatarProps extends BaseComponentProps {
   /** Avatar source URL */
-  src?: string
+  src?: string;
 
   /** Avatar alt text */
-  alt?: string
+  alt?: string;
 
   /** Avatar fallback content */
-  fallback?: React.ReactNode
+  fallback?: React.ReactNode;
 
   /** Avatar size */
-  size?: ComponentSize
+  size?: ComponentSize;
 
   /** Avatar shape */
-  shape?: 'circle' | 'square' | 'rounded'
+  shape?: "circle" | "square" | "rounded";
 
   /** Whether avatar is online */
-  online?: boolean
+  online?: boolean;
 }
 
 export interface TableProps extends BaseComponentProps {
   /** Table data */
-  data?: Record<string, unknown>[]
+  data?: Record<string, unknown>[];
 
   /** Table columns configuration */
-  columns?: Record<string, unknown>[]
+  columns?: Record<string, unknown>[];
 
   /** Loading state */
-  loading?: boolean
+  loading?: boolean;
 
   /** Empty state content */
-  emptyContent?: React.ReactNode
+  emptyContent?: React.ReactNode;
 
   /** Table size */
-  size?: ComponentSize
+  size?: ComponentSize;
 
   /** Whether table is selectable */
-  selectable?: boolean
+  selectable?: boolean;
 
   /** Selection change handler */
-  onSelectionChange?: (selectedRows: Record<string, unknown>[]) => void
+  onSelectionChange?: (selectedRows: Record<string, unknown>[]) => void;
 }
 
 // ============================================================================
@@ -408,47 +416,53 @@ export interface TableProps extends BaseComponentProps {
 
 export interface AlertProps extends BaseComponentProps {
   /** Alert type */
-  type?: 'success' | 'error' | 'warning' | 'info'
+  type?: "success" | "error" | "warning" | "info";
 
   /** Alert title */
-  title?: string
+  title?: string;
 
   /** Alert message */
-  message?: string
+  message?: string;
 
   /** Whether alert is closable */
-  closable?: boolean
+  closable?: boolean;
 
   /** Alert close handler */
-  onClose?: () => void
+  onClose?: () => void;
 
   /** Alert icon */
-  icon?: React.ReactNode
+  icon?: React.ReactNode;
 
   /** Alert content */
-  children?: React.ReactNode
+  children?: React.ReactNode;
 }
 
 export interface ToastProps extends AlertProps {
   /** Toast duration in milliseconds */
-  duration?: number
+  duration?: number;
 
   /** Toast position */
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center'
+  position?:
+    | "top-left"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right"
+    | "top-center"
+    | "bottom-center";
 }
 
 export interface SpinnerProps extends BaseComponentProps {
   /** Spinner size */
-  size?: ComponentSize
+  size?: ComponentSize;
 
   /** Spinner color */
-  color?: string
+  color?: string;
 
   /** Spinner thickness */
-  thickness?: number
+  thickness?: number;
 
   /** Custom spinner label */
-  label?: string
+  label?: string;
 }
 
 // ============================================================================
@@ -458,76 +472,80 @@ export interface SpinnerProps extends BaseComponentProps {
 /**
  * Extract props for a component, excluding children if it's required
  */
-export type ComponentProps<T extends React.ElementType> = React.ComponentPropsWithoutRef<T>
+export type ComponentProps<T extends React.ElementType> =
+  React.ComponentPropsWithoutRef<T>;
 
 /**
  * Create a polymorphic component prop interface
  */
-export type PolymorphicProps<E extends React.ElementType, P = Record<string, never>> = P & {
-  as?: E
-} & Omit<ComponentProps<E>, keyof P>
+export type PolymorphicProps<
+  E extends React.ElementType,
+  P = Record<string, never>,
+> = P & {
+  as?: E;
+} & Omit<ComponentProps<E>, keyof P>;
 
 /**
  * Interactive component props for hoverable/clickable elements
  */
 export interface InteractiveComponentProps extends EventHandlers {
   /** Whether component is interactive */
-  interactive?: boolean
+  interactive?: boolean;
 
   /** Hover state */
-  hover?: boolean
+  hover?: boolean;
 
   /** Active/pressed state */
-  active?: boolean
+  active?: boolean;
 
   /** Focus state */
-  focused?: boolean
+  focused?: boolean;
 
   /** Disabled state */
-  disabled?: boolean
+  disabled?: boolean;
 }
 
 /**
  * Animation variants for Framer Motion
  */
 export interface AnimationVariants {
-  initial?: Record<string, unknown>
-  animate?: Record<string, unknown>
-  exit?: Record<string, unknown>
-  hover?: Record<string, unknown>
-  tap?: Record<string, unknown>
-  focus?: Record<string, unknown>
-  disabled?: Record<string, unknown>
+  initial?: Record<string, unknown>;
+  animate?: Record<string, unknown>;
+  exit?: Record<string, unknown>;
+  hover?: Record<string, unknown>;
+  tap?: Record<string, unknown>;
+  focus?: Record<string, unknown>;
+  disabled?: Record<string, unknown>;
 }
 
 /**
  * Transition configuration for animations
  */
 export interface TransitionConfig {
-  duration?: number
-  delay?: number
-  ease?: string | number[]
-  type?: 'tween' | 'spring' | 'keyframes' | 'inertia' | 'just'
-  stiffness?: number
-  damping?: number
-  mass?: number
-  bounce?: number
-  restSpeed?: number
-  restDelta?: number
-  repeat?: number
-  repeatType?: 'loop' | 'reverse' | 'mirror'
-  repeatDelay?: number
+  duration?: number;
+  delay?: number;
+  ease?: string | number[];
+  type?: "tween" | "spring" | "keyframes" | "inertia" | "just";
+  stiffness?: number;
+  damping?: number;
+  mass?: number;
+  bounce?: number;
+  restSpeed?: number;
+  restDelta?: number;
+  repeat?: number;
+  repeatType?: "loop" | "reverse" | "mirror";
+  repeatDelay?: number;
 }
 
 /**
  * Common event handlers
  */
 export interface EventHandlers {
-  onClick?: (event: React.MouseEvent) => void
-  onMouseEnter?: (event: React.MouseEvent) => void
-  onMouseLeave?: (event: React.MouseEvent) => void
-  onFocus?: (event: React.FocusEvent) => void
-  onBlur?: (event: React.FocusEvent) => void
-  onKeyDown?: (event: React.KeyboardEvent) => void
-  onKeyUp?: (event: React.KeyboardEvent) => void
+  onClick?: (event: React.MouseEvent) => void;
+  onMouseEnter?: (event: React.MouseEvent) => void;
+  onMouseLeave?: (event: React.MouseEvent) => void;
+  onFocus?: (event: React.FocusEvent) => void;
+  onBlur?: (event: React.FocusEvent) => void;
+  onKeyDown?: (event: React.KeyboardEvent) => void;
+  onKeyUp?: (event: React.KeyboardEvent) => void;
 }

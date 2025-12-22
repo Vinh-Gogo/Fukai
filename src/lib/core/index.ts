@@ -1,19 +1,23 @@
 // Core architecture utilities barrel export
-export { default as ErrorBoundary, PageErrorBoundary, ComponentErrorBoundary } from './ErrorBoundary';
-export { 
+export {
+  default as ErrorBoundary,
+  PageErrorBoundary,
+  ComponentErrorBoundary,
+} from "./ErrorBoundary";
+export {
   default as APIClient,
-  CrawlAPI, 
-  FileAPI, 
-  ChatAPI, 
+  CrawlAPI,
+  FileAPI,
+  ChatAPI,
   ActivityAPI,
   APIError,
   NetworkError,
   TimeoutError,
   isNetworkError,
   isClientError,
-  isServerError
-} from './APIClient';
-export type { APIResponse, RequestConfig } from './APIClient';
+  isServerError,
+} from "./APIClient";
+export type { APIResponse, RequestConfig } from "./APIClient";
 export {
   useEnhancedState,
   createStateManager,
@@ -22,17 +26,17 @@ export {
   loggerMiddleware,
   debounceMiddleware,
   localStorageAdapter,
-  memoryAdapter
-} from './StateManager';
-export type { StorageAdapter } from './StateManager';
+  memoryAdapter,
+} from "./StateManager";
+export type { StorageAdapter } from "./StateManager";
 export {
   InputSanitizer,
   CSRFProtection,
   CSPUtils,
   SecurityHeaders,
   FileUploadSecurity,
-  rateLimiters
-} from './Security';
+  rateLimiters,
+} from "./Security";
 export {
   useVirtualList,
   useLazyImage,
@@ -43,5 +47,5 @@ export {
   ResourceLoader,
   BundleAnalyzer,
   MemoryLeakDetector,
-  performanceUtils
-} from './Performance';
+  performanceUtils,
+} from "./Performance";

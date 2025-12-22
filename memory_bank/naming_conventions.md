@@ -3,12 +3,14 @@
 ## 📁 **File & Directory Naming**
 
 ### **General Rules**
+
 - **kebab-case** for file and directory names
 - **PascalCase** for React components
 - **camelCase** for utilities, hooks, and services
 - **snake_case** for Python backend files
 
 ### **Directory Structure**
+
 ```
 src/
 ├── app/                    # Next.js app directory (kebab-case)
@@ -33,6 +35,7 @@ backend/
 ### **File Naming Patterns**
 
 #### **React Components** (`*.tsx`)
+
 ```
 ComponentName.tsx          # Main component file
 ComponentName.stories.tsx  # Storybook stories (future)
@@ -40,18 +43,21 @@ ComponentName.test.tsx     # Unit tests (future)
 ```
 
 #### **Hooks** (`*.ts`)
+
 ```
 useFeatureName.ts          # Custom hook
 useFeatureName.test.ts     # Hook tests (future)
 ```
 
 #### **Utilities** (`*.ts`)
+
 ```
 utilityName.ts             # Utility functions
 utilityName.test.ts        # Utility tests (future)
 ```
 
 #### **Types** (`*.ts`)
+
 ```
 featureName.ts             # Type definitions
 ```
@@ -59,6 +65,7 @@ featureName.ts             # Type definitions
 ## 🏗️ **Component Architecture**
 
 ### **Component Organization**
+
 ```
 components/
 ├── ui/                    # Design system (atoms)
@@ -77,6 +84,7 @@ components/
 ```
 
 ### **Component Naming**
+
 - **Base components**: `Button`, `Input`, `Card`
 - **Composite components**: `ButtonGroup`, `InputField`, `CardList`
 - **Feature components**: `UserProfile`, `DocumentViewer`
@@ -85,6 +93,7 @@ components/
 ## 🎯 **Hook Organization**
 
 ### **Hook Categories**
+
 ```
 hooks/
 ├── ui/                    # UI-related hooks
@@ -102,6 +111,7 @@ hooks/
 ```
 
 ### **Hook Naming**
+
 - **State hooks**: `useAuth`, `useTheme`
 - **Data hooks**: `useDocuments`, `useUsers`
 - **UI hooks**: `useLoading`, `useModal`
@@ -110,21 +120,23 @@ hooks/
 ## 📦 **Export Patterns**
 
 ### **Barrel Exports** (`index.ts`)
+
 ```typescript
 // Single export
-export { ComponentName } from './ComponentName'
-export type { ComponentProps } from './ComponentName'
+export { ComponentName } from "./ComponentName";
+export type { ComponentProps } from "./ComponentName";
 
 // Multiple exports
 export {
   ComponentA,
   ComponentB,
   type ComponentAProps,
-  type ComponentBProps
-} from './components'
+  type ComponentBProps,
+} from "./components";
 ```
 
 ### **Consistent Export Order**
+
 1. **React components** first
 2. **Custom hooks** second
 3. **Utilities** third
@@ -133,31 +145,34 @@ export {
 ## 🏷️ **TypeScript Types**
 
 ### **Type Naming**
+
 ```typescript
 // Interfaces
 interface ComponentProps {}
 interface HookReturnType {}
 
 // Types
-type ComponentVariant = 'primary' | 'secondary'
-type Status = 'idle' | 'loading' | 'success' | 'error'
+type ComponentVariant = "primary" | "secondary";
+type Status = "idle" | "loading" | "success" | "error";
 
 // Generics
-type ApiResponse<T> = { data: T; error?: string }
-type ComponentWithRef<T> = React.ForwardRefExoticComponent<T>
+type ApiResponse<T> = { data: T; error?: string };
+type ComponentWithRef<T> = React.ForwardRefExoticComponent<T>;
 ```
 
 ### **File Organization**
+
 ```typescript
 // types/featureName.ts
 export interface FeatureProps {}
-export type FeatureState = {}
-export type FeatureActions = {}
+export type FeatureState = {};
+export type FeatureActions = {};
 ```
 
 ## 🔧 **Backend Naming (Python)**
 
 ### **File Structure**
+
 ```
 backend/
 ├── app/
@@ -172,6 +187,7 @@ backend/
 ```
 
 ### **Python Naming**
+
 - **snake_case** for files and functions
 - **PascalCase** for classes
 - **UPPER_CASE** for constants
@@ -179,17 +195,20 @@ backend/
 ## ✅ **Migration Plan**
 
 ### **Phase 1: Analysis** ✅
+
 - [x] Document current naming patterns
 - [x] Identify inconsistencies
 - [x] Create standardization guidelines
 
 ### **Phase 2: Standardization** 🔄
+
 - [ ] Rename files to follow conventions
 - [ ] Update import statements
 - [ ] Update barrel exports
 - [ ] Update documentation
 
 ### **Phase 3: Verification** ⏳
+
 - [ ] Ensure all imports work
 - [ ] Run build to verify no breaking changes
 - [ ] Update any documentation references
@@ -197,15 +216,18 @@ backend/
 ## 📋 **Current Issues Found**
 
 ### **Component Files**
+
 - Some components use inconsistent casing
 - Missing index.ts files in some directories
 - Inconsistent export patterns
 
 ### **Hook Files**
+
 - Some hooks don't follow `use*` convention
 - Missing index.ts files in subdirectories
 
 ### **Type Files**
+
 - Inconsistent organization of types
 - Some types mixed with implementation
 
@@ -219,6 +241,7 @@ backend/
 6. **All type files**: Clear organization and naming
 
 This standardization will improve:
+
 - **Developer experience** with predictable file locations
 - **Code maintainability** with consistent patterns
 - **Build performance** with optimized imports
