@@ -73,21 +73,8 @@ export const memo = React.memo;
 // Optimized useCallback with dependencies
 export const useOptimizedCallback = React.useCallback;
 
-// Optimized useMemo with performance tracking
-export function useOptimizedMemo<T>(
-  factory: () => T,
-  deps: React.DependencyList,
-  name?: string,
-): T {
-  const result = React.useMemo(() => {
-    if (name) {
-      return perfMonitor.measure(name, factory);
-    }
-    return factory();
-  }, [factory, name, ...deps]);
-
-  return result;
-}
+// Optimized useMemo (alias for React.useMemo)
+export const useOptimizedMemo = React.useMemo;
 
 // Optimized useEffect with cleanup
 export const useOptimizedEffect = React.useEffect;

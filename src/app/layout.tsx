@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme";
 import { PageErrorBoundary } from "@/lib/core/ErrorBoundary";
 import { Toaster } from "sonner";
 import { BackgroundBarWrapper } from "@/components/layout";
+import { NavigationProvider } from "@/components/navigation/NavigationContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,8 +18,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RAG Platform - Web Search & AI",
+  title: "Search RAG",
   description: "Intelligent Document Processing and Web Crawling Platform",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
@@ -32,9 +39,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider defaultTheme="auto">
-          <BackgroundBarWrapper />
-          {children}
-          <Toaster position="top-right" />
+          <NavigationProvider>
+            <BackgroundBarWrapper />
+            {children}
+            <Toaster position="top-right" />
+          </NavigationProvider>
         </ThemeProvider>
       </body>
     </html>

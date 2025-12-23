@@ -13,6 +13,7 @@ import { useFileUpload, useDownloadedPDFs, useVirtualizedList } from "@/hooks";
 import { TableRow } from "@/components/pdf";
 import { PDFFile } from "@/components/pdf/types";
 import { Navigation } from "@/components/navigation";
+import { useNavigationContext } from "@/components/navigation/NavigationContext";
 import BrandHeader from "@/components/layout/BrandHeader";
 
 // Dynamically import PDFViewer with SSR disabled to prevent document access errors
@@ -38,6 +39,7 @@ export default function PDFProcessing() {
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<PDFFile | null>(null);
   const [isNavigationVisible, setIsNavigationVisible] = useState(true);
+  const { currentWidth } = useNavigationContext();
 
   // Navigation toggle function
   const toggleNavigation = useCallback(() => {
@@ -242,7 +244,12 @@ export default function PDFProcessing() {
       <Navigation isVisible={isNavigationVisible} onToggle={toggleNavigation} />
 
       {/* Main Content Area - Right side */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div
+        className="flex-1 flex flex-col overflow-hidden transition-all duration-300"
+        style={{
+          marginLeft: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${currentWidth * 4}px` : '0px'
+        }}
+      >
         {/* Main Content - Scrollable area including header */}
         <main className="flex-1 overflow-y-auto rounded-3xl">
           {/* Brand Header - Now scrolls with content */}

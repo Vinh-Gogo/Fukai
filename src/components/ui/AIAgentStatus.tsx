@@ -3,30 +3,61 @@ import { Sun, Moon, Monitor } from "lucide-react";
 import { useThemeContext } from "../theme/ThemeProvider";
 import { cn } from "@/lib/utils";
 
+// Constants for particle effects
+const PARTICLE_CONFIG = {
+  sizes: [2, 4, 6, 3, 5],
+  tops: [10, 30, 50, 20, 70],
+  lefts: [15, 45, 75, 25, 85],
+  durations: [2, 2.5, 3, 2.2, 2.8],
+} as const;
+
+// Qwen's signature gradient colors
+const QWEN_GRADIENTS = {
+  light: "bg-gradient-to-r from-emerald-500 to-teal-600",
+  dark: "bg-gradient-to-r from-emerald-900/80 to-teal-900/80",
+} as const;
+
+// Floating particles component
+const FloatingParticles = React.memo(() => (
+  <div className="absolute inset-0 pointer-events-none">
+    {PARTICLE_CONFIG.sizes.map((size, i) => (
+      <div
+        key={i}
+        className="absolute rounded-full bg-emerald-400/20 animate-pulse"
+        style={{
+          width: `${size}px`,
+          height: `${size}px`,
+          top: `${PARTICLE_CONFIG.tops[i]}%`,
+          left: `${PARTICLE_CONFIG.lefts[i]}%`,
+          animationDelay: `${i * 0.2}s`,
+          animationDuration: `${PARTICLE_CONFIG.durations[i]}s`,
+        }}
+      />
+    ))}
+  </div>
+));
+
+FloatingParticles.displayName = "FloatingParticles";
+
 interface AIAgentStatusProps {
   collapsed: boolean;
 }
 
 export const AIAgentStatus = React.memo(({ collapsed }: AIAgentStatusProps) => {
-  const { theme, toggleMode, isDark, isLight, isAuto } = useThemeContext();
+  const { toggleMode, isDark, isAuto } = useThemeContext();
 
   // Get current theme icon with Qwen colors
-  const getCurrentIcon = () => {
+  const getCurrentIcon = React.useCallback(() => {
     if (isAuto) return <Monitor className="w-4 h-4 text-emerald-200" />;
     if (isDark) return <Moon className="w-4 h-4 text-emerald-200" />;
     return <Sun className="w-4 h-4 text-emerald-600" />;
-  };
+  }, [isAuto, isDark]);
 
-  const getNextLabel = () => {
+  const getNextLabel = React.useCallback(() => {
     if (isAuto) return "Light";
     if (isDark) return "Auto";
     return "Dark";
-  };
-
-  // Qwen's signature gradient colors
-  const qwenGradient = "bg-gradient-to-r from-emerald-500 to-teal-600";
-  const qwenDarkGradient =
-    "bg-gradient-to-r from-emerald-900/80 to-teal-900/80";
+  }, [isAuto, isDark]);
 
   if (collapsed) {
     return (
@@ -49,8 +80,8 @@ export const AIAgentStatus = React.memo(({ collapsed }: AIAgentStatusProps) => {
       className={cn(
         "p-1 transition-all duration-300 rounded-xl",
         isDark
-          ? `${qwenDarkGradient} shadow-[0_4px_20px_rgba(0,0,0,0.3)]`
-          : `${qwenGradient} shadow-[0_4px_20px_rgba(0,45,30,0.25)]`,
+          ? `${QWEN_GRADIENTS.dark} shadow-[0_4px_20px_rgba(0,0,0,0.3)]`
+          : `${QWEN_GRADIENTS.light} shadow-[0_4px_20px_rgba(0,45,30,0.25)]`,
       )}
     >
       <div
@@ -65,30 +96,7 @@ export const AIAgentStatus = React.memo(({ collapsed }: AIAgentStatusProps) => {
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-600/10 opacity-50"></div>
 
         {/* Floating particles effect */}
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(5)].map((_, i) => {
-            // Use deterministic values based on index instead of Math.random()
-            const sizes = [2, 4, 6, 3, 5];
-            const tops = [10, 30, 50, 20, 70];
-            const lefts = [15, 45, 75, 25, 85];
-            const durations = [2, 2.5, 3, 2.2, 2.8];
-
-            return (
-              <div
-                key={i}
-                className="absolute rounded-full bg-emerald-400/20 animate-pulse"
-                style={{
-                  width: `${sizes[i]}px`,
-                  height: `${sizes[i]}px`,
-                  top: `${tops[i]}%`,
-                  left: `${lefts[i]}%`,
-                  animationDelay: `${i * 0.2}s`,
-                  animationDuration: `${durations[i]}s`,
-                }}
-              />
-            );
-          })}
-        </div>
+        <FloatingParticles />
 
         {/* AI Agent badge with pulse animation */}
         <div className="relative z-10 flex items-center gap-2">

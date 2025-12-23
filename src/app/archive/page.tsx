@@ -34,11 +34,13 @@ import {
   BarChart3,
   Folder,
   Calendar,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFileManager } from "@/hooks";
 import { FileGrid, FileList, StorageStats } from "@/components/archive";
 import { ArchiveFile, CategoryInfo } from "@/lib/archive";
+import { useNavigationContext } from "@/components/navigation/NavigationContext";
 
 // Mock archived files data - in a real app, this would come from a database
 const MOCK_ARCHIVE_FILES: ArchiveFile[] = [
@@ -99,6 +101,8 @@ const ARCHIVE_CATEGORIES: CategoryInfo[] = [
 
 export default function ArchivePage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showStorageStats, setShowStorageStats] = useState(false);
+  const { currentWidth } = useNavigationContext();
 
   // Use the custom file manager hook
   const fileManager = useFileManager({
@@ -134,7 +138,12 @@ export default function ArchivePage() {
       <Navigation isVisible={true} onToggle={() => {}} />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div
+        className="flex-1 flex flex-col overflow-hidden transition-all duration-300"
+        style={{
+          marginLeft: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${currentWidth * 4}px` : '0px'
+        }}
+      >
         {/* Main Content - Scrollable area including header */}
         <main className="flex-1 overflow-y-auto rounded-3xl">
           {/* Brand Header - Now scrolls with content */}
@@ -172,6 +181,7 @@ export default function ArchivePage() {
                           ? "bg-white shadow-sm"
                           : "hover:bg-gray-200",
                       )}
+                      title="Grid View"
                     >
                       <Grid className="w-4 h-4" />
                     </button>
@@ -183,6 +193,7 @@ export default function ArchivePage() {
                           ? "bg-white shadow-sm"
                           : "hover:bg-gray-200",
                       )}
+                      title="List View"
                     >
                       <List className="w-4 h-4" />
                     </button>
@@ -231,14 +242,39 @@ export default function ArchivePage() {
               </div>
             </div>
 
-            <div className="flex gap-6">
-              {/* Sidebar - Storage Stats */}
-              <div className="w-64 flex-shrink-0">
-                <StorageStats stats={fileManager.storageStats} />
+            <div className="flex flex-col lg:flex-row gap-6">
+              {/* Mobile Storage Stats Toggle */}
+              <div className="lg:hidden">
+                <button
+                  onClick={() => setShowStorageStats(!showStorageStats)}
+                  className="w-full bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-gray-900">Storage Overview</span>
+                    <span className="text-sm text-gray-600">
+                      {fileManager.storageStats.totalFiles} files • {fileManager.storageStats.totalSizeFormatted}
+                    </span>
+                  </div>
+                  <div className={`transform transition-transform ${showStorageStats ? 'rotate-180' : ''}`}>
+                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                  </div>
+                </button>
+                {showStorageStats && (
+                  <div className="mt-4">
+                    <StorageStats stats={fileManager.storageStats} />
+                  </div>
+                )}
               </div>
 
-              {/* Main Content Area */}
-              <div className="flex-1">
+              <div className="flex flex-col lg:flex-row gap-6">
+                {/* Desktop Sidebar - Storage Stats */}
+                <div className="hidden lg:block w-64 flex-shrink-0">
+                  <StorageStats stats={fileManager.storageStats} />
+                </div>
+
+                {/* Main Content Area */}
+                <div className="flex-1">
                 {/* Sort Controls */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -259,28 +295,30 @@ export default function ArchivePage() {
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <span className="text-sm text-gray-600">Sort by:</span>
-                    {(["name", "date", "size"] as const).map((field) => (
-                      <button
-                        key={field}
-                        onClick={() => fileManager.handleSort(field)}
-                        className={cn(
-                          "flex items-center gap-1 px-3 py-1 text-sm rounded-lg transition-colors",
-                          fileManager.sortBy === field
-                            ? "bg-blue-100 text-blue-700"
-                            : "hover:bg-gray-100",
-                        )}
-                      >
-                        {field.charAt(0).toUpperCase() + field.slice(1)}
-                        {fileManager.sortBy === field &&
-                          (fileManager.sortOrder === "asc" ? (
-                            <SortAsc className="w-3 h-3" />
-                          ) : (
-                            <SortDesc className="w-3 h-3" />
-                          ))}
-                      </button>
-                    ))}
+                    <div className="flex flex-wrap gap-1">
+                      {(["name", "date", "size"] as const).map((field) => (
+                        <button
+                          key={field}
+                          onClick={() => fileManager.handleSort(field)}
+                          className={cn(
+                            "flex items-center gap-1 px-3 py-1 text-sm rounded-lg transition-colors",
+                            fileManager.sortBy === field
+                              ? "bg-blue-100 text-blue-700"
+                              : "hover:bg-gray-100",
+                          )}
+                        >
+                          {field.charAt(0).toUpperCase() + field.slice(1)}
+                          {fileManager.sortBy === field &&
+                            (fileManager.sortOrder === "asc" ? (
+                              <SortAsc className="w-3 h-3" />
+                            ) : (
+                              <SortDesc className="w-3 h-3" />
+                            ))}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -302,6 +340,7 @@ export default function ArchivePage() {
                     onFileDelete={handleFileDelete}
                   />
                 )}
+                </div>
               </div>
             </div>
           </div>

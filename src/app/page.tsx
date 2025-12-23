@@ -26,6 +26,7 @@ import {
 } from "@/components/crawl";
 import { DownloadAppSection } from "@/components/features";
 import { NavigationSkeleton } from "@/components/navigation";
+import { useNavigationContext } from "@/components/navigation/NavigationContext";
 import { StorageService, createPDFFile } from "@/lib/crawl";
 
 // Dynamically import Navigation to prevent SSR issues
@@ -45,6 +46,7 @@ export default function Home() {
   const { logActivity } = useActivityLogger();
   const [isNavigationVisible, setIsNavigationVisible] = useState(true);
   const [jobFilter, setJobFilter] = useState("all");
+  const { currentWidth } = useNavigationContext();
 
   // Navigation toggle function
   const toggleNavigation = useCallback(() => {
@@ -208,25 +210,30 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 overflow-x-hidden">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 overflow-x-hidden">
       {/* Navigation Sidebar - Left side */}
       <Navigation isVisible={isNavigationVisible} onToggle={toggleNavigation} />
 
-      {/* Main Content Area - Right side */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Main Content Area - Right side - improved mobile responsiveness */}
+      <div
+        className="flex-1 flex flex-col overflow-hidden min-h-screen transition-all duration-300"
+        style={{
+          marginLeft: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${currentWidth * 4}px` : '0px'
+        }}
+      >
         {/* Main Content - Scrollable area including header */}
-        <main className="flex-1 overflow-y-auto rounded-3xl">
+        <main className="flex-1 overflow-y-auto">
           {/* Brand Header - Now scrolls with content */}
           <BrandHeader
             icon="search"
-            title="RAG Platform"
+            title="RAG Document Crawler"
             subtitle="AI-Powered Semantic Search"
             statusText="Ready to search your documents"
           />
 
           {/* UPGRADE */}
 
-          <div className="container mx-auto px-4 py-6 max-w-7xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 max-w-7xl">
             {/* Vibrant Page Header with Gradient Background */}
             <section className="mb-10 relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20 backdrop-blur-sm">
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTAgMGg2MHY2MEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0wIDBoNjB2NjBIeiIgZmlsbD0ibm9uZSIvPjwvc3ZnPg==')] opacity-5" />
@@ -236,7 +243,9 @@ export default function Home() {
                   <div>
                     <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/30 mb-3">
                       <span className="w-2 h-2 bg-blue-400 rounded-full mr-2 animate-pulse" />
-                      <span className="text-sm font-medium text-black-300">Active Crawling System</span>
+                      <span className="text-sm font-medium text-black-300">
+                        Active Crawling System
+                      </span>
                     </div>
 
                     <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-600 mb-2 transition-all duration-300 hover:scale-[1.02]">
@@ -244,7 +253,8 @@ export default function Home() {
                     </h1>
 
                     <p className="text-lg text-muted-foreground max-w-2xl leading-relaxed">
-                      Manage your web scraping jobs with real-time monitoring, intelligent scheduling, and seamless PDF generation.
+                      Manage your web scraping jobs with real-time monitoring,
+                      intelligent scheduling, and seamless PDF generation.
                     </p>
                   </div>
 
@@ -252,12 +262,16 @@ export default function Home() {
                     {crawlOperations.isRunning ? (
                       <div className="flex items-center space-x-2 bg-red-500/10 px-4 py-2 rounded-xl border border-red-500/20">
                         <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-                        <span className="font-medium text-red-400">Crawling Active</span>
+                        <span className="font-medium text-red-400">
+                          Crawling Active
+                        </span>
                       </div>
                     ) : (
                       <div className="flex items-center space-x-2 bg-green-500/10 px-4 py-2 rounded-xl border border-green-500/20">
                         <div className="w-3 h-3 bg-green-500 rounded-full animate-ping" />
-                        <span className="font-medium text-green-800">System Ready</span>
+                        <span className="font-medium text-green-800">
+                          System Ready
+                        </span>
                       </div>
                     )}
 
@@ -266,8 +280,19 @@ export default function Home() {
                       className="p-2 hover:bg-white/10 rounded-xl transition-all duration-300 transform hover:scale-110"
                       title="System Status"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 text-blue-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
                     </button>
                   </div>
@@ -276,16 +301,35 @@ export default function Home() {
                 {/* Animated Statistics Preview */}
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-blue-500/10 transition-all duration-300 hover:border-blue-500/30 hover:scale-[1.02]">
-                    <div className="text-sm text-black-300 mb-1">Total Jobs</div>
-                    <div className="text-2xl font-bold text-white">{crawlJobs.jobs.length}</div>
+                    <div className="text-sm text-black-300 mb-1">
+                      Total Jobs
+                    </div>
+                    <div className="text-2xl font-bold text-white">
+                      {crawlJobs.jobs.length}
+                    </div>
                   </div>
                   <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-blue-500/10 transition-all duration-300 hover:border-blue-500/30 hover:scale-[1.02]">
-                    <div className="text-sm text-black-300 mb-1">Active Crawls</div>
-                    <div className="text-2xl font-bold text-white">{crawlJobs.jobs.filter(job => job.status === 'running').length}</div>
+                    <div className="text-sm text-black-300 mb-1">
+                      Active Crawls
+                    </div>
+                    <div className="text-2xl font-bold text-white">
+                      {
+                        crawlJobs.jobs.filter((job) => job.status === "running")
+                          .length
+                      }
+                    </div>
                   </div>
                   <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-blue-500/10 transition-all duration-300 hover:border-blue-500/30 hover:scale-[1.02]">
-                    <div className="text-sm text-black-300 mb-1">Completed Jobs</div>
-                    <div className="text-2xl font-bold text-white">{crawlJobs.jobs.filter(job => job.status === 'completed').length}</div>
+                    <div className="text-sm text-black-300 mb-1">
+                      Completed Jobs
+                    </div>
+                    <div className="text-2xl font-bold text-white">
+                      {
+                        crawlJobs.jobs.filter(
+                          (job) => job.status === "completed",
+                        ).length
+                      }
+                    </div>
                   </div>
                 </div>
               </div>
@@ -306,7 +350,9 @@ export default function Home() {
             <div className="mb-10 animate-fade-in-up delay-100">
               <div className="bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-2xl p-1 backdrop-blur-sm border border-purple-500/20">
                 <CrawlSettingsPanel
-                  autoDownloadEnabled={crawlSettings.settings.autoDownloadEnabled}
+                  autoDownloadEnabled={
+                    crawlSettings.settings.autoDownloadEnabled
+                  }
                   onAutoDownloadChange={handleAutoDownloadChange}
                   disabled={crawlOperations.isRunning}
                 />
@@ -317,8 +363,19 @@ export default function Home() {
             <div className="mb-12 animate-fade-in-up delay-200">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 mr-2 text-cyan-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
                   </svg>
                   Active Jobs
                 </h2>
@@ -329,8 +386,19 @@ export default function Home() {
                     className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all duration-300 transform hover:rotate-180"
                     title="Refresh Jobs"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 animate-spin-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 animate-spin-slow"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
                     </svg>
                   </button>
 
@@ -346,8 +414,19 @@ export default function Home() {
                       <option value="failed">Failed</option>
                     </select>
                     <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 text-blue-300"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </div>
                   </div>
@@ -357,13 +436,32 @@ export default function Home() {
               <div className="space-y-4">
                 {filteredJobs.length === 0 ? (
                   <div className="bg-white/5 backdrop-blur-sm border-2 border-dashed border-blue-500/30 rounded-2xl p-12 text-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-blue-400/50 mb-4 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-16 w-16 mx-auto text-blue-400/50 mb-4 animate-bounce"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
                     </svg>
-                    <h3 className="text-xl font-medium text-white mb-2">No jobs found</h3>
-                    <p className="text-muted-foreground mb-4">Create your first web crawling job to get started</p>
+                    <h3 className="text-xl font-medium text-white mb-2">
+                      No jobs found
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Create your first web crawling job to get started
+                    </p>
                     <button
-                      onClick={() => document.getElementById('new-job-form')?.scrollIntoView({ behavior: 'smooth' })}
+                      onClick={() =>
+                        document
+                          .getElementById("new-job-form")
+                          ?.scrollIntoView({ behavior: "smooth" })
+                      }
                       className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-medium hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-500/30"
                     >
                       Add New Job
@@ -401,16 +499,31 @@ export default function Home() {
               </div>
             </section>
 
-            {/* Floating Action Button */}
+            {/* Floating Action Button - improved mobile positioning */}
             {!crawlOperations.isRunning && (
-              <div className="fixed bottom-8 right-8 z-50 animate-bounce">
+              <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 lg:bottom-8 lg:right-8 z-50 animate-bounce">
                 <button
-                  onClick={() => document.getElementById('new-job-form')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all duration-300 transform hover:rotate-12"
+                  onClick={() =>
+                    document
+                      .getElementById("new-job-form")
+                      ?.scrollIntoView({ behavior: "smooth" })
+                  }
+                  className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all duration-300 transform hover:rotate-12 touch-manipulation"
                   title="Add New Job"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
                   </svg>
                 </button>
               </div>

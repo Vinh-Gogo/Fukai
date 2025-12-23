@@ -26,6 +26,7 @@ import {
   ConversationHistoryPanel,
 } from "@/components/rag";
 import { NavigationSkeleton } from "@/components/navigation";
+import { useNavigationContext } from "@/components/navigation/NavigationContext";
 
 // Services
 import { createErrorMessage } from "@/lib/chat";
@@ -46,6 +47,7 @@ export default function RAGPage() {
   // Local state for UI
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const [historyPanelVisible, setHistoryPanelVisible] = useState(false);
+  const { currentWidth } = useNavigationContext();
 
   // Custom hooks
   const chatMessages = useChatMessages();
@@ -189,13 +191,18 @@ export default function RAGPage() {
       <Navigation isVisible={true} onToggle={() => {}} />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div
+        className="flex-1 flex flex-col overflow-hidden transition-all duration-300"
+        style={{
+          marginLeft: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${currentWidth * 4}px` : '0px'
+        }}
+      >
         {/* Main Content - Scrollable area including header and messages */}
         <main className="flex-1 overflow-y-auto rounded-3xl">
           {/* Brand Header - Now scrolls with content */}
           <BrandHeader
             icon="bot"
-            title="RAG Platform"
+            title="RAG Crawling Docs"
             subtitle="AI-Powered Document Intelligence"
             statusText="Advanced semantic search & analysis ready"
           />

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 interface GradientStop {
   offset: string;
@@ -16,7 +16,7 @@ export function useCoastlineEffect(
   widthMultiplier: number,
   height: number,
   pointSpacing: number,
-  gradientStops: readonly GradientStop[]
+  gradientStops: readonly GradientStop[],
 ): React.RefObject<HTMLDivElement | null> {
   const coastlineRef = useRef<HTMLDivElement>(null);
 
@@ -25,7 +25,7 @@ export function useCoastlineEffect(
     if (!coastline) return;
 
     const createCoastline = (): void => {
-      coastline.innerHTML = '';
+      coastline.innerHTML = "";
 
       // Calculate actual dimensions
       const actualWidth = 100 * widthMultiplier; // viewport width percentage * multiplier
@@ -39,15 +39,28 @@ export function useCoastlineEffect(
       svg.setAttribute("preserveAspectRatio", "none");
 
       // Create the coastline path
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      const pathData = generateCoastlinePath(viewBoxWidth, height, pointSpacing);
+      const path = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path",
+      );
+      const pathData = generateCoastlinePath(
+        viewBoxWidth,
+        height,
+        pointSpacing,
+      );
 
       path.setAttribute("d", pathData);
       path.setAttribute("fill", "url(#coastlineGradient)");
 
       // Create gradient definition
-      const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-      const gradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
+      const defs = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "defs",
+      );
+      const gradient = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "linearGradient",
+      );
 
       gradient.setAttribute("id", "coastlineGradient");
       gradient.setAttribute("x1", "0%");
@@ -56,8 +69,11 @@ export function useCoastlineEffect(
       gradient.setAttribute("y2", "100%");
 
       // Add gradient stops
-      gradientStops.forEach(stop => {
-        const stopElement = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+      gradientStops.forEach((stop) => {
+        const stopElement = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "stop",
+        );
         stopElement.setAttribute("offset", stop.offset);
         stopElement.setAttribute("stop-color", stop.color);
         gradient.appendChild(stopElement);
@@ -72,7 +88,7 @@ export function useCoastlineEffect(
     const generateCoastlinePath = (
       width: number,
       height: number,
-      spacing: number
+      spacing: number,
     ): string => {
       let pathData = `M0,${height * 0.7} `;
 
@@ -103,10 +119,10 @@ export function useCoastlineEffect(
 
     // Recreate coastline on window resize
     const handleResize = () => createCoastline();
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, [widthMultiplier, height, pointSpacing, gradientStops]);
 

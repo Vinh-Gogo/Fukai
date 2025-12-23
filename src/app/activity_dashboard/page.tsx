@@ -14,6 +14,7 @@ import { ActivityChart } from "@/components/activity/ActivityChart";
 import { ActivityFeed } from "@/components/activity/ActivityFeed";
 import { ActivityFilters } from "@/components/activity/ActivityFilters";
 import { NavigationSkeleton } from "@/components/navigation";
+import { useNavigationContext } from "@/components/navigation/NavigationContext";
 
 // Custom hooks
 import { useActivityData } from "@/hooks";
@@ -37,6 +38,7 @@ export default function ActivityDashboardPage() {
     activityType: "all",
     searchQuery: "",
   });
+  const { currentWidth } = useNavigationContext();
 
   const { activities, stats, isLoading } = useActivityData(filters);
 
@@ -68,7 +70,12 @@ export default function ActivityDashboardPage() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div
+        className="flex-1 flex flex-col overflow-hidden transition-all duration-300"
+        style={{
+          marginLeft: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${currentWidth * 4}px` : '0px'
+        }}
+      >
         {/* Header */}
         <main className="flex-1 overflow-y-auto rounded-3xl">
           <BrandHeader
