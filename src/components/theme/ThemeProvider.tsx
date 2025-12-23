@@ -55,7 +55,6 @@ export const ThemeProvider = memo<ThemeProviderProps>(
         themeHook.isAuto,
         themeHook.isSystemDark,
       ],
-      "theme-context-value",
     );
 
     return (
