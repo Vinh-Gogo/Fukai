@@ -1,1 +1,1 @@
-"""API package"""
+# API package for the Search RAG backend

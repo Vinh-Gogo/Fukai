@@ -1,82 +1,116 @@
 """
-FastAPI backend for web crawling and file management
+Search RAG Backend - Main FastAPI Application
+
+This is the main entry point for the Search RAG backend service.
+It provides REST API endpoints for document processing, search, and RAG operations.
 """
+
+import uvicorn
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
 import structlog
 
-from app.core.config import settings
-from app.core.logging import setup_logging
-from app.api.v1.api import api_router
-from app.core.database import init_database, init_database_async
-from app.core.middleware import ExceptionHandlerMiddleware, RequestLoggingMiddleware
-from app.core.rate_limiting import limiter, rate_limit_exceeded_handler
-from slowapi.middleware import SlowAPIMiddleware
+from app.config.settings import settings
+from app.core.exceptions import setup_exception_handlers
+from app.core.events import create_startup_handler, create_shutdown_handler
+from app.api.v1.router import api_router
+from app.utils.logger import setup_logging
 
-# Setup structured logging
-setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan context manager"""
+    """Application lifespan context manager for startup and shutdown events."""
     # Startup
-    structlog.get_logger().info("Starting FastAPI application")
-    init_database()
-    await init_database_async()
-    structlog.get_logger().info("Database initialized successfully")
+    startup_handler = create_startup_handler()
+    await startup_handler()
+
     yield
+
     # Shutdown
-    structlog.get_logger().info("Shutting down FastAPI application")
+    shutdown_handler = create_shutdown_handler()
+    await shutdown_handler()
 
-# Create FastAPI application
-app = FastAPI(
-    title=settings.PROJECT_NAME,
-    description="FastAPI backend for web crawling and document management",
-    version="1.0.0",
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    lifespan=lifespan,
-)
 
-# Set up CORS
-if settings.BACKEND_CORS_ORIGINS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+def create_application() -> FastAPI:
+    """Create and configure the FastAPI application."""
+
+    # Setup structured logging
+    setup_logging()
+
+    # Create FastAPI app with lifespan
+    app = FastAPI(
+        title=settings.PROJECT_NAME,
+        description=settings.PROJECT_DESCRIPTION,
+        version=settings.VERSION,
+        openapi_url=f"{settings.API_V1_STR}/openapi.json",
+        docs_url="/docs",
+        redoc_url="/redoc",
+        lifespan=lifespan,
     )
 
-# Set up trusted hosts
-if settings.ALLOWED_HOSTS:
-    app.add_middleware(
-        TrustedHostMiddleware,
-        allowed_hosts=settings.ALLOWED_HOSTS,
+    # Set up CORS
+    if settings.BACKEND_CORS_ORIGINS:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
+    # Set up trusted hosts
+    if not settings.DEBUG:
+        app.add_middleware(
+            TrustedHostMiddleware,
+            allowed_hosts=settings.ALLOWED_HOSTS,
+        )
+
+    # Setup custom exception handlers
+    setup_exception_handlers(app)
+
+    # Include API router
+    app.include_router(api_router, prefix=settings.API_V1_STR)
+
+    # Health check endpoint (simple, without dependencies)
+    @app.get("/health", tags=["health"])
+    async def health_check():
+        """Basic health check endpoint."""
+        return {
+            "status": "healthy",
+            "service": settings.PROJECT_NAME,
+            "version": settings.VERSION,
+            "environment": settings.ENVIRONMENT,
+        }
+
+    # Root endpoint
+    @app.get("/", tags=["root"])
+    async def root():
+        """Root endpoint with API information."""
+        return {
+            "message": f"Welcome to {settings.PROJECT_NAME}",
+            "version": settings.VERSION,
+            "docs": "/docs",
+            "health": "/health",
+            "api": settings.API_V1_STR,
+        }
+
+    return app
+
+
+# Create the FastAPI application instance
+app = create_application()
+
+
+if __name__ == "__main__":
+    # Run the application with uvicorn
+    uvicorn.run(
+        "app.main:app",
+        host=settings.HOST,
+        port=settings.PORT,
+        reload=settings.DEBUG,
+        log_config=None,  # Use our custom logging
+        access_log=True,
     )
-
-# Add custom middleware
-app.add_middleware(ExceptionHandlerMiddleware)
-app.add_middleware(RequestLoggingMiddleware)
-
-# Add rate limiting middleware
-app.add_middleware(SlowAPIMiddleware)
-
-# Add rate limit exception handler
-app.add_exception_handler(429, rate_limit_exceeded_handler)
-
-# Include API routers
-app.include_router(api_router, prefix=settings.API_V1_STR)
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "service": "fastapi-backend"}
-
-@app.get("/")
-async def root():
-    """Root endpoint"""
-    return {"message": "FastAPI Backend for Web Crawling and Document Management"}

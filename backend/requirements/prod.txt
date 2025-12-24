@@ -1,0 +1,28 @@
+# Production dependencies
+-r base.txt
+
+# Production optimizations
+gunicorn==21.2.0
+gevent==23.9.1
+
+# Monitoring & Observability
+sentry-sdk[fastapi]==1.38.0
+prometheus-client==0.19.0
+opentelemetry-distro==0.43b0
+opentelemetry-instrumentation-fastapi==0.43b0
+    
+# Caching
+redis==5.0.1
+
+# Database connection pooling
+sqlalchemy>=2.0.0,<3.0.0
+
+# Health checks
+tenacity==8.2.3
+
+# Security
+cryptography==46.0.3
+bcrypt==5.0.0
+
+# Performance monitoring
+py-spy==0.3.14

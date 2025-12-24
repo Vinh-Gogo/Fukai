@@ -230,7 +230,7 @@ export default function Home() {
             subtitle="AI-Powered Semantic Search"
             statusText="Ready to search your documents"
           />
-
+ 
           {/* UPGRADE */}
 
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 max-w-7xl">

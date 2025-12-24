@@ -4,6 +4,8 @@ frontend/public/uploaded/*
 __pycache__/
 **/store_pdfs/*
 **/uploads/*
+.venv/
+env/
 
 # dependencies
 /node_modules

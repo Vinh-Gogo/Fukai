@@ -1,0 +1,88 @@
+# Search RAG Backend Development Environment
+
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+    env_file:
+      - .env.development
+    volumes:
+      - .:/app
+      - ./uploads:/app/uploads
+    depends_on:
+      - qdrant
+      - redis
+    networks:
+      - search-rag-network
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant:v1.7.4
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - search-rag-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - search-rag-network
+    restart: unless-stopped
+
+  # Celery worker
+  celery-worker:
+    build: .
+    command: celery -A app.workers.celery_app worker --loglevel=info
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+    env_file:
+      - .env.development
+    volumes:
+      - .:/app
+      - ./uploads:/app/uploads
+    depends_on:
+      - redis
+      - backend
+    networks:
+      - search-rag-network
+    restart: unless-stopped
+
+  # Celery beat (scheduler)
+  celery-beat:
+    build: .
+    command: celery -A app.workers.celery_app beat --loglevel=info
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+    env_file:
+      - .env.development
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    networks:
+      - search-rag-network
+    restart: unless-stopped
+
+volumes:
+  qdrant_data:
+  redis_data:
+
+networks:
+  search-rag-network:
+    driver: bridge

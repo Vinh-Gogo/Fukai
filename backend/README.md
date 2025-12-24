@@ -1,443 +1,281 @@
-# Backend API Server
+# Search RAG Backend
 
-FastAPI backend for web crawling, document processing, and RAG (Retrieval-Augmented Generation) functionality.
+A high-performance FastAPI backend for document search and Retrieval-Augmented Generation (RAG) operations.
 
-## 🚀 Features
+## Features
 
-- **FastAPI Framework**: High-performance async API with automatic OpenAPI documentation
-- **Web Crawling**: Automated PDF discovery and download with configurable targets
-- **Document Processing**: PDF text extraction using marker-pdf with OCR capabilities
-- **Vector Search**: Semantic search powered by QDrant and embeddings
-- **Authentication**: User authentication and authorization system
-- **Background Tasks**: Asynchronous job processing with status tracking
-- **Database Integration**: SQLAlchemy ORM with SQLite/PostgreSQL support
-- **Rate Limiting**: Built-in rate limiting and request throttling
-- **Structured Logging**: JSON logging with monitoring and alerting
-- **Docker Support**: Containerized deployment ready
+- 🚀 **FastAPI**: Modern, async Python web framework
+- 🔍 **Document Search**: Semantic search across uploaded documents
+- 🤖 **RAG Pipeline**: Question-answering using retrieved documents
+- 📊 **Vector Database**: Qdrant integration for efficient similarity search
+- 🔐 **Authentication**: JWT-based user authentication
+- 📁 **Document Processing**: Support for PDF, DOCX, TXT, and MD files
+- ⚡ **Background Tasks**: Celery-based async processing
+- 📝 **Structured Logging**: JSON logging with request tracing
+- 🏥 **Health Checks**: Comprehensive system monitoring
+- 🐳 **Container Ready**: Docker and docker-compose support
 
-## 🏗️ Architecture
+## Architecture
 
-### API Structure
+### Project Structure
 
 ```
 backend/
 ├── app/
-│   ├── main.py              # FastAPI application entry point
-│   ├── core/                # Core functionality
-│   │   ├── config.py        # Application configuration
-│   │   ├── database.py      # Database setup and utilities
-│   │   ├── dependencies.py  # Dependency injection
-│   │   └── middleware.py    # Custom middleware
-│   ├── api/v1/              # API version 1
-│   │   ├── api.py           # Main API router
-│   │   └── endpoints/       # API endpoints
-│   │       ├── auth.py      # Authentication endpoints
-│   │       ├── crawl.py     # Crawling operations
-│   │       ├── files.py     # File management
-│   │       └── health.py    # Health checks
-│   ├── domains/             # Business logic domains
-│   │   ├── auth/            # Authentication domain
-│   │   ├── crawler/         # Crawling domain
-│   │   ├── search/          # Search/RAG domain
-│   │   └── documents/       # Document processing domain
-│   ├── infrastructure/      # Infrastructure layer
-│   │   ├── external_services/  # External API clients
-│   │   └── repositories/       # Data access layer
-│   ├── models/              # Database models
-│   ├── schemas/             # Pydantic schemas
-│   └── shared/              # Shared utilities
-├── tests/                   # Test suite
-├── alembic/                 # Database migrations
-└── requirements*.txt        # Dependencies
+│   ├── api/              # API routes and endpoints
+│   ├── core/             # Core functionality (auth, exceptions, events)
+│   ├── config/           # Configuration management
+│   ├── models/           # Database models
+│   ├── services/         # Business logic layer
+│   ├── utils/            # Utility functions
+│   └── workers/          # Background task processing
+├── tests/                # Test suite
+├── requirements/         # Python dependencies
+├── scripts/              # Utility scripts
+├── migrations/           # Database migrations
+└── docs/                 # Documentation
 ```
 
-### Service Architecture
+### API Endpoints
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   FastAPI       │    │   Background     │    │   External      │
-│   Server        │◄──►│   Tasks         │◄──►│   Services      │
-│   (Port 8000)   │    │   Service        │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Database      │    │   File System   │    │   QDrant        │
-│   (SQLite/PG)   │    │   Storage       │    │   Vector DB     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
+- `GET /health` - Basic health check
+- `GET /health/detailed` - Comprehensive health check
+- `POST /api/v1/auth/login` - User authentication
+- `POST /api/v1/documents/upload` - Upload documents
+- `GET /api/v1/search/` - Search documents
+- `POST /api/v1/rag/ask` - Ask questions using RAG
+- `GET /docs` - API documentation (Swagger UI)
 
-## 📋 Prerequisites
+## Quick Start
 
-- Python 3.12+
-- pip or uv package manager
-- QDrant instance (cloud or local)
-- Embedding service (Qwen3-Embedding model)
+### Prerequisites
 
-## 🛠️ Installation
+- Python 3.9+
+- Redis (for background tasks)
+- Qdrant (vector database)
 
-### 1. Clone and Setup
+### Installation
+
+1. **Clone and setup:**
+   ```bash
+   cd backend
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements/dev.txt
+   ```
+
+3. **Environment setup:**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+4. **Run the application:**
+   ```bash
+   # Start the FastAPI server
+   python -m app.main
+
+   # Or using uvicorn directly
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+The API will be available at `http://localhost:8000` and documentation at `http://localhost:8000/docs`.
+
+### Docker Setup
 
 ```bash
-cd backend
-cp .env.example .env
-# Edit .env with your configuration
+# Build and run with docker-compose
+docker-compose up -d
+
+# Or build manually
+docker build -t search-rag-backend .
+docker run -p 8000:8000 search-rag-backend
 ```
 
-### 2. Install Dependencies
-
-```bash
-# Using pip
-pip install -r requirements-core.txt
-pip install -r requirements.txt
-
-# Or using uv (recommended)
-uv pip install -r requirements-core.txt
-uv pip install -r requirements.txt
-```
-
-### 3. Initialize Database
-
-```bash
-# Create tables
-python -m app.core.database
-
-# Run migrations (if using Alembic)
-alembic upgrade head
-```
-
-## 🚀 Running the Application
-
-### Development Mode
-
-```bash
-# Using uvicorn directly
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-
-# Or using the startup script
-../scripts/start-apis.sh
-```
-
-### Production Mode
-
-```bash
-# Using gunicorn
-gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
-
-# Or using Docker
-docker-compose -f ../docker/docker-compose.yml up -d backend
-```
-
-## 📚 API Documentation
-
-### Access Points
-
-- **API Documentation**: http://localhost:8000/docs (Swagger UI)
-- **Alternative Docs**: http://localhost:8000/redoc
-- **OpenAPI Schema**: http://localhost:8000/openapi.json
-- **Health Check**: http://localhost:8000/health
-
-### Main Endpoints
-
-#### Authentication
-
-- `POST /api/v1/auth/login` - User login
-- `POST /api/v1/auth/register` - User registration
-- `GET /api/v1/auth/me` - Get current user
-
-#### Crawling Operations
-
-- `POST /api/v1/crawl/start` - Start crawl job
-- `GET /api/v1/crawl/status/{task_id}` - Get job status
-- `GET /api/v1/crawl/history` - List crawl history
-- `DELETE /api/v1/crawl/cancel/{task_id}` - Cancel job
-- `GET /api/v1/crawl/pages` - Get pagination links
-- `POST /api/v1/crawl/articles` - Extract article links
-- `POST /api/v1/crawl/pdf-links` - Extract PDF links
-
-#### File Management
-
-- `GET /api/v1/files/list` - List uploaded files
-- `POST /api/v1/files/upload` - Upload file
-- `GET /api/v1/files/{file_id}` - Download file
-- `DELETE /api/v1/files/{file_id}` - Delete file
-
-#### Search/RAG
-
-- `POST /api/v1/rag/search` - Semantic search
-- `POST /api/v1/rag/ingest` - Ingest documents
-- `GET /api/v1/rag/documents` - List documents
-
-## ⚙️ Configuration
+## Configuration
 
 ### Environment Variables
 
-```bash
-# Application
-PROJECT_NAME="Web RAG Backend"
-API_V1_STR="/api/v1"
-SECRET_KEY="your-secret-key"
+Key configuration options:
 
-# Database
-DATABASE_URL="sqlite:///./app.db"
+- `DATABASE_URL`: Database connection string
+- `QDRANT_URL`: Vector database URL
+- `OPENAI_API_KEY`: OpenAI API key for LLM operations
+- `SECRET_KEY`: JWT signing key (change in production)
+- `DEBUG`: Enable/disable debug mode
 
-# QDrant Vector Database
-QDRANT_API_KEY="your-qdrant-key"
-QDRANT_URL="https://your-instance.qdrant.io"
+See `.env.example` for all available options.
 
-# Embedding Service
-OPENAI_BASE_URL_EMBED="http://localhost:8080/v1"
-OPENAI_API_KEY_EMBED="text"
+### External Services
 
-# File Storage
-UPLOAD_DIR="./uploads"
-MAX_UPLOAD_SIZE=52428800
+The backend requires these external services:
 
-# Crawling
-BIWASE_BASE_URL="https://biwase.com.vn/tin-tuc/ban-tin-biwase"
-CRAWL_USER_AGENT="FastAPI-Crawler/1.0"
-CRAWL_TIMEOUT=30
-CRAWL_DELAY=1.0
+- **Qdrant**: Vector database for document embeddings
+- **Redis**: Message broker for background tasks
+- **PostgreSQL/MySQL**: Primary database (optional, defaults to SQLite)
 
-# Processing
-MAX_CONCURRENT_PDF_JOBS=2
-CHUNK_SIZE=1000
-CHUNK_OVERLAP=200
+## Development
 
-# Security
-ALLOWED_HOSTS=["localhost", "127.0.0.1"]
-BACKEND_CORS_ORIGINS=["http://localhost:3000"]
-
-# Rate Limiting
-RATE_LIMIT_REQUESTS=100
-RATE_LIMIT_WINDOW=60
-```
-
-### External Services Setup
-
-#### QDrant Vector Database
-
-1. Sign up at https://cloud.qdrant.io
-2. Create a new cluster
-3. Get API key and URL
-4. Update environment variables
-
-#### Embedding Service
-
-1. Run Qwen3-Embedding model locally or use hosted service
-2. Example with vLLM:
+### Running Tests
 
 ```bash
-python -m vllm.entrypoints.openai.api_server \
-  --model Qwen/Qwen3-Embedding-0.6B \
-  --port 8080
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=app --cov-report=html
+
+# Run specific test file
+pytest tests/test_api/test_health.py
 ```
-
-## 🧪 Testing
-
-### Run Tests
-
-```bash
-# All tests
-python run_tests.py
-
-# Specific test categories
-python run_tests.py crawler
-python run_tests.py auth
-python run_tests.py integration
-
-# With coverage
-python -m pytest --cov=app --cov-report=html
-```
-
-### Test Structure
-
-```
-tests/
-├── conftest.py              # Test configuration and fixtures
-├── test_auth_endpoints.py   # Authentication endpoint tests
-├── test_crawl_endpoints.py  # Crawling endpoint tests
-├── test_crawler.py          # Crawler logic tests
-├── test_embedding_service.py # Embedding service tests
-├── test_pdf_processor.py    # PDF processing tests
-└── test_qdrant_service.py   # Vector database tests
-```
-
-## 🔧 Development
 
 ### Code Quality
 
 ```bash
-# Linting
-ruff check .
-
-# Formatting
+# Format code
 black .
+isort .
+
+# Lint code
+flake8 app tests
 
 # Type checking
-mypy .
+mypy app
 ```
 
-### Database Operations
+### Database Migrations
 
 ```bash
-# Create migration
+# Create new migration
 alembic revision --autogenerate -m "Add new table"
 
-# Apply migrations
+# Run migrations
 alembic upgrade head
 
 # Downgrade
 alembic downgrade -1
 ```
 
-### Docker Development
+### Background Tasks
 
 ```bash
-# Build development image
-docker build -f ../docker/backend/Dockerfile -t rag-backend:dev .
+# Start Celery worker
+celery -A app.workers.celery_app worker --loglevel=info
 
-# Run with hot reload
-docker run -v $(pwd):/app -p 8000:8000 rag-backend:dev
+# Start Celery beat (scheduler)
+celery -A app.workers.celery_app beat --loglevel=info
 ```
 
-## 📊 Monitoring & Logging
+## API Usage Examples
 
-### Structured Logging
+### Authentication
 
-All logs are structured JSON with the following fields:
+```bash
+# Login
+curl -X POST "http://localhost:8000/api/v1/auth/login" \
+     -H "Content-Type: application/x-www-form-urlencoded" \
+     -d "username=user&password=password"
 
-- `timestamp`: ISO 8601 timestamp
-- `level`: Log level (INFO, WARNING, ERROR)
-- `logger`: Logger name
-- `message`: Log message
-- `extra`: Additional context fields
+# Use token in subsequent requests
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+     "http://localhost:8000/api/v1/documents/"
+```
 
-### Health Checks
+### Document Upload
 
-- **Application Health**: `/health` - Overall application status
-- **Database Health**: `/health/database` - Database connectivity
-- **External Services**: `/health/external` - QDrant and embedding service status
+```bash
+curl -X POST "http://localhost:8000/api/v1/documents/upload" \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -F "file=@document.pdf"
+```
 
-### Metrics
+### Search
 
-- Request/response times
-- Error rates by endpoint
-- Background task success/failure rates
-- Resource usage (CPU, memory)
+```bash
+curl "http://localhost:8000/api/v1/search/?query=your%20search%20term" \
+     -H "Authorization: Bearer YOUR_TOKEN"
+```
 
-## 🚀 Deployment
+### RAG Query
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/rag/ask?question=What%20is%20machine%20learning?" \
+     -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+## Deployment
+
+### Production Checklist
+
+- [ ] Set `DEBUG=false`
+- [ ] Use strong `SECRET_KEY`
+- [ ] Configure production database
+- [ ] Set up proper CORS origins
+- [ ] Configure external service URLs
+- [ ] Set up monitoring and logging
+- [ ] Configure reverse proxy (nginx)
+- [ ] Set up SSL/TLS certificates
 
 ### Docker Production
 
-```bash
-# Build production image
-docker build -f ../docker/backend/Dockerfile.prod -t rag-backend:latest .
-
-# Run with docker-compose
-docker-compose -f ../docker/docker-compose.yml up -d
+```yaml
+# docker-compose.prod.yml
+version: '3.8'
+services:
+  backend:
+    build: .
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+    env_file:
+      - .env.production
 ```
 
-### Environment-Specific Configs
+## Monitoring
 
-- **Development**: `.env` - Full debugging, reload enabled
-- **Testing**: `.env.test` - Test database, minimal logging
-- **Production**: Environment variables - Optimized settings, security enabled
+### Health Checks
 
-## 🤝 API Usage Examples
+- `GET /health` - Basic health status
+- `GET /health/detailed` - Detailed system status
 
-### Start a Crawl Job
+### Metrics
 
-```python
-import requests
+The application exposes Prometheus metrics at `/metrics` (when configured).
 
-response = requests.post(
-    "http://localhost:8000/api/v1/crawl/start",
-    json={"crawl_type": "simple", "user_id": "user123"},
-    headers={"Authorization": "Bearer your-token"}
-)
-task_id = response.json()["data"]["task_id"]
-```
+### Logging
 
-### Check Job Status
+- Structured JSON logging for production
+- Request ID tracing
+- Configurable log levels
 
-```python
-status_response = requests.get(
-    f"http://localhost:8000/api/v1/crawl/status/{task_id}",
-    headers={"Authorization": "Bearer your-token"}
-)
-status = status_response.json()
-```
+## Contributing
 
-### Semantic Search
+1. Fork the repository
+2. Create a feature branch
+3. Write tests for new functionality
+4. Ensure all tests pass
+5. Submit a pull request
 
-```python
-search_response = requests.post(
-    "http://localhost:8000/api/v1/rag/search",
-    json={"query": "your search query", "limit": 10},
-    headers={"Authorization": "Bearer your-token"}
-)
-results = search_response.json()
-```
+### Development Guidelines
 
-## 📝 Contributing
+- Use type hints for all function parameters
+- Write comprehensive docstrings
+- Follow PEP 8 style guidelines
+- Add tests for new features
+- Update documentation as needed
 
-1. Follow PEP 8 style guidelines
-2. Add tests for new functionality
-3. Update documentation for API changes
-4. Use type hints for all function parameters
-5. Run full test suite before submitting PR
+## License
 
-## 🐛 Troubleshooting
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-### Common Issues
+## Support
 
-1. **Database Connection Failed**
-   - Check DATABASE_URL in environment
-   - Ensure database server is running
-   - Verify connection credentials
+For support and questions:
 
-2. **QDrant Connection Issues**
-   - Verify API key and URL
-   - Check network connectivity
-   - Ensure QDrant service is accessible
-
-3. **Embedding Service Errors**
-   - Confirm service is running on correct port
-   - Check OPENAI_BASE_URL_EMBED configuration
-   - Verify model compatibility
-
-4. **File Upload Issues**
-   - Check UPLOAD_DIR permissions
-   - Verify MAX_UPLOAD_SIZE settings
-   - Ensure sufficient disk space
-
-### Debug Mode
-
-Enable debug logging:
-
-```bash
-LOG_LEVEL=DEBUG uvicorn app.main:app --reload
-```
-
-## 📈 Performance Optimization
-
-- **Async Operations**: All I/O operations are async
-- **Connection Pooling**: Database and external service connections pooled
-- **Caching**: Response caching for frequently accessed data
-- **Rate Limiting**: Prevents abuse and ensures fair usage
-- **Background Processing**: Long-running tasks processed asynchronously
-
-## 🔒 Security
-
-- **Authentication**: JWT-based user authentication
-- **Authorization**: Role-based access control
-- **Input Validation**: All inputs validated with Pydantic
-- **Rate Limiting**: Request throttling to prevent abuse
-- **CORS**: Configurable cross-origin resource sharing
-- **HTTPS**: SSL/TLS encryption in production
-- **Secrets Management**: Sensitive data stored securely
-
----
-
-Built with FastAPI, SQLAlchemy, and modern Python async patterns for high-performance document processing and retrieval.
+- 📖 [API Documentation](http://localhost:8000/docs)
+- 🐛 [Issue Tracker](https://github.com/your-org/search-rag/issues)
+- 💬 [Discussions](https://github.com/your-org/search-rag/discussions)
