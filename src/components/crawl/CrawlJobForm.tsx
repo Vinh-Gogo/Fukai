@@ -24,7 +24,7 @@ export const CrawlJobForm: React.FC<CrawlJobFormProps> = ({
 
   return (
     <section className="mb-8 animate-fade-in">
-      <div className="border-t border-border pt-8">
+      <div className="border-t pt-8">
         <h2 className="text-xl font-semibold text-foreground mb-4">
           Add New Crawl Job
         </h2>

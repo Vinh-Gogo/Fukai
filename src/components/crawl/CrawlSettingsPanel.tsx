@@ -23,13 +23,13 @@ export const CrawlSettingsPanel: React.FC<CrawlSettingsPanelProps> = ({
   };
 
   return (
-    <section className="mb-8 animate-fade-in">
-      <div className="border-t border-border pt-8">
-        <h2 className="text-xl font-semibold text-foreground mb-4">
+    <section className="mb-8 animate-fade-in border border-border rounded-xl text-center">
+      <div className="px-1 py-1 flex justify-between items-center bg-accent/50 border-b border-border rounded-t-xl gap-4">
+        <h2 className="text-xl font-semibold text-foreground mb-1 text-center">
           Auto-Download Settings
         </h2>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <label className="flex items-center cursor-pointer gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 text-center">
+          <label className="flex items-center cursor-pointer gap-3 text-center">
             <input
               type="checkbox"
               checked={autoDownloadEnabled}
@@ -37,7 +37,7 @@ export const CrawlSettingsPanel: React.FC<CrawlSettingsPanelProps> = ({
               disabled={disabled}
               className="w-5 h-5 text-primary bg-background border-border rounded focus:ring-primary/20 focus:ring-2 disabled:opacity-50"
             />
-            <span className="font-medium text-foreground">
+            <span className="font-medium text-foreground text-center">
               Auto-download new PDFs after re-run
             </span>
           </label>

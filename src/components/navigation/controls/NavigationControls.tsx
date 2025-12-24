@@ -64,7 +64,7 @@ export const NavigationControls = React.memo(
         {isMobile && mounted && (
           <button
             onClick={toggleSidebar}
-            className="fixed top-4 left-4 z-50 p-2.5 rounded-xl shadow-lg lg:hidden transition-all duration-300 hover:scale-105 backdrop-blur-sm"
+            className="fixed top-4 right-4 z-50 p-2.5 rounded-xl shadow-lg lg:hidden transition-all duration-300 hover:scale-105 backdrop-blur-sm"
             aria-label={sidebarOpen ? "Close menu" : "Open menu"}
             style={getToggleButtonStyles()}
           >

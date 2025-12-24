@@ -213,7 +213,7 @@ export const ActivityChart: React.FC<ActivityChartProps> = ({
   }, [activities, timeRange, chartType]);
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm border border-border rounded-xl p-6">
+    <div className="bg-white border border-border rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">

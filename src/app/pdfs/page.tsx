@@ -251,7 +251,7 @@ export default function PDFProcessing() {
         }}
       >
         {/* Main Content - Scrollable area including header */}
-        <main className="flex-1 overflow-y-auto rounded-3xl">
+        <main className="flex-1 overflow-y-auto">
           {/* Brand Header - Now scrolls with content */}
           <BrandHeader
             icon="file-text"

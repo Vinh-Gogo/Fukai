@@ -77,7 +77,7 @@ export default function ActivityDashboardPage() {
         }}
       >
         {/* Header */}
-        <main className="flex-1 overflow-y-auto rounded-3xl">
+        <main className="flex-1 overflow-y-auto">
           <BrandHeader
             icon="activity"
             title="Activity Dashboard"

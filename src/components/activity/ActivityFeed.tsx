@@ -122,7 +122,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   const displayActivities = activities.slice(0, 50); // Limit to 50 most recent
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm border border-border rounded-xl p-6">
+    <div className="bg-white backdrop-blur-sm border border-border rounded-xl p-3">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Activity className="w-6 h-6 text-primary" />

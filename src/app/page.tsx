@@ -222,7 +222,7 @@ export default function Home() {
         }}
       >
         {/* Main Content - Scrollable area including header */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto mx-2">
           {/* Brand Header - Now scrolls with content */}
           <BrandHeader
             icon="search"
@@ -348,7 +348,7 @@ export default function Home() {
 
             {/* Settings Panel with Accordion Effect */}
             <div className="mb-10 animate-fade-in-up delay-100">
-              <div className="bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-2xl p-1 backdrop-blur-sm border border-purple-500/20">
+              <div className="bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-2xl">
                 <CrawlSettingsPanel
                   autoDownloadEnabled={
                     crawlSettings.settings.autoDownloadEnabled

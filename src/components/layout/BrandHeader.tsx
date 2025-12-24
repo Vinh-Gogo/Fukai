@@ -105,7 +105,7 @@ export default function BrandHeader({
         {/* Centered Content Wrapper */}
         <div className="max-w-4xl mx-auto text-center relative z-10">
           {/* Icon Container - Large Hero Icon with Glow */}
-          <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-white/10 backdrop-blur-sm rounded-2xl mb-6 md:mb-8 shadow-2xl border border-white/20 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]">
+          <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-white/10 backdrop-blur-sm rounded mb-6 md:mb-8 shadow-2xl border border-white/20 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]">
             <IconComponent className="w-8 h-8 md:w-10 md:h-10 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
           </div>
 
@@ -128,14 +128,14 @@ export default function BrandHeader({
 
           {/* Status Indicator with Enhanced Animation */}
           {showStatusIndicator && (
-            <div className="inline-flex items-center gap-2 md:gap-3 mt-6 md:mt-8 px-4 md:px-6 py-2 md:py-3 bg-white/15 backdrop-blur-sm rounded-full border border-white/20 shadow-lg animate-float">
+            <div className="inline-flex items-center gap-2 md:gap-3 mt-6 md:mt-8 px-4 md:px-6 py-2 md:py-3 bg-white/15 backdrop-blur-sm border border-white/20 shadow-lg animate-float">
               <div className="flex items-center gap-1.5">
                 {/* Enhanced Wave Animation */}
                 <div className="flex items-center space-x-1">
                   {[...Array(5)].map((_, i) => (
                     <div
                       key={i}
-                      className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-400 rounded-full animate-wave-pulse"
+                      className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-400 animate-wave-pulse"
                       style={{
                         animationDelay: `${i * 0.15}s`,
                         transform: "scale(0.8)",
@@ -183,10 +183,10 @@ export default function BrandHeader({
                 <stop offset="100%" stopColor="rgba(255, 255, 255, 0.2)" />
               </linearGradient>
             </defs>
-            <path
+            {/* <path
               d="M0,80 C100,70 200,90 300,80 C400,70 500,90 600,80 C700,70 800,90 900,80 C1000,70 1100,90 1200,80 L1200,120 L0,120 Z"
               fill="url(#foamGradient)"
-            />
+            /> */}
           </svg>
         </div>
       </div>

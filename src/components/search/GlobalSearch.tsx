@@ -18,9 +18,8 @@ interface GlobalSearchProps {
 
 export function GlobalSearch({
   className,
-  placeholder = "Search documents, chat history, and content...",
-  showFilters = true,
-  maxResults = 10,
+  placeholder = "Search documents, history, content...",
+  maxResults = 4,
   onResultClick,
 }: GlobalSearchProps) {
   const {
@@ -252,11 +251,11 @@ export function GlobalSearch({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             className={cn(
-              "w-full pl-10 pr-10 py-2 bg-white border border-gray-300 rounded-lg",
-              "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+              "w-full pl-8 pr-8 py-2 bg-white border border-gray-300 text-sm",
+              "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg",
               "placeholder-gray-400 text-gray-900",
               "transition-all duration-200",
-              isSearchOpen && "rounded-b-none border-b-0",
+              isSearchOpen,
             )}
           />
 

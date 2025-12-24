@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 
 // Navigation width values (in Tailwind units)
 export const NAVIGATION_WIDTHS = {
-  collapsed: 22, // w-22 = 88px (22 * 4px)
+  collapsed: 24, // w-24 = 96px (24 * 4px)
   expanded: 66,   // w-66 = 264px (66 * 4px)
 } as const;
 
