@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import { backendAPI } from "@/lib/api/backend-client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,38 +30,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate unique filename
-    const timestamp = Date.now();
-    const randomId = Math.random().toString(36).substring(2, 15);
-    const filename = `${timestamp}-${randomId}-${file.name}`;
-    const filepath = join(process.cwd(), "public", "uploaded", filename);
+    // Create FormData for backend upload
+    const backendFormData = new FormData();
+    backendFormData.append("file", file);
 
-    // Ensure uploaded directory exists
-    const uploadDir = join(process.cwd(), "public", "uploaded");
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch {
-      // Directory might already exist, ignore error
-    }
+    // Upload to backend
+    const result = await backendAPI.uploadDocument(backendFormData);
 
-    // Convert file to buffer and save
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await writeFile(filepath, buffer);
-
-    // Return success response with file info
-    return NextResponse.json({
-      success: true,
-      filename,
-      originalName: file.name,
-      size: file.size,
-      url: `/uploaded/${filename}`,
-      message: "File uploaded successfully",
-    });
+    // Return success response from backend
+    return NextResponse.json(result);
   } catch (error) {
     console.error("File upload error:", error);
     return NextResponse.json(
-      { error: "Failed to upload file" },
+      { error: error instanceof Error ? error.message : "Failed to upload file" },
       { status: 500 },
     );
   }

@@ -15,52 +15,8 @@ from app.api.deps import get_logger, get_request_id
 api_router = APIRouter()
 
 
-# Request logging middleware
-@api_router.middleware("http")
-async def log_requests(request: Request, call_next):
-    """
-    Middleware to log API requests and responses.
-
-    This middleware logs request details and response status for monitoring
-    and debugging purposes.
-    """
-    logger = get_logger(request)
-    request_id = get_request_id(request)
-
-    # Log request start
-    logger.info(
-        "API request started",
-        method=request.method,
-        url=str(request.url),
-        headers=dict(request.headers),
-        client=request.client.host if request.client else None,
-    )
-
-    try:
-        # Process the request
-        response = await call_next(request)
-
-        # Log successful response
-        logger.info(
-            "API request completed",
-            status_code=response.status_code,
-            content_length=response.headers.get("content-length"),
-        )
-
-        return response
-
-    except Exception as e:
-        # Log error response
-        logger.error(
-            "API request failed",
-            error=str(e),
-            exc_info=True,
-        )
-        raise
-
-
 # Import and include endpoint routers
-from app.api.v1.endpoints import health, documents, search, rag, auth
+from app.api.v1.endpoints import health, documents, search, rag, crawler
 
 # Include routers with prefixes
 api_router.include_router(
@@ -88,9 +44,9 @@ api_router.include_router(
 )
 
 api_router.include_router(
-    auth.router,
-    prefix="/auth",
-    tags=["authentication"]
+    crawler.router,
+    prefix="/crawler",
+    tags=["crawler"]
 )
 
 
@@ -111,7 +67,7 @@ async def api_info():
             "documents": "/documents",
             "search": "/search",
             "rag": "/rag",
-            "auth": "/auth",
+            "crawler": "/crawler",
             "docs": "/docs",
             "openapi": "/openapi.json",
         },

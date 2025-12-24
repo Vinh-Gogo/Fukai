@@ -64,7 +64,7 @@ export const AIAgentStatus = React.memo(({ collapsed }: AIAgentStatusProps) => {
       <div className="p-1 flex justify-center">
         <div
           className={cn(
-            "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300",
+            "w-8 h-8 flex items-center justify-center transition-all duration-300",
             "bg-gradient-to-r from-emerald-500 to-teal-600 shadow-[0_0_12px_rgba(52,211,153,0.4)]",
             "hover:shadow-[0_0_15px_rgba(52,211,153,0.6)] hover:scale-105",
           )}
@@ -78,7 +78,7 @@ export const AIAgentStatus = React.memo(({ collapsed }: AIAgentStatusProps) => {
   return (
     <div
       className={cn(
-        "p-1 transition-all duration-300 rounded-xl",
+        "p-1 transition-all duration-300",
         isDark
           ? `${QWEN_GRADIENTS.dark} shadow-[0_4px_20px_rgba(0,0,0,0.3)]`
           : `${QWEN_GRADIENTS.light} shadow-[0_4px_20px_rgba(0,45,30,0.25)]`,

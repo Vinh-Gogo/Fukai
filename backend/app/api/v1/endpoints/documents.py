@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 
 from app.config.settings import settings
-from app.api.deps import get_current_user, get_logger, get_db_session
+from app.api.deps import get_logger, get_db_session
 from app.core.exceptions import ValidationError
 
 
@@ -20,7 +20,6 @@ router = APIRouter()
 @router.post("/upload")
 async def upload_document(
     file: UploadFile = File(...),
-    current_user: str = Depends(get_current_user),
     logger=Depends(get_logger),
     db=Depends(get_db_session),
 ):
@@ -30,7 +29,7 @@ async def upload_document(
     This endpoint accepts document uploads and queues them for processing.
     Supported formats: PDF, TXT, MD, DOCX
     """
-    logger.info("Document upload requested", filename=file.filename, user=current_user)
+    logger.info("Document upload requested", filename=file.filename)
 
     # Validate file type
     if not file.filename:
@@ -65,15 +64,14 @@ async def upload_document(
 
 @router.get("/")
 async def list_documents(
-    current_user: str = Depends(get_current_user),
     logger=Depends(get_logger),
 ):
     """
-    List user's documents.
+    List documents.
 
-    Returns a list of documents uploaded by the current user.
+    Returns a list of documents.
     """
-    logger.info("Document list requested", user=current_user)
+    logger.info("Document list requested")
 
     # TODO: Implement document listing from database
     return {
@@ -86,7 +84,6 @@ async def list_documents(
 @router.get("/{document_id}")
 async def get_document(
     document_id: str,
-    current_user: str = Depends(get_current_user),
     logger=Depends(get_logger),
 ):
     """
@@ -94,7 +91,7 @@ async def get_document(
 
     Returns detailed information about a specific document.
     """
-    logger.info("Document details requested", document_id=document_id, user=current_user)
+    logger.info("Document details requested", document_id=document_id)
 
     # TODO: Implement document retrieval
     return {
@@ -106,7 +103,6 @@ async def get_document(
 @router.delete("/{document_id}")
 async def delete_document(
     document_id: str,
-    current_user: str = Depends(get_current_user),
     logger=Depends(get_logger),
 ):
     """
@@ -114,7 +110,7 @@ async def delete_document(
 
     Removes a document and its associated data.
     """
-    logger.info("Document deletion requested", document_id=document_id, user=current_user)
+    logger.info("Document deletion requested", document_id=document_id)
 
     # TODO: Implement document deletion
     return {

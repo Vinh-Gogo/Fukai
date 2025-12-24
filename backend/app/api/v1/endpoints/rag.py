@@ -7,7 +7,7 @@ This module provides endpoints for Q&A and conversational AI using retrieved doc
 from fastapi import APIRouter, Depends, Query
 from typing import Optional, Dict, Any
 
-from app.api.deps import get_current_user, get_logger
+from app.api.deps import get_logger
 
 
 router = APIRouter()
@@ -17,7 +17,6 @@ router = APIRouter()
 async def ask_question(
     question: str = Query(..., description="Question to ask"),
     context_docs: Optional[int] = Query(5, description="Number of documents to retrieve for context"),
-    current_user: str = Depends(get_current_user),
     logger=Depends(get_logger),
 ):
     """
@@ -25,7 +24,7 @@ async def ask_question(
 
     Retrieves relevant documents and generates an answer using LLM.
     """
-    logger.info("RAG question asked", question=question, context_docs=context_docs, user=current_user)
+    logger.info("RAG question asked", question=question, context_docs=context_docs)
 
     # TODO: Implement RAG pipeline
     return {
@@ -41,7 +40,6 @@ async def ask_question(
 async def chat_message(
     message: str = Query(..., description="Chat message"),
     conversation_id: Optional[str] = Query(None, description="Conversation ID for context"),
-    current_user: str = Depends(get_current_user),
     logger=Depends(get_logger),
 ):
     """
@@ -49,7 +47,7 @@ async def chat_message(
 
     Maintains conversation context and provides RAG-enhanced responses.
     """
-    logger.info("Chat message received", message=message, conversation_id=conversation_id, user=current_user)
+    logger.info("Chat message received", message=message, conversation_id=conversation_id)
 
     # TODO: Implement conversational RAG
     return {
@@ -63,15 +61,14 @@ async def chat_message(
 
 @router.get("/conversations")
 async def list_conversations(
-    current_user: str = Depends(get_current_user),
     logger=Depends(get_logger),
 ):
     """
-    List user conversations.
+    List conversations.
 
-    Returns a list of conversation threads for the current user.
+    Returns a list of conversation threads.
     """
-    logger.info("Conversation list requested", user=current_user)
+    logger.info("Conversation list requested")
 
     # TODO: Implement conversation history
     return {

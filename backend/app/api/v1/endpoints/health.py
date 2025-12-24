@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Dict, Any
 import psutil
 import asyncio
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 
 from app.config.settings import settings
 from app.api.deps import get_logger, get_request_id

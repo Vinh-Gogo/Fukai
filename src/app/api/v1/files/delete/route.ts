@@ -12,9 +12,9 @@ import {
   createInternalServerErrorResponse,
   generateRequestId,
   createRequestContext,
-} from "../../../_lib/utils/response";
-import { validateFileDelete } from "../../../_lib/api/validation";
-import { PATHS } from "../../../_lib/api/config";
+} from "@/lib/utils/response";
+import { validateFileDelete } from "@/lib/api/validation";
+import { PATHS } from "@/lib/api/config";
 
 // Verify file exists and get its stats
 async function verifyFileExists(filepath: string) {

@@ -49,32 +49,37 @@ export default function PDFProcessing() {
   // Fetch real PDF files from backend
   const fetchRealPDFFiles = useCallback(async (): Promise<PDFFile[]> => {
     try {
-      // Fetch list of uploaded files from backend
-      const response = await fetch("/api/v1/files/list");
-      if (!response.ok) {
-        throw new Error("Failed to fetch files");
-      }
+      // Import backend client dynamically to avoid SSR issues
+      const { backendAPI } = await import("@/lib/api/backend-client");
 
-      const data = await response.json();
-      const files = data.files || [];
+      // Fetch list of documents from backend
+      const data = await backendAPI.listDocuments() as { documents?: Array<{
+        id?: string;
+        filename: string;
+        size: number;
+        created_at: string;
+        status: string;
+      }> };
+      const documents = data.documents || [];
 
-      // Convert backend file format to PDFFile format
-      return files.map(
+      // Convert backend document format to PDFFile format
+      return documents.map(
         (
-          file: {
+          doc: {
+            id?: string;
             filename: string;
             size: number;
-            modified: number;
-            url: string;
+            created_at: string;
+            status: string;
           },
           index: number,
         ) => ({
-          id: `uploaded-${Date.now()}-${index}`,
-          name: file.filename,
-          size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-          status: "completed" as const,
-          uploadDate: new Date(file.modified * 1000).toLocaleString(),
-          sourceUrl: file.url,
+          id: doc.id || `doc-${Date.now()}-${index}`,
+          name: doc.filename,
+          size: `${(doc.size / 1024 / 1024).toFixed(2)} MB`,
+          status: (doc.status === "completed" ? "completed" : "processing") as "completed" | "processing",
+          uploadDate: new Date(doc.created_at).toLocaleString(),
+          sourceUrl: `/api/documents/${doc.id}/download`, // Backend download endpoint
           pages: Math.floor(Math.random() * 50) + 10, // Mock page count for now
           language: "English", // Default assumption
         }),

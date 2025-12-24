@@ -14,10 +14,10 @@ import {
   formatFileSize,
   generateRequestId,
   createRequestContext,
-} from "../../../_lib/utils/response";
-import { validateFileUpload } from "../../../_lib/api/validation";
-import { FILE_CONFIG, PATHS } from "../../../_lib/api/config";
-import type { UploadedFileInfo } from "../../../_lib/api/types";
+} from "@/lib/utils/response";
+import { validateFileUpload } from "@/lib/api/validation";
+import { FILE_CONFIG, PATHS } from "@/lib/api/config";
+import type { UploadedFileInfo } from "@/lib/api/types";
 
 // Generate unique filename with timestamp and random component
 function generateUniqueFilename(originalName: string): string {

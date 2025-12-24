@@ -78,10 +78,10 @@ def setup_logging() -> None:
     # Log setup completion
     logger = logging.getLogger(__name__)
     logger.info(
-        "Logging setup completed",
-        log_level=settings.LOG_LEVEL,
-        log_format=settings.LOG_FORMAT,
-        environment=settings.ENVIRONMENT
+        "Logging setup completed, log_level=%s, log_format=%s, environment=%s",
+        settings.LOG_LEVEL,
+        settings.LOG_FORMAT,
+        settings.ENVIRONMENT
     )
 
 

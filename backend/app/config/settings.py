@@ -7,7 +7,8 @@ with sensible defaults for development.
 
 import secrets
 from typing import List, Optional, Union
-from pydantic import AnyHttpUrl, BaseSettings, validator
+from pydantic import AnyHttpUrl, validator
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -48,10 +49,10 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
-    # Security Configuration
-    SECRET_KEY: str = secrets.token_urlsafe(32)
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
-    ALGORITHM: str = "HS256"
+    # Security Configuration (disabled for now)
+    # SECRET_KEY: str = secrets.token_urlsafe(32)
+    # ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
+    # ALGORITHM: str = "HS256"
 
     # Trusted Hosts (for production)
     ALLOWED_HOSTS: List[str] = ["*"]  # In production, specify actual hosts
@@ -98,6 +99,12 @@ class Settings(BaseSettings):
     RAG_CONTEXT_WINDOW: int = 4000
     RAG_MAX_TOKENS: int = 1000
     RAG_TEMPERATURE: float = 0.1
+
+    # Crawler Configuration
+    CRAWLER_BASE_URL: str = 'https://biwase.com.vn/tin-tuc/ban-tin-biwase'
+    CRAWLER_RATE_LIMIT_DELAY: int = 1  # seconds between requests
+    CRAWLER_REQUEST_TIMEOUT: int = 30  # seconds
+    CRAWLER_DOWNLOAD_TIMEOUT: int = 60  # seconds for downloads
 
     class Config:
         """Pydantic configuration."""

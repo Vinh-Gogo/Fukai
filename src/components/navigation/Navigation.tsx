@@ -39,7 +39,6 @@ export function Navigation({
       <aside
         className={cn(
           "flex flex-col transition-all duration-300 border",
-          "rounded-3xl",
           // Kích thước - improved mobile responsiveness
           isMobile ? "fixed top-0 left-0 z-40 h-full" : "fixed top-0 left-0 z-30 h-screen",
           isMobile

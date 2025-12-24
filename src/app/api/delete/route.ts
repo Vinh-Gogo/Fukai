@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { unlink } from "fs/promises";
-import { join } from "path";
+import { backendAPI } from "@/lib/api/backend-client";
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -19,32 +18,24 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Invalid file path" }, { status: 400 });
     }
 
-    // Extract filename from path
-    const basename = filename.replace("/uploaded/", "");
-    if (!basename) {
+    // Extract filename from path - this will be used as document ID for backend
+    const documentId = filename.replace("/uploaded/", "");
+    if (!documentId) {
       return NextResponse.json({ error: "Invalid filename" }, { status: 400 });
     }
 
-    // Construct full file path
-    const filepath = join(process.cwd(), "public", "uploaded", basename);
-
-    try {
-      // Delete the file
-      await unlink(filepath);
-    } catch {
-      // File might not exist, which is fine
-      console.log("File not found or already deleted:", filepath);
-    }
+    // Delete from backend
+    const result = await backendAPI.deleteDocument(documentId);
 
     return NextResponse.json({
       success: true,
       message: "File deleted successfully",
-      filename: basename,
+      filename: documentId,
     });
   } catch (error) {
     console.error("File deletion error:", error);
     return NextResponse.json(
-      { error: "Failed to delete file" },
+      { error: error instanceof Error ? error.message : "Failed to delete file" },
       { status: 500 },
     );
   }
