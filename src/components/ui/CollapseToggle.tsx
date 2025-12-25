@@ -174,7 +174,7 @@ export const CollapseToggle = React.memo(
             y: [0, -2, 2, -1, 1, 0],
           }}
           transition={{ duration: 0.3, repeat: Infinity, ease: "linear" }}
-          className="relative w-12 h-12"
+          className="relative w-5 h-5"
         >
           <FlySVG uniqueId={uniqueId} />
           <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-2 rounded-full bg-black/20 blur-sm" />
