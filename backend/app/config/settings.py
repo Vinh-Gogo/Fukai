@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     DEBUG: bool = True
 
     # CORS Configuration
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = [
+    BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",  # Next.js dev server
         "http://localhost:8000",  # FastAPI dev server
         "http://127.0.0.1:3000",
@@ -103,8 +103,13 @@ class Settings(BaseSettings):
     # Crawler Configuration
     CRAWLER_BASE_URL: str = 'https://biwase.com.vn/tin-tuc/ban-tin-biwase'
     CRAWLER_RATE_LIMIT_DELAY: int = 1  # seconds between requests
-    CRAWLER_REQUEST_TIMEOUT: int = 30  # seconds
+    CRAWLER_REQUEST_TIMEOUT: int = 60  # seconds
+    CRAWLER_REQUEST_RETRIES: int = 3
+    CRAWLER_REQUEST_BACKOFF_FACTOR: float = 1.0  # seconds multiplier for exponential backoff
     CRAWLER_DOWNLOAD_TIMEOUT: int = 60  # seconds for downloads
+    # Mocking for tests / offline parsing
+    CRAWLER_USE_MOCK: bool = False
+    CRAWLER_MOCK_HTML_PATH: Optional[str] = "backend/tests/fixtures/biwase_mock.html"
 
     class Config:
         """Pydantic configuration."""

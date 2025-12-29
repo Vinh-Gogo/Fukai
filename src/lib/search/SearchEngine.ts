@@ -159,19 +159,7 @@ export class SearchEngine {
     // For now, we'll simulate with mock data
     try {
       // In a real implementation, this would extract text from PDFs
-      const mockPDFs: PDFFile[] = [
-        {
-          id: "pdf-1",
-          name: "Annual Report 2024.pdf",
-          size: "2.3 MB",
-          status: "completed",
-          uploadDate: "2025-01-15",
-          sourceUrl: "https://example.com/annual-report-2024.pdf",
-          pages: 45,
-          language: "English",
-          quality: "high",
-        },
-      ];
+      const mockPDFs: PDFFile[] = [];
 
       for (const pdf of mockPDFs) {
         const doc: SearchDocument = {

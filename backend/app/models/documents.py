@@ -6,11 +6,11 @@ their metadata, and text chunks for RAG applications.
 """
 
 from sqlalchemy import Column, Integer, String, Text, DateTime, Float, ForeignKey, Boolean, Index
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship
 from datetime import datetime
 from typing import List
 
-Base = declarative_base()
+from app.config.database import Base
 
 
 class Document(Base):

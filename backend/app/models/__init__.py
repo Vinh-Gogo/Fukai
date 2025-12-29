@@ -14,6 +14,15 @@ from .crawler import (
     CrawlerConfig,
 )
 
+# Import document models (SQLAlchemy models for database)
+from .documents import (
+    Document,
+    DocumentChunk,
+    ProcessingJob,
+    DocumentCollection,
+    CollectionDocument,
+)
+
 __all__ = [
     "CrawlScanResponse",
     "CrawlDownloadRequest",
@@ -21,4 +30,10 @@ __all__ = [
     "PDFFileInfo",
     "CrawlStatusResponse",
     "CrawlerConfig",
+    # Document models
+    "Document",
+    "DocumentChunk",
+    "ProcessingJob",
+    "DocumentCollection",
+    "CollectionDocument",
 ]

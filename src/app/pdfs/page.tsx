@@ -18,6 +18,7 @@ import BrandHeader from "@/components/layout/BrandHeader";
 import { PDFList } from "@/components/features/PDFList";
 import { useCrawlRealtimeStore } from "@/stores/crawlRealtime";
 import { LiveStatusIndicator } from "@/components/ui/LiveStatusIndicator";
+import { backendAPI } from "@/lib/api/backend-client";
 
 // Dynamically import PDFViewer with SSR disabled to prevent document access errors
 const PDFViewer = dynamic(
@@ -44,6 +45,18 @@ export default function PDFProcessing() {
   const [isNavigationVisible, setIsNavigationVisible] = useState(true);
   const { currentWidth } = useNavigationContext();
 
+  // Prevent hydration mismatch by initializing margin to server-safe value ("0px")
+  // and only reading window.innerWidth inside useEffect after mount.
+  const [marginLeft, setMarginLeft] = useState<string>("0px");
+  useEffect(() => {
+    const updateMargin = () => {
+      setMarginLeft(window.innerWidth >= 1024 ? `${currentWidth * 4}px` : "0px");
+    };
+    updateMargin();
+    window.addEventListener("resize", updateMargin);
+    return () => window.removeEventListener("resize", updateMargin);
+  }, [currentWidth]);
+
   // Connect to crawl realtime store
   const realtimeStore = useCrawlRealtimeStore();
 
@@ -59,13 +72,16 @@ export default function PDFProcessing() {
       const { backendAPI } = await import("@/lib/api/backend-client");
 
       // Fetch list of documents from backend
-      const data = await backendAPI.listDocuments() as { documents?: Array<{
+      type BackendDoc = {
         id?: string;
         filename: string;
-        size: number;
+        size?: number;
+        file_size?: number;
         created_at: string;
-        status: string;
-      }> };
+        status?: string;
+        processing_status?: string;
+      };
+      const data = await backendAPI.listDocuments() as { documents?: BackendDoc[] };
       const documents = data.documents || [];
 
       // Convert backend document format to PDFFile format
@@ -74,47 +90,44 @@ export default function PDFProcessing() {
           doc: {
             id?: string;
             filename: string;
-            size: number;
+            size?: number;
+            file_size?: number;
             created_at: string;
-            status: string;
+            status?: string;
+            processing_status?: string;
           },
           index: number,
-        ) => ({
-          id: doc.id || `doc-${Date.now()}-${index}`,
-          name: doc.filename,
-          size: `${(doc.size / 1024 / 1024).toFixed(2)} MB`,
-          status: (doc.status === "completed" ? "completed" : "processing") as "completed" | "processing",
-          uploadDate: new Date(doc.created_at).toLocaleString(),
-          sourceUrl: `/api/documents/${doc.id}/download`, // Backend download endpoint
-          pages: Math.floor(Math.random() * 50) + 10, // Mock page count for now
-          language: "English", // Default assumption
-        }),
+        ) => {
+          const fileSize = doc.size || doc.file_size || 0;
+          const status = doc.status || doc.processing_status || 'processing';
+
+          return {
+            id: doc.id || `doc-${Date.now()}-${index}`,
+            name: doc.filename,
+            size: fileSize > 0 ? `${(fileSize / 1024 / 1024).toFixed(2)} MB` : "Unknown",
+            status: (status === "completed" ? "completed" : "processing") as "completed" | "processing",
+            uploadDate: new Date(doc.created_at).toLocaleString(),
+            sourceUrl: `/api/documents/${doc.id}/download`, // Backend download endpoint
+            pages: Math.floor(Math.random() * 50) + 10, // Mock page count for now
+            language: "English", // Default assumption
+          };
+        },
       );
-    } catch (error) {
-      console.error("Failed to fetch PDF files:", error);
+    } catch (error: unknown) {
+      const err = error as { message?: string; type?: string; status?: number };
+      console.error("Failed to fetch PDF files:", err);
+
+      // Provide more specific error information
+      if (err.type === "network") {
+        console.warn("Backend server is not available. Showing demo files.");
+      } else if (typeof err.status === "number" && err.status >= 500) {
+        console.error("Backend server error:", err.message);
+      } else {
+        console.error("API error:", err.message ?? String(error));
+      }
+
       // Fallback to demo files if backend is unavailable
-      return [
-        {
-          id: "demo-1",
-          name: "Annual Report 2024.pdf",
-          size: "2.4 MB",
-          status: "completed" as const,
-          uploadDate: "2025-12-18 14:30:00",
-          sourceUrl: "/demo-files/annual-report-2024.pdf",
-          pages: 45,
-          language: "English",
-        },
-        {
-          id: "demo-2",
-          name: "Technical Documentation.pdf",
-          size: "1.8 MB",
-          status: "processing" as const,
-          uploadDate: "2025-12-18 14:25:00",
-          sourceUrl: "/demo-files/tech-docs.pdf",
-          pages: 32,
-          language: "English",
-        },
-      ];
+      return [];
     }
   }, []);
 
@@ -222,92 +235,89 @@ export default function PDFProcessing() {
       // Add files to the list immediately with downloading status
       setFiles((prev) => [...initialFiles, ...prev]);
 
-      // Process downloads sequentially to avoid overwhelming the server
-      const downloadedFiles: PDFFile[] = [];
+      // Send download request to backend via the backend client (ensures correct baseURL and better errors)
+      try {
+        const result = await backendAPI.downloadPDFs({ pdf_urls: urls });
 
-      for (let i = 0; i < urls.length; i++) {
-        const url = urls[i];
-        const fileId = initialFiles[i].id;
+        // Update UI entries based on result.files (if provided)
+        // Map backend result files to PDFFile format
+        // Handle per-file results: successful downloads and errors
+        type CrawlerFile = {
+          filename?: string;
+          filepath?: string;
+          size?: number;
+          url?: string;
+          error?: string;
+        };
+        const completedFiles = (result.files || []).map((f: CrawlerFile, idx: number): PDFFile => {
+          const filename =
+            (f?.filename ?? (f?.filepath ? f.filepath.split("/").pop() : undefined)) ??
+            `downloaded-${Date.now()}-${idx}`;
 
-        try {
-          console.log(`Downloading PDF from: ${url}`);
-
-          // Download the PDF file
-          const response = await fetch(url);
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          // If backend returned an error for this file, mark it as error
+          if (f?.error) {
+            return {
+              id: `error-${Date.now()}-${idx}`,
+              name: filename,
+              size: "Error",
+              status: "error" as const,
+              uploadDate: new Date().toISOString().slice(0, 19).replace("T", " "),
+              sourceUrl: f?.url || f?.filepath || "",
+              pages: 0,
+              language: "English",
+            };
           }
 
-          const blob = await response.blob();
-          const fileSize = blob.size;
-
-          // Convert blob to File object
-          const fileName = decodeURIComponent(url.split("/").pop() || `crawled-pdf-${i + 1}.pdf`);
-          const file = new File([blob], fileName, { type: 'application/pdf' });
-
-          // Upload to backend (similar to file upload process)
-          const formData = new FormData();
-          formData.append("file", file);
-
-          const uploadResponse = await fetch("/api/upload", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!uploadResponse.ok) {
-            const error = await uploadResponse.json();
-            throw new Error(error.error || "Upload failed");
-          }
-
-          const result = await uploadResponse.json();
-
-          // Update the file entry with completed status
-          const completedFile: PDFFile = {
-            id: `completed-${Date.now()}-${i}`,
-            name: fileName,
-            size: `${(fileSize / 1024 / 1024).toFixed(2)} MB`,
+          const size = f?.size ? `${(f.size / 1024 / 1024).toFixed(2)} MB` : "Unknown";
+          const sourceUrl = f?.url || (f?.filepath ? `/uploaded/${filename}` : "");
+          return {
+            id: `completed-${Date.now()}-${idx}`,
+            name: filename,
+            size,
             status: "completed" as const,
             uploadDate: new Date().toISOString().slice(0, 19).replace("T", " "),
-            sourceUrl: result.url,
-            pages: Math.floor(Math.random() * 50) + 10, // Mock page count
+            sourceUrl,
+            pages: Math.floor(Math.random() * 50) + 10,
             language: "English",
           };
+        });
+ 
+        // Replace initial placeholder entries with completed ones in order
+        setFiles((prev) => {
+          const updated = [...prev];
+          for (let i = 0; i < initialFiles.length; i++) {
+            const placeholderId = initialFiles[i].id;
+            const completed = completedFiles[i];
+            if (completed) {
+              const idx = updated.findIndex((f) => f.id === placeholderId);
+              if (idx !== -1) updated[idx] = completed;
+              else updated.unshift(completed);
+            }
+          }
+          return updated;
+        });
 
-          downloadedFiles.push(completedFile);
-
-          // Update the file in the list
+        // If the overall operation reported failure, surface message and mark placeholders
+        if (result && result.success === false) {
+          console.error("Server reported download failure:", result.error || result.message);
           setFiles((prev) =>
-            prev.map((f) =>
-              f.id === fileId
-                ? completedFile
-                : f
-            )
+            prev.map((f) => (f.id.startsWith("downloading-") ? { ...f, size: "Error", status: "error" as const } : f)),
           );
-
-          console.log(`Successfully downloaded and processed: ${fileName}`);
-
-        } catch (error) {
-          console.error(`Failed to download ${url}:`, error);
-
-          // Update file with error status
-          setFiles((prev) =>
-            prev.map((f) =>
-              f.id === fileId
-                ? {
-                    ...f,
-                    size: "Error",
-                    status: "error" as const,
-                  }
-                : f
-            )
-          );
+          alert(`Download operation failed on server: ${result.error || result.message}`);
         }
-
-        // Small delay between downloads to be respectful to the server
-        await new Promise(resolve => setTimeout(resolve, 500));
+ 
+        console.log(`Successfully requested server-side download for ${urls.length} PDFs`);
+      } catch (error) {
+        console.error("Failed to request server-side download:", error);
+ 
+        // Mark all initial entries as error
+        setFiles((prev) =>
+          prev.map((f) => (f.id.startsWith("downloading-") ? { ...f, size: "Error", status: "error" as const } : f)),
+        );
+ 
+        alert("Failed to download crawled PDFs via server. See console for details.");
       }
 
-      console.log(`Successfully downloaded ${downloadedFiles.length} out of ${urls.length} PDFs`);
     } catch (error) {
       console.error("Failed to process crawled URLs:", error);
       alert("Failed to process crawled URLs. Please try again.");
@@ -399,7 +409,7 @@ export default function PDFProcessing() {
       <div
         className="flex-1 flex flex-col overflow-hidden transition-all duration-300"
         style={{
-          marginLeft: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${currentWidth * 4}px` : '0px'
+          marginLeft,
         }}
       >
         {/* Main Content - Scrollable area including header */}

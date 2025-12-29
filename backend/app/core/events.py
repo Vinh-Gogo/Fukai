@@ -13,6 +13,15 @@ from app.config.database import create_tables
 from app.config.settings import settings
 from app.workers.celery_app import celery_app
 
+# Import models to ensure they are registered with SQLAlchemy Base before table creation
+from app.models import (
+    Document,
+    DocumentChunk,
+    ProcessingJob,
+    DocumentCollection,
+    CollectionDocument,
+)
+
 
 logger = structlog.get_logger(__name__)
 

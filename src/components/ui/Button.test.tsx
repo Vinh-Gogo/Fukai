@@ -12,20 +12,20 @@ describe("Button", () => {
     render(<Button {...defaultProps} />);
     const button = screen.getByRole("button", { name: /click me/i });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveClass("bg-primary");
+    expect(button).toHaveClass("bg-primary-600");
   });
 
   it("renders with different variants", () => {
     const { rerender } = render(
       <Button {...defaultProps} variant="secondary" />,
     );
-    expect(screen.getByRole("button")).toHaveClass("bg-secondary");
+    expect(screen.getByRole("button")).toHaveClass("bg-gray-100");
 
     rerender(<Button {...defaultProps} variant="outline" />);
-    expect(screen.getByRole("button")).toHaveClass("border-input");
+    expect(screen.getByRole("button")).toHaveClass("border-gray-300");
 
     rerender(<Button {...defaultProps} variant="ghost" />);
-    expect(screen.getByRole("button")).toHaveClass("hover:bg-accent");
+    expect(screen.getByRole("button")).toHaveClass("hover:bg-gray-100");
   });
 
   it("renders with different sizes", () => {
@@ -49,14 +49,14 @@ describe("Button", () => {
     render(<Button {...defaultProps} disabled />);
     const button = screen.getByRole("button");
     expect(button).toBeDisabled();
-    expect(button).toHaveClass("opacity-50");
+    expect(button).toHaveClass("disabled:opacity-50");
   });
 
   it("shows loading state", () => {
     render(<Button {...defaultProps} loading />);
     const button = screen.getByRole("button");
     expect(button).toBeDisabled();
-    expect(button).toHaveClass("opacity-50");
+    expect(button).toHaveClass("disabled:opacity-50");
     expect(screen.getByText("Click me")).toBeInTheDocument();
   });
 

@@ -135,7 +135,7 @@ describe("useCrawlJobForm", () => {
     const mockEvent = {
       preventDefault: jest.fn(),
       key: "Enter",
-    } as React.KeyboardEvent<HTMLInputElement>;
+    } as unknown as React.KeyboardEvent<HTMLInputElement>;
 
     act(() => {
       result.current.handleKeyPress(mockEvent);
@@ -156,7 +156,7 @@ describe("useCrawlJobForm", () => {
       preventDefault: jest.fn(),
       key: "Enter",
       shiftKey: true,
-    } as React.KeyboardEvent<HTMLInputElement>;
+    } as unknown as React.KeyboardEvent<HTMLInputElement>;
 
     act(() => {
       result.current.handleKeyPress(mockEvent);

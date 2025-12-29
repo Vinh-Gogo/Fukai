@@ -72,7 +72,7 @@ async def upload_document(
             f.write(file_content)
 
         # Process the uploaded file
-        result = document_service.process_uploaded_file(
+        result = await document_service.process_uploaded_file(
             file_path=str(temp_path),
             filename=file.filename,
             mime_type=file.content_type or "application/pdf"

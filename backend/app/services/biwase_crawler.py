@@ -15,6 +15,8 @@ from dataclasses import dataclass
 import structlog
 import json
 from datetime import datetime
+from requests.utils import requote_uri
+from urllib.parse import urlparse, urlunparse, quote
 
 from app.config.settings import settings
 
@@ -76,14 +78,36 @@ class BiwaseCrawlerService:
         })
 
     def get_soup(self, url: str) -> Optional[BeautifulSoup]:
-        """Fetch a URL and return a BeautifulSoup object."""
+        """Fetch a URL with retries and return a BeautifulSoup object."""
+        from requests.exceptions import RequestException
+        import math
         try:
             self.logger.debug("Fetching URL", url=url)
-            response = self.session.get(url, timeout=settings.CRAWLER_REQUEST_TIMEOUT)
-            response.raise_for_status()
-            return BeautifulSoup(response.content.decode('utf-8'), 'html.parser')
+            retries = int(getattr(settings, "CRAWLER_REQUEST_RETRIES", 3))
+            backoff = float(getattr(settings, "CRAWLER_REQUEST_BACKOFF_FACTOR", 1.0))
+            timeout = int(getattr(settings, "CRAWLER_REQUEST_TIMEOUT", 60))
+
+            for attempt in range(1, retries + 1):
+                try:
+                    self.logger.debug("Fetching attempt", url=url, attempt=attempt, timeout=timeout)
+                    response = self.session.get(url, timeout=timeout)
+                    response.raise_for_status()
+                    return BeautifulSoup(response.content.decode('utf-8', errors='ignore'), 'html.parser')
+                except RequestException as re:
+                    # Log attempt failure
+                    self.logger.warning("Fetch attempt failed", url=url, attempt=attempt, error=str(re))
+                    if attempt == retries:
+                        raise
+                    # exponential backoff sleep
+                    sleep_time = backoff * (2 ** (attempt - 1))
+                    self.logger.debug("Sleeping before retry", seconds=sleep_time)
+                    time.sleep(sleep_time)
+
         except Exception as e:
-            self.logger.error("Error fetching URL", url=url, error=str(e))
+            # Capture full traceback for diagnostics
+            import traceback
+            tb = traceback.format_exc()
+            self.logger.exception("Error fetching URL", url=url, error=str(e), traceback=tb)
             return None
 
     def get_pagination_links(self) -> List[str]:
@@ -139,33 +163,93 @@ class BiwaseCrawlerService:
         self.logger.debug("Found PDF links in article", count=len(pdf_links), news_url=news_url)
         return pdf_links
 
-    def download_pdf(self, pdf_url: str) -> Optional[Dict[str, Any]]:
-        """Download a PDF file."""
+    def download_pdf(self, pdf_url: str) -> Dict[str, Any]:
+        """Download a PDF file. Returns file info on success or an error entry on failure."""
         try:
             self.logger.debug("Downloading PDF", pdf_url=pdf_url)
-            response = self.session.get(pdf_url, timeout=settings.CRAWLER_DOWNLOAD_TIMEOUT)
-            response.raise_for_status()
 
-            filename = pdf_url.split('/')[-1]
-            file_path = self.output_dir / filename
+            # Remember original URL for diagnostics and filenames
+            original_pdf_url = pdf_url
 
-            with open(file_path, 'wb') as f:
-                f.write(response.content)
+            # Ensure URL is properly quoted to handle spaces and unsafe characters.
+            # If scheme is missing, prepend https:// so parsing yields netloc correctly.
+            try:
+                if not pdf_url.startswith(("http://", "https://")):
+                    pdf_url_to_parse = "https://" + pdf_url.lstrip("/")
+                else:
+                    pdf_url_to_parse = pdf_url
+
+                parsed = urlparse(pdf_url_to_parse)
+
+                # Quote the path component to preserve slashes and encode spaces
+                quoted_path = quote(parsed.path)
+                safe_url = urlunparse(parsed._replace(path=quoted_path))
+
+                # Ensure '//' after the scheme (handle edge-cases)
+                if safe_url.startswith("https:") and not safe_url.startswith("https://"):
+                    safe_url = safe_url.replace("https:", "https://", 1)
+
+                # Fallback to requote_uri to handle other unsafe characters
+                safe_url = requote_uri(safe_url)
+                # Ensure scheme has '//' after it (handle edge-cases where netloc is missing)
+                if safe_url.startswith("https:") and not safe_url.startswith("https://"):
+                    safe_url = safe_url.replace("https:", "https://", 1)
+                if safe_url.startswith("http:") and not safe_url.startswith("http://"):
+                    safe_url = safe_url.replace("http:", "http://", 1)
+
+                # Basic validation
+                parsed_safe = urlparse(safe_url)
+                if not parsed_safe.scheme or not parsed_safe.netloc:
+                    raise ValueError(f"Invalid URL after parsing: {safe_url}")
+
+            except Exception:
+                # Last-resort: try requote_uri and ensure https scheme
+                prefixed = pdf_url if pdf_url.startswith(("http://", "https://")) else "https://" + pdf_url
+                safe_url = requote_uri(prefixed)
+
+            # Stream download to avoid large memory usage
+            with self.session.get(safe_url, timeout=settings.CRAWLER_DOWNLOAD_TIMEOUT, stream=True) as response:
+                response.raise_for_status()
+
+                # Use a safe filename derived from the original filename but normalize spaces
+                original_filename = pdf_url.split('/')[-1]
+                # Replace problematic filesystem characters and normalize spaces
+                filename = original_filename.replace(' ', '_')
+                file_path = self.output_dir / filename
+
+                with open(file_path, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
+
+                size = file_path.stat().st_size
 
             file_info = {
+                "original_filename": original_filename,
                 "filename": filename,
                 "filepath": str(file_path),
-                "url": pdf_url,
-                "size": len(response.content),
+                "original_url": pdf_url,
+                "requested_url": safe_url,
+                "size": size,
                 "downloaded_at": time.time()
             }
 
-            self.logger.info("PDF downloaded successfully", filename=filename, size=len(response.content))
+            self.logger.info("PDF downloaded successfully", filename=filename, size=size)
             return file_info
 
         except Exception as e:
-            self.logger.error("Error downloading PDF", pdf_url=pdf_url, error=str(e))
-            return None
+            # Capture full traceback for diagnostics
+            import traceback
+            tb = traceback.format_exc()
+            # Log both original and attempted URL for easier diagnostics
+            self.logger.exception("Error downloading PDF", original_url=pdf_url, attempted_url=locals().get('safe_url'), error=str(e), traceback=tb)
+            return {
+                "original_url": pdf_url,
+                "attempted_url": locals().get('safe_url'),
+                "requested_url": locals().get('safe_url'),
+                "filename": pdf_url.split('/')[-1],
+                "error": tb
+            }
 
     def scan(self) -> CrawlResult:
         """
@@ -218,7 +302,10 @@ class BiwaseCrawlerService:
             )
 
         except Exception as e:
-            self.logger.error("Scan failed", error=str(e))
+            # Capture full traceback for diagnostics
+            import traceback
+            tb = traceback.format_exc()
+            self.logger.exception("Scan failed", error=str(e), traceback=tb)
             return CrawlResult(
                 success=False,
                 pages_found=0,
@@ -226,7 +313,7 @@ class BiwaseCrawlerService:
                 pdfs_found=0,
                 pdf_urls=[],
                 message="Scan operation failed",
-                error=str(e)
+                error=tb
             )
 
     def download(self, pdf_urls: Optional[List[str]] = None) -> DownloadResult:
@@ -261,9 +348,10 @@ class BiwaseCrawlerService:
             for i, pdf_url in enumerate(pdf_urls):
                 self.logger.debug("Downloading PDF", index=i+1, total=total_count, url=pdf_url)
 
-                file_info = self.download_pdf(pdf_url)
-                if file_info:
-                    downloaded_files.append(file_info)
+                file_result = self.download_pdf(pdf_url)
+                # Append whatever the download function returned (success info or error info)
+                if file_result:
+                    downloaded_files.append(file_result)
 
                 time.sleep(settings.CRAWLER_RATE_LIMIT_DELAY)  # Rate limiting
 

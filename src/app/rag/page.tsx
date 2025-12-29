@@ -1,194 +1,155 @@
 "use client";
 
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
+
 // Disable SSR to prevent hydration issues with browser APIs
 export const runtime = "edge";
-
-import React, { useState, useCallback, useEffect } from "react";
-import dynamic from "next/dynamic";
-import BrandHeader from "@/components/layout/BrandHeader";
-import { Bot, Plus } from "lucide-react";
-
-// Custom hooks
-import {
-  useChatMessages,
-  useChatInput,
-  useAIResponses,
-  useChatScroll,
-  useConversationManager,
-} from "@/hooks";
+import { Send, MessageSquare, FileText, Loader2, ExternalLink } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // Components
-import {
-  ChatMessages,
-  ChatInput,
-  WelcomeScreen,
-  TypingIndicator,
-  ConversationHistoryPanel,
-} from "@/components/rag";
-import { NavigationSkeleton } from "@/components/navigation";
+import BrandHeader from "@/components/layout/BrandHeader";
+import { Navigation } from "@/components/navigation";
 import { useNavigationContext } from "@/components/navigation/NavigationContext";
 
-// Services
-import { createErrorMessage } from "@/lib/chat";
+// Types
+interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+  sources?: Array<{
+    chunk_id: string;
+    document_id: string;
+    content: string;
+    score: number;
+    page_number?: number;
+  }>;
+  confidence?: number;
+  chunks_used?: number;
+}
 
-// Dynamically import Navigation to prevent SSR issues
-const Navigation = dynamic(
-  () =>
-    import("@/components/navigation").then((mod) => ({
-      default: mod.Navigation,
-    })),
-  {
-    ssr: false,
-    loading: () => <NavigationSkeleton />,
-  },
-);
+interface RAGResponse {
+  question: string;
+  answer: string;
+  confidence: number;
+  chunks_used: number;
+  sources: Array<{
+    chunk_id: string;
+    document_id: string;
+    content: string;
+    score: number;
+    page_number?: number;
+    word_count?: number;
+  }>;
+  metadata: {
+    context_length: number;
+    processing_time: number;
+  };
+}
 
-export default function RAGPage() {
-  // Local state for UI
-  const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
-  const [historyPanelVisible, setHistoryPanelVisible] = useState(false);
+export default function RAGChatPage() {
   const { currentWidth } = useNavigationContext();
-
-  // Custom hooks
-  const chatMessages = useChatMessages();
-  const chatInput = useChatInput();
-  const aiResponses = useAIResponses();
-  const { messagesEndRef } = useChatScroll([chatMessages.messages.length]);
-  const conversationManager = useConversationManager();
-
-  // Initialize conversation if none exists
-  useEffect(() => {
-    if (!conversationManager.currentConversationId) {
-      conversationManager.createNewConversation();
+  const [isNavigationVisible, setIsNavigationVisible] = useState(true);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: 'welcome',
+      role: 'assistant',
+      content: 'Hello! I can help you find information from the processed documents. Ask me anything about Biwase reports, company information, or any topics covered in the uploaded PDFs.',
+      timestamp: new Date(),
     }
-  }, [conversationManager]);
+  ]);
+  const [inputValue, setInputValue] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Handle sending a message
-  const handleSendMessage = useCallback(
-    async (content: string) => {
-      if (!content.trim()) return;
+  const toggleNavigation = useCallback(() => {
+    setIsNavigationVisible((prev) => !prev);
+  }, []);
 
-      // Ensure we have a current conversation
-      let conversationId = conversationManager.currentConversationId;
-      if (!conversationId) {
-        conversationId = conversationManager.createNewConversation();
-      }
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
-      // Add user message to conversation
-      conversationManager.addMessageToConversation(conversationId, {
-        role: "user",
-        content: content.trim(),
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSendMessage = useCallback(async () => {
+    if (!inputValue.trim() || isLoading) return;
+
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
+      role: 'user',
+      content: inputValue.trim(),
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInputValue('');
+    setIsLoading(true);
+
+    try {
+      // Call RAG API
+      const response = await fetch('/api/rag/ask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: userMessage.content,
+          max_context_chunks: 5,
+          score_threshold: 0.7,
+          include_sources: true,
+        }),
       });
 
-      // Add to current chat messages for display
-      chatMessages.addMessage({
-        role: "user",
-        content: content.trim(),
-      });
-
-      // Clear input
-      chatInput.clearInput();
-
-      try {
-        // Generate AI response
-        const aiResponse = await aiResponses.generateResponse(content);
-
-        // Add AI response to conversation
-        conversationManager.addMessageToConversation(
-          conversationId,
-          aiResponse,
-        );
-
-        // Add to current chat messages for display
-        chatMessages.addMessage(aiResponse);
-      } catch (error) {
-        console.error("Error getting AI response:", error);
-
-        // Add error message
-        const errorMessage = createErrorMessage(
-          error instanceof Error ? error.message : "Unknown error occurred",
-        );
-
-        // Add error to conversation
-        conversationManager.addMessageToConversation(
-          conversationId,
-          errorMessage,
-        );
-
-        // Add to current chat messages for display
-        chatMessages.addMessage(errorMessage);
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
       }
-    },
-    [chatMessages, chatInput, aiResponses, conversationManager],
-  );
 
-  // Handle quick prompt selection
-  const handleQuickPrompt = useCallback(
-    (promptId: string, enhancedQuery: string) => {
-      setSelectedPrompt(promptId);
-      chatInput.setInputValue(enhancedQuery);
+      const data: RAGResponse = await response.json();
 
-      // Auto-send after a brief delay
-      setTimeout(() => {
-        handleSendMessage(enhancedQuery);
-        setSelectedPrompt(null);
-      }, 500);
-    },
-    [chatInput, handleSendMessage],
-  );
+      const assistantMessage: Message = {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: data.answer,
+        timestamp: new Date(),
+        sources: data.sources,
+        confidence: data.confidence,
+        chunks_used: data.chunks_used,
+      };
 
-  // Handle conversation switching
-  const handleSelectConversation = useCallback(
-    (conversationId: string) => {
-      conversationManager.switchToConversation(conversationId);
+      setMessages(prev => [...prev, assistantMessage]);
 
-      // Load conversation messages
-      const conversation = conversationManager.conversations.find(
-        (c) => c.id === conversationId,
-      );
-      if (conversation) {
-        chatMessages.clearMessages();
-        conversation.messages.forEach((message) => {
-          chatMessages.addMessage(message);
-        });
-      }
-    },
-    [conversationManager, chatMessages],
-  );
+    } catch (error) {
+      console.error('Failed to send message:', error);
 
-  // Handle creating new conversation
-  const handleCreateNewConversation = useCallback(() => {
-    conversationManager.createNewConversation();
-    chatMessages.clearMessages();
-    setHistoryPanelVisible(false);
-  }, [conversationManager, chatMessages]);
+      const errorMessage: Message = {
+        id: `error-${Date.now()}`,
+        role: 'assistant',
+        content: 'Sorry, I encountered an error while processing your question. Please try again.',
+        timestamp: new Date(),
+      };
 
-  // Handle deleting conversation
-  const handleDeleteConversation = useCallback(
-    (conversationId: string) => {
-      conversationManager.deleteConversation(conversationId);
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [inputValue, isLoading]);
 
-      // If we deleted the current conversation, clear messages
-      if (conversationId === conversationManager.currentConversationId) {
-        chatMessages.clearMessages();
-
-        // Load the new current conversation if exists
-        if (conversationManager.currentConversation) {
-          conversationManager.currentConversation.messages.forEach(
-            (message) => {
-              chatMessages.addMessage(message);
-            },
-          );
-        }
-      }
-    },
-    [conversationManager, chatMessages],
-  );
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-indigo-50 via-purple-50/30 to-pink-50/20 overflow-x-hidden">
+    <div className="flex h-screen bg-gradient-to-br from-blue-50 via-indigo-50/30 to-purple-50/20 overflow-x-hidden">
       {/* Navigation Sidebar */}
-      <Navigation isVisible={true} onToggle={() => {}} />
+      <Navigation isVisible={isNavigationVisible} onToggle={toggleNavigation} />
 
       {/* Main Content */}
       <div
@@ -197,71 +158,154 @@ export default function RAGPage() {
           marginLeft: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${currentWidth * 4}px` : '0px'
         }}
       >
-        {/* Main Content - Scrollable area including header and messages */}
-        <main className="flex-1 overflow-y-auto">
-          {/* Brand Header - Now scrolls with content */}
-          <BrandHeader
-            icon="bot"
-            title="RAG Crawling Docs"
-            subtitle="AI-Powered Document Intelligence"
-            statusText="Advanced semantic search & analysis ready"
-          />
+        {/* Header */}
+        <BrandHeader
+          icon="bot"
+          title="RAG Assistant"
+          subtitle="Ask questions about your documents"
+          statusText="AI-powered Q&A ready"
+        />
 
-          {/* Floating New Chat Button */}
-          <div className="absolute top-4 right-4 z-20">
-            <button
-              onClick={handleCreateNewConversation}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 font-medium shadow-sm text-sm"
-            >
-              <Plus className="w-4 h-4" />
-              Create New Dialog Box
-            </button>
+        {/* Chat Container */}
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={cn(
+                  "flex",
+                  message.role === 'user' ? "justify-end" : "justify-start"
+                )}
+              >
+                <div
+                  className={cn(
+                    "max-w-[80%] rounded-lg p-4 shadow-sm",
+                    message.role === 'user'
+                      ? "bg-blue-600 text-white"
+                      : "bg-white border border-gray-200"
+                  )}
+                >
+                  {/* Message Content */}
+                  <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                    {message.content}
+                  </div>
+
+                  {/* Metadata for assistant messages */}
+                  {message.role === 'assistant' && message.id !== 'welcome' && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                        {message.confidence !== undefined && (
+                          <span className="flex items-center gap-1">
+                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                            {message.confidence.toFixed(1)}% confidence
+                          </span>
+                        )}
+                        {message.chunks_used !== undefined && (
+                          <span>{message.chunks_used} sources used</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sources */}
+                  {message.sources && message.sources.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <div className="text-xs text-gray-600 mb-2 font-medium">
+                        Sources ({message.sources.length}):
+                      </div>
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {message.sources.map((source, index) => (
+                          <div
+                            key={source.chunk_id}
+                            className="bg-gray-50 rounded p-2 text-xs"
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-medium">Source {index + 1}</span>
+                              <div className="flex items-center gap-2">
+                                {source.page_number && (
+                                  <span className="text-gray-500">Page {source.page_number}</span>
+                                )}
+                                <span className="text-green-600 font-medium">
+                                  {(source.score * 100).toFixed(1)}% match
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-gray-700 line-clamp-2">
+                              {source.content}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Timestamp */}
+                  <div className="mt-2 text-xs opacity-60">
+                    {message.timestamp.toLocaleTimeString()}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Loading indicator */}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                    <span className="text-sm text-gray-600">Thinking...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
           </div>
 
-          {/* Chat Interface - Messages only, input fixed at bottom */}
-          <div className="flex-1 bg-white/80 backdrop-blur-sm">
-            {/* Messages Container */}
-            <div className="mt-2 h-full overflow-y-auto p-6 space-y-6 rounded-3xl scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-              {/* Welcome Screen or Messages */}
-              {!chatMessages.hasMessages ? (
-                <WelcomeScreen
-                  onQuickPromptSelect={handleQuickPrompt}
-                  currentInputValue={chatInput.inputValue}
+          {/* Input Area */}
+          <div className="border-t border-gray-200 bg-white p-4">
+            <div className="flex gap-3">
+              <div className="flex-1 relative">
+                <textarea
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Ask a question about the documents..."
+                  className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 pr-12 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 min-h-[44px] max-h-32"
+                  rows={1}
+                  disabled={isLoading}
+                  style={{
+                    height: 'auto',
+                    minHeight: '44px'
+                  }}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = 'auto';
+                    target.style.height = Math.min(target.scrollHeight, 128) + 'px';
+                  }}
                 />
-              ) : (
-                <>
-                  <ChatMessages messages={chatMessages.messages} />
-                  {aiResponses.isTyping && <TypingIndicator />}
-                </>
-              )}
+              </div>
+              <button
+                onClick={handleSendMessage}
+                disabled={!inputValue.trim() || isLoading}
+                className="flex items-center justify-center w-11 h-11 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Send className="w-5 h-5" />
+                )}
+              </button>
+            </div>
 
-              <div ref={messagesEndRef} />
+            {/* Helper text */}
+            <div className="mt-2 text-xs text-gray-500 text-center">
+              Press Enter to send • Shift+Enter for new line
             </div>
           </div>
-        </main>
-
-        {/* Chat Input - Fixed at bottom */}
-        <ChatInput
-          inputValue={chatInput.inputValue}
-          onInputChange={chatInput.setInputValue}
-          onSubmit={handleSendMessage}
-          onKeyDown={chatInput.handleKeyDown(handleSendMessage)}
-          selectedPrompt={selectedPrompt}
-          onPromptSelect={handleQuickPrompt}
-          isLoading={aiResponses.isLoading}
-        />
+        </div>
       </div>
-
-      {/* Conversation History Panel */}
-      <ConversationHistoryPanel
-        conversations={conversationManager.conversations}
-        currentConversationId={conversationManager.currentConversationId}
-        isVisible={historyPanelVisible}
-        onToggle={() => setHistoryPanelVisible(!historyPanelVisible)}
-        onSelectConversation={handleSelectConversation}
-        onDeleteConversation={handleDeleteConversation}
-        onCreateNewConversation={handleCreateNewConversation}
-      />
     </div>
   );
 }

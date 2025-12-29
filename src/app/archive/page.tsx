@@ -43,52 +43,7 @@ import { ArchiveFile, CategoryInfo } from "@/lib/archive";
 import { useNavigationContext } from "@/components/navigation/NavigationContext";
 
 // Mock archived files data - in a real app, this would come from a database
-const MOCK_ARCHIVE_FILES: ArchiveFile[] = [
-  {
-    id: "archive-1",
-    name: "Annual Report 2024.pdf",
-    size: "2.4 MB",
-    sourceUrl: "/demo-files/annual-report-2024.pdf",
-    downloadDate: "2025-12-15",
-    type: "PDF",
-    category: "reports",
-    tags: ["report", "annual", "2024"],
-    isDownloaded: true,
-  },
-  {
-    id: "archive-2",
-    name: "Technical Documentation.pdf",
-    size: "1.8 MB",
-    sourceUrl: "/demo-files/tech-docs.pdf",
-    downloadDate: "2025-12-14",
-    type: "PDF",
-    category: "manuals",
-    tags: ["technical", "manual"],
-    isDownloaded: true,
-  },
-  {
-    id: "archive-3",
-    name: "User Guide.pdf",
-    size: "3.2 MB",
-    sourceUrl: "/uploaded/user-guide.pdf",
-    downloadDate: "2025-12-13",
-    type: "PDF",
-    category: "manuals",
-    tags: ["guide", "user"],
-    isDownloaded: false,
-  },
-  {
-    id: "archive-4",
-    name: "Financial Summary 2024.pdf",
-    size: "1.5 MB",
-    sourceUrl: "/uploaded/financial-summary.pdf",
-    downloadDate: "2025-12-12",
-    type: "PDF",
-    category: "reports",
-    tags: ["financial", "summary", "2024"],
-    isDownloaded: false,
-  },
-];
+const MOCK_ARCHIVE_FILES: ArchiveFile[] = [];
 
 // Archive categories for organization
 const ARCHIVE_CATEGORIES: CategoryInfo[] = [

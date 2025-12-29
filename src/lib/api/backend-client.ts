@@ -287,7 +287,7 @@ export interface BackendAPIConfig {
   maxRetries: number;
 }
 
-class BackendAPIClient {
+export class BackendAPIClient {
   private baseURL: string;
 
   constructor(baseURL: string) {
@@ -317,8 +317,25 @@ class BackendAPIClient {
       const response = await fetch(url, config);
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
+        let errorMessage = `HTTP ${response.status}`;
+        let errorDetails = '';
+
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.message || errorData.error || errorMessage;
+            errorDetails = errorData.details || '';
+          }
+        } catch (parseError) {
+          // If parsing fails, use the raw response text
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+
+        const error = new Error(errorMessage);
+        (error as any).status = response.status;
+        (error as any).details = errorDetails;
+        throw error;
       }
 
       // Handle empty responses
@@ -329,6 +346,16 @@ class BackendAPIClient {
         return await response.text() as any;
       }
     } catch (error) {
+      // Enhanced error handling
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        // Network error - backend is likely not running
+        const networkError = new Error('Unable to connect to backend server. Please ensure the backend is running.');
+        (networkError as any).type = 'network';
+        (networkError as any).status = 0;
+        console.error(`Backend API network error: ${url}`, error);
+        throw networkError;
+      }
+
       console.error(`Backend API request failed: ${url}`, error);
       throw error;
     }

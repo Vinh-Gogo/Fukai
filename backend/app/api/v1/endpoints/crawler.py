@@ -26,7 +26,12 @@ router = APIRouter()
 
 def get_crawler_service(logger: structlog.BoundLogger = Depends(get_logger)) -> BiwaseCrawlerService:
     """Dependency to get a BiwaseCrawlerService instance."""
-    return BiwaseCrawlerService(logger=logger)
+    try:
+        return BiwaseCrawlerService(logger=logger)
+    except Exception as e:
+        logger.exception("Failed to initialize BiwaseCrawlerService", error=str(e))
+        # Raise an HTTPException so FastAPI surfaces a clear error to the client
+        raise HTTPException(status_code=500, detail=f"Failed to initialize crawler service: {str(e)}")
 
 
 @router.get("/scan", response_model=CrawlScanResponse, summary="Scan for PDF documents")
@@ -52,9 +57,10 @@ async def scan_for_pdfs(
         result = crawler.scan()
 
         if not result.success:
+            # Provide more detail when scan returns a failure result
             raise HTTPException(
                 status_code=500,
-                detail=f"Scan failed: {result.error}"
+                detail=f"Scan failed: {result.error or result.message or 'Unknown scan error'}"
             )
 
         # Convert dataclass to Pydantic model
@@ -77,9 +83,14 @@ async def scan_for_pdfs(
 
         return response
 
+    except HTTPException:
+        # Re-raise HTTPExceptions so FastAPI handles them correctly
+        raise
     except Exception as e:
-        logger.error("Crawler scan failed", error=str(e))
-        raise HTTPException(status_code=500, detail=f"Scan operation failed: {str(e)}")
+        # Log full exception with stack trace to make debugging easier
+        logger.exception("Crawler scan failed")
+        # Include repr(e) to capture exception type when str(e) is empty
+        raise HTTPException(status_code=500, detail=f"Scan operation failed: {repr(e)}")
 
 
 @router.post("/download", response_model=CrawlDownloadResponse, summary="Download PDF documents")
@@ -107,15 +118,24 @@ async def download_pdfs(
     try:
         pdf_urls = request.pdf_urls if request else None
 
-        result = crawler.download(pdf_urls=pdf_urls)
-
-        if not result.success:
-            raise HTTPException(
-                status_code=500,
-                detail=f"Download failed: {result.error}"
+        try:
+            result = crawler.download(pdf_urls=pdf_urls)
+        except Exception as e:
+            logger.error("Crawler download raised exception", error=str(e))
+            # Return a structured 200 response with success=False so the client can
+            # inspect per-file errors and handle the failure gracefully.
+            return CrawlDownloadResponse(
+                success=False,
+                downloaded_count=0,
+                total_count=0,
+                files=[],
+                message="Download operation failed due to server error",
+                error=str(e),
             )
 
-        # Convert dataclass to Pydantic model
+        # Convert dataclass to Pydantic model and return it directly.
+        # Return 200 even when `result.success` is False so the client
+        # can inspect per-file errors and partial successes.
         response = CrawlDownloadResponse(
             success=result.success,
             downloaded_count=result.downloaded_count,
@@ -125,11 +145,14 @@ async def download_pdfs(
             error=result.error,
         )
 
-        logger.info(
-            "Crawler download completed",
-            downloaded=result.downloaded_count,
-            total=result.total_count
-        )
+        if not result.success:
+            logger.error("Crawler download completed with errors", error=result.error)
+        else:
+            logger.info(
+                "Crawler download completed",
+                downloaded=result.downloaded_count,
+                total=result.total_count
+            )
 
         return response
 

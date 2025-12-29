@@ -14,6 +14,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from app.services.pdf_processor import PDFProcessorService, PDFProcessingResult, PDFMetadata, TextChunk
+from app.services.embedding_service import EmbeddingService
 from app.models.documents import Document, DocumentChunk, ProcessingJob
 from app.config.settings import settings
 
@@ -25,8 +26,9 @@ class DocumentService:
         self.db = db_session
         self.logger = logger
         self.pdf_processor = PDFProcessorService(logger)
+        self.embedding_service = EmbeddingService(logger)
 
-    def process_uploaded_file(
+    async def process_uploaded_file(
         self,
         file_path: str,
         filename: str,
@@ -97,6 +99,7 @@ class DocumentService:
                 document.estimated_tokens = sum(chunk.token_estimate for chunk in result.chunks)
 
                 # Create chunk records
+                chunk_dicts = []
                 for i, chunk in enumerate(result.chunks):
                     chunk_record = DocumentChunk(
                         id=str(uuid.uuid4()),
@@ -111,6 +114,41 @@ class DocumentService:
                         end_position=chunk.end_position
                     )
                     self.db.add(chunk_record)
+
+                    # Prepare chunk data for embedding
+                    chunk_dicts.append({
+                        'chunk_id': chunk.chunk_id,
+                        'content': chunk.content,
+                        'page_number': chunk.page_number,
+                        'word_count': chunk.word_count,
+                        'token_estimate': chunk.token_estimate,
+                        'start_position': chunk.start_position,
+                        'end_position': chunk.end_position
+                    })
+
+                # Generate and store embeddings
+                try:
+                    self.logger.info("Generating embeddings", document_id=document_id, chunks=len(chunk_dicts))
+
+                    # Initialize embedding service if needed
+                    await self.embedding_service.initialize()
+
+                    # Generate and store embeddings
+                    embedding_result = await self.embedding_service.store_chunk_embeddings(
+                        document_id, chunk_dicts
+                    )
+
+                    if embedding_result['success']:
+                        self.logger.info("Embeddings generated successfully",
+                                       document_id=document_id, vectors=embedding_result['vectors_stored'])
+                    else:
+                        self.logger.warning("Embedding generation failed",
+                                          document_id=document_id, error=embedding_result.get('error'))
+
+                except Exception as embed_error:
+                    self.logger.warning("Embedding generation failed",
+                                      document_id=document_id, error=str(embed_error))
+                    # Don't fail the entire process if embeddings fail
 
                 # Update status
                 document.processing_status = "completed"
