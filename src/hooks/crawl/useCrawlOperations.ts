@@ -1,6 +1,9 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { CrawlJob } from "./useCrawlJobs";
 import { useActivityLogger } from "../activity/useActivityLogger";
+import { useRealTimeCrawl } from "./useRealTimeCrawl";
+import { useCrossTabSync } from "./useCrossTabSync";
+import { useCrawlRealtimeStore } from "../../stores/crawlRealtime";
 
 interface UseCrawlOperationsResult {
   isRunning: boolean;
@@ -31,9 +34,9 @@ interface DownloadAPIResponse {
 
 // API service functions
 const crawlAPI = {
-  async getPages(url: string): Promise<CrawlAPIResponse> {
+  async scanForPDFs(): Promise<CrawlAPIResponse> {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawl/pages?url=${encodeURIComponent(url)}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawler/scan`,
     );
 
     if (!response.ok) {
@@ -43,60 +46,26 @@ const crawlAPI = {
     return response.json();
   },
 
-  async getArticles(pageUrls: string[]): Promise<CrawlAPIResponse> {
+  async downloadPDFs(pdfUrls?: string[]): Promise<DownloadAPIResponse> {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawl/articles`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ page_urls: pageUrls }),
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
-  },
-
-  async getPDFLinks(articleUrls: string[]): Promise<CrawlAPIResponse> {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawl/pdf-links`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ article_urls: articleUrls }),
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
-  },
-
-  async checkExistingPDFs(): Promise<{ existing_files: string[] }> {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/files/existing`,
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
-  },
-
-  async downloadPDFs(pdfUrls: string[]): Promise<DownloadAPIResponse> {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/files/download-pdfs`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawler/download`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pdf_urls: pdfUrls }),
       },
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  },
+
+  async getCrawlerStatus(): Promise<{ downloaded_files_count: number; downloaded_files: unknown[] }> {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawler/status`,
     );
 
     if (!response.ok) {
@@ -113,6 +82,55 @@ export const useCrawlOperations = (
   const [isRunning, setIsRunning] = useState(false);
   const { logActivity, logError } = useActivityLogger();
 
+  // Real-time crawl hooks
+  const realtimeStore = useCrawlRealtimeStore();
+
+  // Cross-tab synchronization
+  const { broadcast, getStoredData } = useCrossTabSync({
+    channelName: 'crawl-realtime-updates',
+    onMessage: (data: unknown) => {
+      // Handle cross-tab messages
+      const message = data as { type?: string; urls?: string[]; progress?: number; stage?: string; connected?: boolean; error?: string };
+      if (message.type === 'urls_found' && message.urls) {
+        realtimeStore.addDiscoveredUrls(message.urls);
+      } else if (message.type === 'progress_update') {
+        realtimeStore.setProgress(message.progress || 0, message.stage);
+      } else if (message.type === 'connection_status') {
+        realtimeStore.setConnectionStatus(message.connected || false, message.error);
+      }
+    },
+    enabled: realtimeStore.isCrossTabEnabled,
+  });
+
+  // Real-time crawl hook
+  const { isConnected, connectionError } = useRealTimeCrawl({
+    onProgressUpdate: (event) => {
+      if (event.event === 'progress_update') {
+        realtimeStore.setProgress(event.data.progress || 0, event.data.stage);
+        broadcast({ type: 'progress_update', progress: event.data.progress, stage: event.data.stage });
+      }
+    },
+    onUrlsFound: (urls) => {
+      realtimeStore.addDiscoveredUrls(urls);
+      broadcast({ type: 'urls_found', urls });
+    },
+    onCrawlCompleted: (data) => {
+      realtimeStore.setProgress(100, 'completed');
+      broadcast({ type: 'crawl_completed', data });
+    },
+    onError: (error) => {
+      realtimeStore.setConnectionStatus(false, error);
+      broadcast({ type: 'connection_status', connected: false, error });
+    },
+    enabled: isRunning, // Only enable when crawling is active
+  });
+
+  // Sync connection status
+  useEffect(() => {
+    realtimeStore.setConnectionStatus(isConnected, connectionError);
+    broadcast({ type: 'connection_status', connected: isConnected, error: connectionError });
+  }, [isConnected, connectionError, broadcast]);
+
   const startCrawl = useCallback(
     async (jobId: string, job: CrawlJob) => {
       if (isRunning) return;
@@ -120,7 +138,7 @@ export const useCrawlOperations = (
       const crawlStartTime = Date.now();
       logActivity("crawl_started", {
         job_id: jobId,
-        job_url: job.url,
+        job_url: "https://biwase.com.vn/tin-tuc/ban-tin-biwase", // Backend scans this predefined URL
       });
 
       // Update job status to running
@@ -128,104 +146,53 @@ export const useCrawlOperations = (
         status: "running",
         progress: 0,
         errorMessage: undefined,
-        currentStage: "pages",
+        currentStage: "pdfs",
       });
       setIsRunning(true);
 
       try {
-        // Stage 1: Get pagination links
+        // Scan for PDFs - backend scans predefined biwase.com.vn URL
         logActivity("crawl_stage_started", {
           job_id: jobId,
-          stage: "pages",
-          url: job.url,
+          stage: "scanning",
+          url: "https://biwase.com.vn/tin-tuc/ban-tin-biwase",
         });
 
-        const pagesData = await crawlAPI.getPages(job.url);
-        if (!pagesData.success) {
-          throw new Error(pagesData.message || "Failed to get pages");
+        const scanData = await crawlAPI.scanForPDFs();
+        if (!scanData.success) {
+          throw new Error(scanData.message || "Failed to scan for PDFs");
         }
 
-        // Update UI with pages found
-        updateJob(jobId, {
-          pagesFound: pagesData.pages_found || 0,
-          pageUrls: pagesData.page_urls,
-          progress: 10,
-          currentStage: "articles",
-        });
-
-        logActivity("pages_discovered", {
+        logActivity("scan_completed", {
           job_id: jobId,
-          pages_found: pagesData.pages_found || 0,
-          page_urls: pagesData.page_urls,
-        });
-
-        // Stage 2: Get articles from pages
-        logActivity("crawl_stage_started", {
-          job_id: jobId,
-          stage: "articles",
-          pages_found: pagesData.pages_found || 0,
-        });
-
-        const articlesData = await crawlAPI.getArticles(
-          pagesData.page_urls || [],
-        );
-        if (!articlesData.success) {
-          throw new Error(articlesData.message || "Failed to get articles");
-        }
-
-        // Update UI with articles found
-        updateJob(jobId, {
-          articleUrls: articlesData.article_urls,
-          progress: 50,
-          currentStage: "pdfs",
-        });
-
-        logActivity("articles_discovered", {
-          job_id: jobId,
-          articles_found: articlesData.article_urls?.length || 0,
-          pages_processed: pagesData.pages_found || 0,
-        });
-
-        // Stage 3: Extract PDF links from articles
-        logActivity("crawl_stage_started", {
-          job_id: jobId,
-          stage: "pdfs",
-          articles_found: articlesData.article_urls?.length || 0,
-        });
-
-        const pdfsData = await crawlAPI.getPDFLinks(
-          articlesData.article_urls || [],
-        );
-        if (!pdfsData.success) {
-          throw new Error(pdfsData.message || "Failed to get PDF links");
-        }
-
-        logActivity("pdfs_discovered", {
-          job_id: jobId,
-          pdfs_found: pdfsData.pdfs_found || 0,
-          articles_processed: articlesData.article_urls?.length || 0,
+          pages_found: scanData.pages_found || 0,
+          articles_found: scanData.article_urls?.length || 0,
+          pdfs_found: scanData.pdfs_found || 0,
+          pdf_urls: scanData.pdf_urls,
         });
 
         // Update job with final results
         const avgDelay = 3.2;
-        const successRate = (pdfsData.pdfs_found || 0) > 0 ? 95 : 0;
+        const successRate = (scanData.pdfs_found || 0) > 0 ? 95 : 0;
 
         updateJob(jobId, {
           status: "completed",
           progress: 100,
-          pdfsFound: pdfsData.pdfs_found || 0,
+          pagesFound: scanData.pages_found || 0,
+          articleUrls: scanData.article_urls,
+          pdfsFound: scanData.pdfs_found || 0,
           lastRun: new Date().toLocaleString(),
           avgDelay,
           successRate,
-          pdfUrls: pdfsData.pdf_urls,
+          pdfUrls: scanData.pdf_urls,
           currentStage: undefined,
         });
 
         logActivity("crawl_completed", {
           job_id: jobId,
-          total_pages: pagesData.pages_found || 0,
-          total_articles: articlesData.article_urls?.length || 0,
-          total_pdfs: pdfsData.pdfs_found || 0,
+          total_pages: scanData.pages_found || 0,
+          total_articles: scanData.article_urls?.length || 0,
+          total_pdfs: scanData.pdfs_found || 0,
           success_rate: successRate,
           avg_delay: avgDelay,
           duration_ms: Date.now() - crawlStartTime,
@@ -241,7 +208,7 @@ export const useCrawlOperations = (
           error instanceof Error ? error : new Error(String(error)),
           {
             job_id: jobId,
-            job_url: job.url,
+            job_url: "https://biwase.com.vn/tin-tuc/ban-tin-biwase",
             duration_ms: Date.now() - crawlStartTime,
           },
         );
@@ -348,8 +315,8 @@ export const useCrawlOperations = (
   const handleAutoDownload = useCallback(
     async (jobId: string, pdfUrls: string[]) => {
       try {
-        const existingData = await crawlAPI.checkExistingPDFs();
-        const existingFiles = existingData.existing_files || [];
+        const statusData = await crawlAPI.getCrawlerStatus();
+        const existingFiles = (statusData.downloaded_files as Array<{ filename: string }> | undefined)?.map((file) => file.filename) || [];
 
         const newPdfUrls = pdfUrls.filter((url: string) => {
           const filename = url.split("/").pop();

@@ -49,10 +49,10 @@ export const navigationItems: NavigationItemConfig[] = [
     gradient: "from-amber-500 via-orange-500 to-amber-600",
   },
   {
-    name: "Activity Dashboard",
-    href: "/activity_dashboard",
+    name: "Preparing for RAG",
+    href: "/pre_rag",
     icon: BarChart3,
-    description: "Monitor user activity",
+    description: "Monitor Data Before RAG Integration",
     gradient: "from-emerald-500 via-teal-500 to-emerald-600",
   },
   {

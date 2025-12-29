@@ -6,6 +6,8 @@ import { StatsGrid } from "./StatsGrid";
 import { PDFList } from "./PDFList";
 import { ErrorDisplay } from "../status/ErrorDisplay";
 import { JobControls } from "./JobControls";
+import { useCrawlRealtimeStore } from "../../stores/crawlRealtime";
+import { LiveStatusIndicator } from "../ui/LiveStatusIndicator";
 
 interface CrawlJob {
   id: string;
@@ -61,6 +63,8 @@ export const JobCard = React.memo(
     onAddToProcessing,
     onDownloadSingle,
   }: JobCardProps) => {
+    const realtimeStore = useCrawlRealtimeStore();
+
     const stats = useMemo(
       () => [
         { label: "Pages Found", value: job.pagesFound, icon: "📄" },
@@ -96,7 +100,16 @@ export const JobCard = React.memo(
                 Last run: {job.lastRun}
               </p>
             </div>
-            <StatusBadge status={job.status} />
+            <div className="flex items-center gap-2">
+              {job.status === "running" && (
+                <LiveStatusIndicator
+                  isConnected={realtimeStore.isConnected}
+                  error={realtimeStore.connectionError}
+                  discoveredUrls={realtimeStore.totalUrlsFound}
+                />
+              )}
+              <StatusBadge status={job.status} />
+            </div>
           </div>
 
           {job.status === "running" && (
@@ -108,13 +121,13 @@ export const JobCard = React.memo(
 
           <StatsGrid stats={stats} />
 
-          {job.status === "completed" &&
-            job.pdfUrls &&
-            job.pdfUrls.length > 0 && (
+          {((job.status === "completed" && job.pdfUrls && job.pdfUrls.length > 0) ||
+            (job.status === "running" && realtimeStore.discoveredUrls.length > 0)) && (
               <PDFList
-                pdfUrls={job.pdfUrls}
+                pdfUrls={job.pdfUrls || []}
                 onAddToProcessing={onAddToProcessing}
                 onDownloadSingle={onDownloadSingle}
+                showRealtimeUrls={job.status === "running"}
               />
             )}
 

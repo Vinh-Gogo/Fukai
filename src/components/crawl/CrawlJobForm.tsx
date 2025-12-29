@@ -26,8 +26,14 @@ export const CrawlJobForm: React.FC<CrawlJobFormProps> = ({
     <section className="mb-8 animate-fade-in">
       <div className="border-t pt-8">
         <h2 className="text-xl font-semibold text-foreground mb-4">
-          Add New Crawl Job
+          Crawl Biwase PDFs
         </h2>
+        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800">
+            This crawler scans <strong>https://biwase.com.vn/tin-tuc/ban-tin-biwase</strong> for PDF documents.
+            The URL field below is for job identification only.
+          </p>
+        </div>
         <form
           onSubmit={handleSubmit}
           className="flex flex-col sm:flex-row gap-4"
@@ -35,7 +41,7 @@ export const CrawlJobForm: React.FC<CrawlJobFormProps> = ({
           <div className="flex-1">
             <input
               type="url"
-              placeholder="https://example.com"
+              placeholder="https://biwase.com.vn/tin-tuc/ban-tin-biwase"
               value={url}
               onChange={(e) => handleUrlChange(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -60,7 +66,7 @@ export const CrawlJobForm: React.FC<CrawlJobFormProps> = ({
             )}
           >
             <Plus className="w-4 h-4" />
-            <span>{isSubmitting ? "Adding..." : "Add Job"}</span>
+            <span>{isSubmitting ? "Scanning..." : "Start Scan"}</span>
           </button>
         </form>
       </div>

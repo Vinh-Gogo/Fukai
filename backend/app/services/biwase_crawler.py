@@ -13,6 +13,8 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 import structlog
+import json
+from datetime import datetime
 
 from app.config.settings import settings
 
@@ -286,6 +288,73 @@ class BiwaseCrawlerService:
                 message="Download operation failed",
                 error=str(e)
             )
+
+    def export_urls_to_json(self, pdf_urls: Optional[List[str]] = None) -> Dict[str, Any]:
+        """
+        Export PDF URLs to a JSON file in the data directory.
+
+        Args:
+            pdf_urls: Optional list of PDF URLs to export. If None, scans first to get all URLs.
+
+        Returns:
+            Dictionary containing export result information.
+        """
+        try:
+            self.logger.info("Starting URL export to JSON")
+
+            if pdf_urls is None:
+                # Scan first to get all PDF URLs
+                scan_result = self.scan()
+                if not scan_result.success:
+                    return {
+                        "success": False,
+                        "message": "Failed to scan for PDFs before export",
+                        "error": scan_result.error,
+                        "file_path": None
+                    }
+                pdf_urls = scan_result.pdf_urls
+
+            # Create data directory at project root (parent of backend directory)
+            data_dir = Path(__file__).parent.parent.parent.parent / "data"
+            data_dir.mkdir(parents=True, exist_ok=True)
+
+            # Create JSON data structure
+            export_data = {
+                "scan_timestamp": datetime.now().isoformat(),
+                "source_url": self.base_url,
+                "total_urls": len(pdf_urls),
+                "urls": pdf_urls
+            }
+
+            # Generate filename with timestamp
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"biwase_pdf_urls_{timestamp}.json"
+            file_path = data_dir / filename
+
+            # Write JSON file
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(export_data, f, indent=2, ensure_ascii=False)
+
+            self.logger.info("URLs exported to JSON successfully",
+                           file_path=str(file_path),
+                           total_urls=len(pdf_urls))
+
+            return {
+                "success": True,
+                "message": f"Successfully exported {len(pdf_urls)} PDF URLs to JSON",
+                "file_path": str(file_path),
+                "total_urls": len(pdf_urls),
+                "export_data": export_data
+            }
+
+        except Exception as e:
+            self.logger.error("URL export to JSON failed", error=str(e))
+            return {
+                "success": False,
+                "message": "Failed to export URLs to JSON",
+                "error": str(e),
+                "file_path": None
+            }
 
     def get_downloaded_files(self) -> List[Dict[str, Any]]:
         """

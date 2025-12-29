@@ -6,6 +6,7 @@ __pycache__/
 **/uploads/*
 .venv/
 env/
+backend/venv/
 
 # dependencies
 /node_modules
@@ -49,3 +50,6 @@ next-env.d.ts
 
 # memory bank
 memory-bank/*
+
+# data exports
+data/

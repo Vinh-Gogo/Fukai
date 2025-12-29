@@ -80,9 +80,9 @@ export default function ActivityDashboardPage() {
         <main className="flex-1 overflow-y-auto">
           <BrandHeader
             icon="activity"
-            title="Activity Dashboard"
-            subtitle="Monitor User Activities & Analytics"
-            statusText="Real-time activity tracking & insights"
+            title="Preparing for RAG"
+            subtitle="Monitor Data Before RAG Integration"
+            statusText="MARDOWN PROGRESS"
           />
 
           <div className="container mx-auto px-4 py-8 space-y-8">

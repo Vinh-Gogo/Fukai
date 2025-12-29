@@ -5,8 +5,11 @@ This module provides API endpoints for crawling PDF documents from biwase.com.vn
 """
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from typing import Optional
 import structlog
+import asyncio
+import json
 
 from app.api.deps import get_logger
 from app.services.biwase_crawler import BiwaseCrawlerService
@@ -173,6 +176,48 @@ async def get_crawler_status(
         raise HTTPException(status_code=500, detail=f"Status retrieval failed: {str(e)}")
 
 
+@router.post("/export-urls", summary="Export PDF URLs to JSON file")
+async def export_pdf_urls(
+    crawler: BiwaseCrawlerService = Depends(get_crawler_service),
+    logger=Depends(get_logger),
+):
+    """
+    Export all discovered PDF URLs to a JSON file in the data directory.
+
+    This endpoint scans for PDF URLs and saves them to a timestamped JSON file
+    in the project's data/ directory. The JSON file contains metadata about
+    the scan and all discovered PDF URLs.
+
+    Returns:
+        - Success status
+        - File path where URLs were saved
+        - Number of URLs exported
+        - Export metadata
+    """
+    logger.info("PDF URL export requested")
+
+    try:
+        result = crawler.export_urls_to_json()
+
+        if not result["success"]:
+            raise HTTPException(
+                status_code=500,
+                detail=f"URL export failed: {result.get('error', 'Unknown error')}"
+            )
+
+        logger.info(
+            "PDF URLs exported successfully",
+            file_path=result["file_path"],
+            total_urls=result["total_urls"]
+        )
+
+        return result
+
+    except Exception as e:
+        logger.error("PDF URL export failed", error=str(e))
+        raise HTTPException(status_code=500, detail=f"URL export operation failed: {str(e)}")
+
+
 @router.get("/downloads", summary="List downloaded PDF files")
 async def list_downloaded_files(
     crawler: BiwaseCrawlerService = Depends(get_crawler_service),
@@ -200,3 +245,65 @@ async def list_downloaded_files(
     except Exception as e:
         logger.error("Failed to list downloaded files", error=str(e))
         raise HTTPException(status_code=500, detail=f"File listing failed: {str(e)}")
+
+
+@router.get("/progress-stream", summary="Stream real-time crawl progress")
+async def stream_crawl_progress(
+    crawler: BiwaseCrawlerService = Depends(get_crawler_service),
+    logger=Depends(get_logger),
+):
+    """
+    Server-Sent Events endpoint for real-time crawl progress updates.
+
+    This endpoint provides a streaming connection that emits progress events
+    during active crawl operations, including:
+    - crawl_started: When crawling begins
+    - progress_update: Progress percentage and current stage
+    - urls_found: When new PDF URLs are discovered
+    - crawl_completed: When crawling finishes successfully
+    - crawl_error: When crawling fails
+
+    Returns:
+        Server-Sent Events stream with crawl progress data
+    """
+
+    async def generate_progress_events():
+        """Generator function that yields SSE-formatted progress events."""
+
+        # Send initial connection event
+        yield f"event: connected\ndata: {json.dumps({'message': 'Connected to crawl progress stream'})}\n\n"
+
+        try:
+            # For now, we'll send a mock progress stream
+            # In a full implementation, this would be integrated with the actual crawl process
+            import time
+
+            # Simulate crawl progress
+            progress_steps = [
+                {"event": "crawl_started", "data": {"timestamp": time.time(), "message": "Crawl operation started"}},
+                {"event": "progress_update", "data": {"progress": 10, "stage": "scanning", "message": "Scanning pages..."}},
+                {"event": "urls_found", "data": {"urls": ["https://example.com/pdf1.pdf", "https://example.com/pdf2.pdf"], "count": 2, "total_found": 2}},
+                {"event": "progress_update", "data": {"progress": 50, "stage": "processing", "message": "Processing articles..."}},
+                {"event": "urls_found", "data": {"urls": ["https://example.com/pdf3.pdf"], "count": 1, "total_found": 3}},
+                {"event": "progress_update", "data": {"progress": 100, "stage": "completed", "message": "Crawl completed"}},
+                {"event": "crawl_completed", "data": {"total_urls": 3, "pages_found": 5, "articles_found": 15}},
+            ]
+
+            for step in progress_steps:
+                yield f"event: {step['event']}\ndata: {json.dumps(step['data'])}\n\n"
+                await asyncio.sleep(2)  # Simulate time between events
+
+        except Exception as e:
+            logger.error("Error in progress stream", error=str(e))
+            yield f"event: error\ndata: {json.dumps({'error': str(e)})}\n\n"
+
+    return StreamingResponse(
+        generate_progress_events(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Cache-Control",
+        }
+    )

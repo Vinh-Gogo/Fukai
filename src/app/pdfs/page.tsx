@@ -15,6 +15,9 @@ import { PDFFile } from "@/components/pdf/types";
 import { Navigation } from "@/components/navigation";
 import { useNavigationContext } from "@/components/navigation/NavigationContext";
 import BrandHeader from "@/components/layout/BrandHeader";
+import { PDFList } from "@/components/features/PDFList";
+import { useCrawlRealtimeStore } from "@/stores/crawlRealtime";
+import { LiveStatusIndicator } from "@/components/ui/LiveStatusIndicator";
 
 // Dynamically import PDFViewer with SSR disabled to prevent document access errors
 const PDFViewer = dynamic(
@@ -40,6 +43,9 @@ export default function PDFProcessing() {
   const [selectedFile, setSelectedFile] = useState<PDFFile | null>(null);
   const [isNavigationVisible, setIsNavigationVisible] = useState(true);
   const { currentWidth } = useNavigationContext();
+
+  // Connect to crawl realtime store
+  const realtimeStore = useCrawlRealtimeStore();
 
   // Navigation toggle function
   const toggleNavigation = useCallback(() => {
@@ -178,6 +184,147 @@ export default function PDFProcessing() {
     setSelectedFile(file);
   }, []);
 
+  // Load URLs from data file
+  const loadUrlsFromDataFile = useCallback(async (): Promise<string[]> => {
+    try {
+      const response = await fetch('/api/data/urls');
+      if (!response.ok) {
+        throw new Error('Failed to load data file');
+      }
+      const data = await response.json();
+      return data.urls || [];
+    } catch (error) {
+      console.error('Failed to load URLs from data file:', error);
+      // Fallback: return empty array
+      return [];
+    }
+  }, []);
+
+  // Handler for adding crawled URLs to processing
+  const handleAddCrawledURLsToProcessing = useCallback(async (urls: string[]) => {
+    if (urls.length === 0) return;
+
+    try {
+      console.log(`Processing ${urls.length} crawled URLs...`);
+
+      // Create initial file entries with "downloading" status
+      const initialFiles: PDFFile[] = urls.map((url, index) => ({
+        id: `downloading-${Date.now()}-${index}`,
+        name: decodeURIComponent(url.split("/").pop() || `crawled-pdf-${index + 1}.pdf`),
+        size: "Downloading...",
+        status: "processing" as const,
+        uploadDate: new Date().toLocaleString(),
+        sourceUrl: url,
+        pages: 0,
+        language: "English",
+      }));
+
+      // Add files to the list immediately with downloading status
+      setFiles((prev) => [...initialFiles, ...prev]);
+
+      // Process downloads sequentially to avoid overwhelming the server
+      const downloadedFiles: PDFFile[] = [];
+
+      for (let i = 0; i < urls.length; i++) {
+        const url = urls[i];
+        const fileId = initialFiles[i].id;
+
+        try {
+          console.log(`Downloading PDF from: ${url}`);
+
+          // Download the PDF file
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          const blob = await response.blob();
+          const fileSize = blob.size;
+
+          // Convert blob to File object
+          const fileName = decodeURIComponent(url.split("/").pop() || `crawled-pdf-${i + 1}.pdf`);
+          const file = new File([blob], fileName, { type: 'application/pdf' });
+
+          // Upload to backend (similar to file upload process)
+          const formData = new FormData();
+          formData.append("file", file);
+
+          const uploadResponse = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!uploadResponse.ok) {
+            const error = await uploadResponse.json();
+            throw new Error(error.error || "Upload failed");
+          }
+
+          const result = await uploadResponse.json();
+
+          // Update the file entry with completed status
+          const completedFile: PDFFile = {
+            id: `completed-${Date.now()}-${i}`,
+            name: fileName,
+            size: `${(fileSize / 1024 / 1024).toFixed(2)} MB`,
+            status: "completed" as const,
+            uploadDate: new Date().toISOString().slice(0, 19).replace("T", " "),
+            sourceUrl: result.url,
+            pages: Math.floor(Math.random() * 50) + 10, // Mock page count
+            language: "English",
+          };
+
+          downloadedFiles.push(completedFile);
+
+          // Update the file in the list
+          setFiles((prev) =>
+            prev.map((f) =>
+              f.id === fileId
+                ? completedFile
+                : f
+            )
+          );
+
+          console.log(`Successfully downloaded and processed: ${fileName}`);
+
+        } catch (error) {
+          console.error(`Failed to download ${url}:`, error);
+
+          // Update file with error status
+          setFiles((prev) =>
+            prev.map((f) =>
+              f.id === fileId
+                ? {
+                    ...f,
+                    size: "Error",
+                    status: "error" as const,
+                  }
+                : f
+            )
+          );
+        }
+
+        // Small delay between downloads to be respectful to the server
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
+      console.log(`Successfully downloaded ${downloadedFiles.length} out of ${urls.length} PDFs`);
+    } catch (error) {
+      console.error("Failed to process crawled URLs:", error);
+      alert("Failed to process crawled URLs. Please try again.");
+    }
+  }, []);
+
+  // Handler for downloading individual crawled PDF
+  const handleDownloadCrawledPDF = useCallback(async (url: string) => {
+    try {
+      // Open the URL in a new tab for download
+      window.open(url, '_blank');
+    } catch (error) {
+      console.error("Failed to download PDF:", error);
+      alert("Failed to download PDF. Please try again.");
+    }
+  }, []);
+
   useEffect(() => {
     fetchPDFFiles();
   }, [fetchPDFFiles]);
@@ -268,10 +415,18 @@ export default function PDFProcessing() {
           <div className="container mx-auto px-4 py-8">
             <div className="mb-8">
               <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    PDF Processing
-                  </h1>
+                <div className="flex-1">
+                  <div className="flex items-center gap-4 mb-4">
+                    <h1 className="text-3xl font-bold text-gray-900">
+                      PDF Processing
+                    </h1>
+                    {/* Live Status Indicator */}
+                    <LiveStatusIndicator
+                      isConnected={realtimeStore.isConnected}
+                      error={realtimeStore.connectionError}
+                      discoveredUrls={realtimeStore.discoveredUrls.length}
+                    />
+                  </div>
                   <p className="text-gray-600">
                     Manage PDF files and convert to markdown
                   </p>
@@ -287,6 +442,17 @@ export default function PDFProcessing() {
                   {loading ? "Loading..." : "Refresh"}
                 </button>
               </div>
+            </div>
+
+            {/* Crawled URLs Section */}
+            <div className="mb-6">
+              <PDFList
+                pdfUrls={[]} // Empty since we're using realtime or data file URLs
+                onAddToProcessing={handleAddCrawledURLsToProcessing}
+                onDownloadSingle={handleDownloadCrawledPDF}
+                showRealtimeUrls={true}
+                showDataFileUrls={true}
+              />
             </div>
 
             {/* File Upload Zone */}
