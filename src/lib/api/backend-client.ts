@@ -477,6 +477,14 @@ export class BackendAPIClient {
   }
 
   // API info
+  async registerPDF(pdfUrl: string) {
+    return this.request('/api/v1/pdfs', {
+      method: 'POST',
+      body: { pdf_url: pdfUrl },
+    });
+  }
+
+  // API info
   async getAPIInfo() {
     return this.request('/api/v1/');
   }

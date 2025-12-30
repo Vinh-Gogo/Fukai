@@ -343,10 +343,7 @@ export default function PDFProcessing() {
 
     try {
       // Register the PDF URL with the backend
-      const result = await backendAPI.request("/api/v1/pdfs", {
-        method: "POST",
-        body: { pdf_url: pdfUrl },
-      });
+      const result = await backendAPI.registerPDF(pdfUrl);
 
       // Add to local list for immediate feedback
       setFiles((prev) => [
