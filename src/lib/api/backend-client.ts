@@ -209,6 +209,7 @@ export interface CrawlScanResponse {
 
 export interface CrawlDownloadRequest {
   pdf_urls?: string[];
+  output_dir?: string;
 }
 
 export interface PDFFileInfo {
@@ -450,14 +451,20 @@ export class BackendAPIClient {
   }
 
   // Crawler endpoints
-  async scanForPDFs(): Promise<CrawlScanResponse> {
-    return this.request('/api/v1/crawler/scan');
+  async scanForPDFs(baseUrl?: string): Promise<CrawlScanResponse> {
+    const endpoint = baseUrl 
+      ? `/api/v1/crawler/scan?base_url=${encodeURIComponent(baseUrl)}`
+      : '/api/v1/crawler/scan?base_url=https://biwase.com.vn/tin-tuc/ban-tin-biwase';
+    return this.request(endpoint);
   }
 
   async downloadPDFs(request?: CrawlDownloadRequest): Promise<CrawlDownloadResponse> {
     return this.request('/api/v1/crawler/download', {
       method: 'POST',
-      body: request || {},
+      body: request || { 
+        pdf_urls: [],
+        output_dir: "src/store/pdfs"
+      },
     });
   }
 

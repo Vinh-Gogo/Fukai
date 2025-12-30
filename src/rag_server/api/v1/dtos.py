@@ -206,8 +206,13 @@ class CrawlerDownloadRequestDTO(BaseDTO):
     @validator('pdf_urls', each_item=True)
     def validate_pdf_urls(cls, v):
         """Validate PDF URLs."""
-        if not URL_REGEX.match(v):
-            raise ValueError('Invalid PDF URL format')
+        # Allow URLs with spaces and special characters since they come from the crawler
+        if not isinstance(v, str) or not v.strip():
+            raise ValueError('PDF URL must be a non-empty string')
+        # Just check it looks like a URL
+        if not (v.startswith('http://') or v.startswith('https://')):
+            raise ValueError('PDF URL must start with http:// or https://')
+        return v
         if not v.lower().endswith('.pdf'):
             raise ValueError('URL must point to a PDF file (.pdf extension)')
         return v

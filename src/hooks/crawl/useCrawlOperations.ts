@@ -34,10 +34,12 @@ interface DownloadAPIResponse {
 
 // API service functions
 const crawlAPI = {
-  async scanForPDFs(): Promise<CrawlAPIResponse> {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawler/scan`,
-    );
+  async scanForPDFs(baseUrl?: string): Promise<CrawlAPIResponse> {
+    const url = baseUrl 
+      ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawler/scan?base_url=${encodeURIComponent(baseUrl)}`
+      : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawler/scan?base_url=https://biwase.com.vn/tin-tuc/ban-tin-biwase`;
+    
+    const response = await fetch(url);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -47,17 +49,34 @@ const crawlAPI = {
   },
 
   async downloadPDFs(pdfUrls?: string[]): Promise<DownloadAPIResponse> {
+    if (!pdfUrls || pdfUrls.length === 0) {
+      return {
+        success: false,
+        message: "No PDF URLs provided",
+      };
+    }
+
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawler/download`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pdf_urls: pdfUrls }),
+        body: JSON.stringify({ 
+          pdf_urls: pdfUrls,
+          output_dir: "src/store/pdfs"
+        }),
       },
     );
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      let errorDetails = '';
+      try {
+        const errorData = await response.json();
+        errorDetails = JSON.stringify(errorData);
+      } catch (e) {
+        // Ignore parsing error
+      }
+      throw new Error(`HTTP error! status: ${response.status}. Details: ${errorDetails}`);
     }
 
     return response.json();
@@ -158,7 +177,7 @@ export const useCrawlOperations = (
           url: "https://biwase.com.vn/tin-tuc/ban-tin-biwase",
         });
 
-        const scanData = await crawlAPI.scanForPDFs();
+        const scanData = await crawlAPI.scanForPDFs(job.url);
         if (!scanData.success) {
           throw new Error(scanData.message || "Failed to scan for PDFs");
         }

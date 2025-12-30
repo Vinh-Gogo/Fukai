@@ -53,3 +53,5 @@ memory-bank/*
 
 # data exports
 data/
+
+src/store/pdfs/
