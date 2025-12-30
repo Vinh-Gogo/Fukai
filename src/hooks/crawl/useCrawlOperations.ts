@@ -39,13 +39,37 @@ const crawlAPI = {
       ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawler/scan?base_url=${encodeURIComponent(baseUrl)}`
       : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawler/scan?base_url=https://biwase.com.vn/tin-tuc/ban-tin-biwase`;
     
-    const response = await fetch(url);
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minute timeout
+      
+      try {
+        const response = await fetch(url, { signal: controller.signal });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) {
+          let errorMessage = `HTTP ${response.status}`;
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorData.detail || errorMessage;
+          } catch (e) {
+            // Could not parse error response
+          }
+          throw new Error(errorMessage);
+        }
+
+        return response.json();
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          throw new Error('Request timeout - server took too long to respond');
+        }
+        throw error;
+      }
+      throw new Error("Failed to fetch scan data");
     }
-
-    return response.json();
   },
 
   async downloadPDFs(pdfUrls?: string[]): Promise<DownloadAPIResponse> {
@@ -56,30 +80,50 @@ const crawlAPI = {
       };
     }
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawler/download`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          pdf_urls: pdfUrls,
-          output_dir: "src/store/pdfs"
-        }),
-      },
-    );
-
-    if (!response.ok) {
-      let errorDetails = '';
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 900000); // 15 minute timeout for downloads (handles slow networks)
+      
       try {
-        const errorData = await response.json();
-        errorDetails = JSON.stringify(errorData);
-      } catch (e) {
-        // Ignore parsing error
-      }
-      throw new Error(`HTTP error! status: ${response.status}. Details: ${errorDetails}`);
-    }
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/crawler/download`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              pdf_urls: pdfUrls,
+              output_dir: "src/store/pdfs"
+            }),
+            signal: controller.signal,
+          },
+        );
 
-    return response.json();
+        if (!response.ok) {
+          let errorDetails = '';
+          try {
+            const errorData = await response.json();
+            errorDetails = JSON.stringify(errorData);
+          } catch (e) {
+            // Ignore parsing error
+          }
+          throw new Error(`HTTP error! status: ${response.status}. Details: ${errorDetails}`);
+        }
+
+        const result = await response.json();
+        return result;
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Failed to fetch";
+      console.error("Download PDF error details:", {
+        error,
+        message: errorMsg,
+        pdfCount: pdfUrls?.length,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      throw error;
+    }
   },
 
   async getCrawlerStatus(): Promise<{ downloaded_files_count: number; downloaded_files: unknown[] }> {
@@ -222,6 +266,12 @@ export const useCrawlOperations = (
             ? error.message
             : "Unknown error occurred during crawl";
 
+        console.error("Crawl error details:", {
+          error,
+          message: errorMessage,
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+
         logError(
           "crawl_failed",
           error instanceof Error ? error : new Error(String(error)),
@@ -317,6 +367,13 @@ export const useCrawlOperations = (
           throw new Error(data.message || "Bulk download failed");
         }
       } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error("Download all PDFs error:", {
+          error,
+          message: errorMsg,
+          pdfCount: pdfUrls.length,
+        });
+        
         logError(
           "bulk_download_failed",
           error instanceof Error ? error : new Error(String(error)),

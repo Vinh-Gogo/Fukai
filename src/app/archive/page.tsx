@@ -3,7 +3,7 @@
 // Disable SSR to prevent hydration issues with browser APIs
 export const runtime = "edge";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
 import BrandHeader from "@/components/layout/BrandHeader";
 import { NavigationSkeleton } from "@/components/navigation";
@@ -42,9 +42,6 @@ import { FileGrid, FileList, StorageStats } from "@/components/archive";
 import { ArchiveFile, CategoryInfo } from "@/lib/archive";
 import { useNavigationContext } from "@/components/navigation/NavigationContext";
 
-// Mock archived files data - in a real app, this would come from a database
-const MOCK_ARCHIVE_FILES: ArchiveFile[] = [];
-
 // Archive categories for organization
 const ARCHIVE_CATEGORIES: CategoryInfo[] = [
   { id: "all", name: "All Files", icon: Archive, count: 0 },
@@ -57,13 +54,119 @@ const ARCHIVE_CATEGORIES: CategoryInfo[] = [
 export default function ArchivePage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showStorageStats, setShowStorageStats] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [archiveFiles, setArchiveFiles] = useState<ArchiveFile[]>([]);
   const { currentWidth } = useNavigationContext();
+
+  // Fetch archived PDF files from backend
+  const fetchArchivedFiles = useCallback(async () => {
+    interface BackendDownloadedFile {
+      filename?: string;
+      name?: string;
+      size?: number;
+      size_mb?: number;
+      downloaded_at?: number;
+      url?: string;
+      filepath?: string;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      // Import backend client dynamically to avoid SSR issues
+      const { backendAPI } = await import("@/lib/api/backend-client");
+
+      // Use crawler status endpoint to get actually downloaded PDF files
+      const data = await backendAPI.getCrawlerStatus();
+
+      if (!data.downloaded_files || !Array.isArray(data.downloaded_files)) {
+        console.warn("No downloaded files found on server");
+        setArchiveFiles([]);
+        return;
+      }
+
+      // Convert downloaded files to ArchiveFile format
+      const files: ArchiveFile[] = data.downloaded_files.map(
+        (file: BackendDownloadedFile, index: number) => {
+          const filename = file.filename || file.name || "Unknown";
+          const sizeBytes = file.size || 0;
+          const sizeMB = file.size_mb || (sizeBytes / 1024 / 1024);
+          
+          return {
+            id: `archive-${index}-${Date.now()}`,
+            name: filename,
+            size: sizeMB > 0 ? `${sizeMB.toFixed(2)} MB` : "Unknown",
+            type: "application/pdf",
+            category: categorizeFile(filename),
+            downloadDate: file.downloaded_at 
+              ? new Date(file.downloaded_at * 1000).toISOString()
+              : new Date().toISOString(),
+            sourceUrl: file.url || file.filepath || "",
+            tags: extractFileTags(filename),
+            isDownloaded: true,
+          };
+        },
+      );
+
+      setArchiveFiles(files);
+      console.log(`Loaded ${files.length} archived files from server`);
+    } catch (error: unknown) {
+      const err = error as { message?: string; type?: string; status?: number };
+      console.error("Failed to fetch archived files:", err);
+
+      if (err.type === "network") {
+        console.warn("Backend server is not available.");
+      }
+      
+      setArchiveFiles([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Helper function to categorize file based on name
+  const categorizeFile = (filename: string): string => {
+    const lowerName = filename.toLowerCase();
+    if (lowerName.includes("report") || lowerName.includes("ban tin")) return "reports";
+    if (lowerName.includes("manual") || lowerName.includes("guide")) return "manuals";
+    return "documents";
+  };
+
+  // Helper function to extract tags from filename
+  const extractFileTags = (filename: string): string[] => {
+    const tags: string[] = [];
+    const lowerName = filename.toLowerCase();
+
+    // Extract year tags
+    const yearMatch = filename.match(/20\d{2}/);
+    if (yearMatch) tags.push(yearMatch[0]);
+
+    // Add category tags
+    if (lowerName.includes("report") || lowerName.includes("ban tin")) tags.push("report");
+    if (lowerName.includes("biwase")) tags.push("biwase");
+    if (lowerName.includes("fixed")) tags.push("updated");
+
+    return tags.slice(0, 3); // Limit to 3 tags
+  };
+
+  // Fetch files on component mount
+  useEffect(() => {
+    fetchArchivedFiles();
+  }, [fetchArchivedFiles]);
 
   // Use the custom file manager hook
   const fileManager = useFileManager({
-    initialFiles: MOCK_ARCHIVE_FILES,
+    initialFiles: [],
     categories: ARCHIVE_CATEGORIES,
   });
+
+  // Update file manager when archived files change
+  useEffect(() => {
+    if (archiveFiles.length > 0 && fileManager.files.length === 0) {
+      // Update the files in the file manager
+      archiveFiles.forEach(file => fileManager.addFile(file));
+    }
+  }, [archiveFiles, fileManager]);
 
   // Event handlers
   const handleFilePreview = useCallback((file: ArchiveFile) => {
@@ -278,7 +381,26 @@ export default function ArchivePage() {
                 </div>
 
                 {/* Files Display */}
-                {viewMode === "grid" ? (
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-20">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                      <p className="text-gray-600">Loading archived files...</p>
+                    </div>
+                  </div>
+                ) : fileManager.filteredFiles.length === 0 ? (
+                  <div className="flex items-center justify-center py-20">
+                    <div className="text-center">
+                      <Archive className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600 text-lg mb-2">No files found</p>
+                      <p className="text-gray-400 text-sm">
+                        {fileManager.searchQuery 
+                          ? "Try adjusting your search query"
+                          : "Start by downloading PDFs from the crawler"}
+                      </p>
+                    </div>
+                  </div>
+                ) : viewMode === "grid" ? (
                   <FileGrid
                     files={fileManager.filteredFiles}
                     selectedFiles={fileManager.selectedFiles}

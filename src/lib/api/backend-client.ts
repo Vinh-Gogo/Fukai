@@ -400,15 +400,15 @@ export class BackendAPIClient {
   }
 
   async listDocuments() {
-    return this.request('/api/v1/documents/');
+    return this.request('/api/v1/pdfs/');
   }
 
   async getDocument(documentId: string) {
-    return this.request(`/api/v1/documents/${documentId}`);
+    return this.request(`/api/v1/pdfs/${documentId}`);
   }
 
   async deleteDocument(documentId: string) {
-    return this.request(`/api/v1/documents/${documentId}`, { method: 'DELETE' });
+    return this.request(`/api/v1/pdfs/${documentId}`, { method: 'DELETE' });
   }
 
   // Search endpoints

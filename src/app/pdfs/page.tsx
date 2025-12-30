@@ -67,49 +67,46 @@ export default function PDFProcessing() {
 
   // Fetch real PDF files from backend
   const fetchRealPDFFiles = useCallback(async (): Promise<PDFFile[]> => {
+    interface BackendDownloadedFile {
+      filename?: string;
+      name?: string;
+      size?: number;
+      size_mb?: number;
+      downloaded_at?: number;
+      url?: string;
+      filepath?: string;
+    }
+
     try {
       // Import backend client dynamically to avoid SSR issues
       const { backendAPI } = await import("@/lib/api/backend-client");
 
-      // Fetch list of documents from backend
-      type BackendDoc = {
-        id?: string;
-        filename: string;
-        size?: number;
-        file_size?: number;
-        created_at: string;
-        status?: string;
-        processing_status?: string;
-      };
-      const data = await backendAPI.listDocuments() as { documents?: BackendDoc[] };
-      const documents = data.documents || [];
+      // Use crawler status endpoint to get actually downloaded PDF files
+      const data = await backendAPI.getCrawlerStatus();
 
-      // Convert backend document format to PDFFile format
-      return documents.map(
-        (
-          doc: {
-            id?: string;
-            filename: string;
-            size?: number;
-            file_size?: number;
-            created_at: string;
-            status?: string;
-            processing_status?: string;
-          },
-          index: number,
-        ) => {
-          const fileSize = doc.size || doc.file_size || 0;
-          const status = doc.status || doc.processing_status || 'processing';
+      if (!data.downloaded_files || !Array.isArray(data.downloaded_files)) {
+        console.warn("No downloaded files found on server");
+        return [];
+      }
 
+      // Convert downloaded files to PDFFile format
+      return data.downloaded_files.map(
+        (file: BackendDownloadedFile, index: number) => {
           return {
-            id: doc.id || `doc-${Date.now()}-${index}`,
-            name: doc.filename,
-            size: fileSize > 0 ? `${(fileSize / 1024 / 1024).toFixed(2)} MB` : "Unknown",
-            status: (status === "completed" ? "completed" : "processing") as "completed" | "processing",
-            uploadDate: new Date(doc.created_at).toLocaleString(),
-            sourceUrl: `/api/documents/${doc.id}/download`, // Backend download endpoint
-            pages: Math.floor(Math.random() * 50) + 10, // Mock page count for now
-            language: "English", // Default assumption
+            id: `pdf-${index}-${Date.now()}`,
+            name: file.filename || file.name || "Unknown",
+            size: file.size 
+              ? `${(file.size / 1024 / 1024).toFixed(2)} MB` 
+              : file.size_mb 
+                ? `${file.size_mb} MB`
+                : "Unknown",
+            status: "completed" as const,
+            uploadDate: file.downloaded_at 
+              ? new Date(file.downloaded_at * 1000).toLocaleString()
+              : new Date().toLocaleString(),
+            sourceUrl: file.url || file.filepath || "",
+            pages: Math.floor(Math.random() * 50) + 10,
+            language: "English",
           };
         },
       );
@@ -339,66 +336,38 @@ export default function PDFProcessing() {
     fetchPDFFiles();
   }, [fetchPDFFiles]);
 
-  // Handle file uploads
-  const handleFilesSelected = useCallback(
-    async (uploadedFiles: File[]) => {
-      if (uploadedFiles.length === 0) return;
+  // Handle PDF URL registration
+  const handleFilesSelected = useCallback(async () => {
+    const pdfUrl = window.prompt("Enter the public URL of the PDF to register:");
+    if (!pdfUrl) return;
 
-      // Start upload simulation for progress tracking
-      await uploadFiles(uploadedFiles);
-
-      // Upload files to server
-      const uploadPromises = uploadedFiles.map(async (file) => {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        try {
-          const response = await fetch("/api/upload", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || "Upload failed");
-          }
-
-          const result = await response.json();
-          return {
-            file,
-            result,
-            success: true,
-          };
-        } catch (error) {
-          console.error("Upload error for file:", file.name, error);
-          return {
-            file,
-            error: error instanceof Error ? error.message : "Upload failed",
-            success: false,
-          };
-        }
+    try {
+      // Register the PDF URL with the backend
+      const result = await backendAPI.request("/api/v1/pdfs", {
+        method: "POST",
+        body: { pdf_url: pdfUrl },
       });
 
-      const uploadResults = await Promise.all(uploadPromises);
-
-      // Convert uploaded files to PDFFile objects
-      const newPDFFiles: PDFFile[] = uploadResults.map(
-        ({ file, result, success }, index) => ({
-          id: `uploaded-${Date.now()}-${index}`,
-          name: file.name,
-          size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-          status: success ? ("completed" as const) : ("error" as const),
+      // Add to local list for immediate feedback
+      setFiles((prev) => [
+        {
+          id: `registered-${Date.now()}`,
+          name: pdfUrl.split("/").pop() || pdfUrl,
+          size: "Unknown",
+          status: "completed",
           uploadDate: new Date().toISOString().slice(0, 19).replace("T", " "),
-          sourceUrl: success ? result.url : "",
-          pages: success ? Math.floor(Math.random() * 50) + 10 : 0, // Mock page count for successful uploads
-          language: success ? "English" : "", // Default assumption
-        }),
-      );
-
-      setFiles((prev) => [...newPDFFiles, ...prev]);
-    },
-    [uploadFiles],
-  );
+          sourceUrl: pdfUrl,
+          pages: Math.floor(Math.random() * 50) + 10,
+          language: "Unknown",
+        },
+        ...prev,
+      ]);
+      alert("PDF URL registered successfully!");
+    } catch (error) {
+      console.error("Failed to register PDF URL:", error);
+      alert("Failed to register PDF URL. See console for details.");
+    }
+  }, []);
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 overflow-x-hidden">
