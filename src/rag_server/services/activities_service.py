@@ -16,24 +16,23 @@ async def log_activity(
     user_agent: Optional[str] = None
 ) -> None:
     """Log an activity to the database."""
-    db: AsyncSession = await anext(get_db())
+    from ..core.db import AsyncSessionLocal
     try:
-        activity = Activity(
-            activity_type=activity_type,
-            entity_type=entity_type,
-            entity_id=entity_id,
-            action=action,
-            user_id=user_id,
-            details=details,
-            ip_address=ip_address,
-            user_agent=user_agent
-        )
-        db.add(activity)
-        await db.commit()
+        async with AsyncSessionLocal() as db:
+            activity = Activity(
+                activity_type=activity_type,
+                entity_type=entity_type,
+                entity_id=entity_id,
+                action=action,
+                user_id=user_id,
+                details=details,
+                ip_address=ip_address,
+                user_agent=user_agent
+            )
+            db.add(activity)
+            await db.commit()
     except Exception as e:
         print(f"Failed to log activity: {e}")
-    finally:
-        await db.close()
 
 async def get_activities(
     limit: int = 50,

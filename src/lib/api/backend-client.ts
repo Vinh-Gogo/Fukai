@@ -289,9 +289,11 @@ export interface BackendAPIConfig {
 
 export class BackendAPIClient {
   private baseURL: string;
+  private apiKey: string;
 
-  constructor(baseURL: string) {
+  constructor(baseURL: string, apiKey?: string) {
     this.baseURL = baseURL;
+    this.apiKey = apiKey || 'admin'; // Default to 'admin' if not provided
   }
 
   private async request<T = unknown>(
@@ -305,6 +307,7 @@ export class BackendAPIClient {
       method,
       headers: {
         'Content-Type': 'application/json',
+        'X-API-Key': this.apiKey,
         ...headers,
       },
     };
@@ -378,6 +381,9 @@ export class BackendAPIClient {
       const response = await fetch(url, {
         method: 'POST',
         body: formData,
+        headers: {
+          'X-API-Key': this.apiKey,
+        },
       });
 
       if (!response.ok) {

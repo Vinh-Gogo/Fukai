@@ -12,8 +12,8 @@ DTOs provide:
 from pydantic import BaseModel, Field, HttpUrl, validator, model_validator
 from typing import List, Optional, Dict, Any, Union
 from datetime import datetime
-from enum import Enum
 import re
+from ...enums.activity import ActivityType, ActivityAction, EntityType
 
 # Common field constraints
 URL_REGEX = re.compile(
@@ -24,31 +24,6 @@ URL_REGEX = re.compile(
     r'(?::\d+)?'  # optional port
     r'(?:/?|[/?]\S+)$', re.IGNORECASE  # path
 )
-
-class ActivityType(str, Enum):
-    """Enumeration of activity types."""
-    WEB_URL_CREATED = "web_url_created"
-    PDF_CREATED = "pdf_created"
-    PDF_DOWNLOADED = "pdf_downloaded"
-    PDF_SKIPPED = "pdf_skipped"
-    PDF_FAILED = "pdf_failed"
-    API_ACCESSED = "api_accessed"
-
-class ActivityAction(str, Enum):
-    """Enumeration of activity actions."""
-    CREATED = "created"
-    UPDATED = "updated"
-    DELETED = "deleted"
-    ACCESSED = "accessed"
-    SUCCEEDED = "succeeded"
-    FAILED = "failed"
-
-class EntityType(str, Enum):
-    """Enumeration of entity types."""
-    WEB_URL = "WebURL"
-    PDF = "PDF"
-    API = "API"
-    CRAWLER_EXECUTION = "CrawlerExecution"
 
 # Base DTO classes
 class BaseDTO(BaseModel):

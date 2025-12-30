@@ -156,10 +156,9 @@ async def verify_token(
 @router.get(
     "/me",
     summary="Current User Info",
-    description="Get information about the currently authenticated user.",
+    description="Get information about the currently authenticated user. Returns default guest user if no authentication provided.",
     responses={
-        200: {"description": "Current user information"},
-        401: {"description": "Not authenticated", "model": ErrorResponseDTO}
+        200: {"description": "Current user information"}
     }
 )
 async def get_current_user_info(
@@ -168,27 +167,47 @@ async def get_current_user_info(
     """
     Get current authenticated user information.
 
+    **Authentication Options:**
+    - JWT token (Authorization: Bearer <token>)
+    - API key (X-API-Key: admin)
+    - No authentication (returns default guest user)
+
     **Returns:**
     - Username
     - Role
     - Account status
-    - Token information
+    - Token information (for JWT auth)
+    - Authentication method
     """
+    # If no authentication provided, return default guest user
     if not current_user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={
-                "error": "Not authenticated",
-                "message": "No valid authentication provided"
-            }
-        )
+        return {
+            "username": "guest",
+            "role": "guest",
+            "enabled": True,
+            "auth_method": "none",
+            "message": "No authentication provided - using default guest access"
+        }
 
+    # Handle API key authentication (when JWT fails)
+    if current_user.get("auth_method") == "api_key":
+        # For API key authentication, return admin user info
+        return {
+            "username": "admin",
+            "role": "admin",
+            "enabled": True,
+            "auth_method": "api_key",
+            "message": "Authenticated via API key"
+        }
+
+    # Handle JWT authentication
     return {
         "username": current_user["username"],
         "role": current_user["role"],
-        "enabled": current_user["enabled"],
+        "enabled": current_user.get("enabled", True),  # Default to True if not provided
         "token_issued": current_user.get("token_issued"),
-        "token_expires": current_user.get("token_expires")
+        "token_expires": current_user.get("token_expires"),
+        "auth_method": current_user.get("auth_method", "jwt")
     }
 
 @router.get(

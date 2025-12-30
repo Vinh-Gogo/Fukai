@@ -132,25 +132,62 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.api_key = api_key or config.api_key
         self.exclude_paths = exclude_paths or config.auth_exclude_paths
+        print(f"DEBUG: AuthenticationMiddleware initialized with api_key={self.api_key}, exclude_paths={self.exclude_paths}")
 
     async def dispatch(self, request: Request, call_next) -> Response:
-        # Skip authentication for excluded paths
-        if any(request.url.path.startswith(path) for path in self.exclude_paths):
+        # Skip authentication entirely if no API key is configured (development mode)
+        if self.api_key is None:
+            print(f"DEBUG: Authentication disabled (no API key configured) for {request.url.path}")
+            # Add default user info for activity logging
+            request.state.user_id = "anonymous"
+            request.state.user_role = "user"
+            request.state.auth_method = "none"
             return await call_next(request)
+
+        # Skip authentication for excluded paths
+        # For root path '/', use exact match. For others, use starts_with logic
+        is_excluded = False
+        matching_path = None
+        for exclude_path in self.exclude_paths:
+            if exclude_path == "/":
+                # Exact match for root path
+                is_excluded = request.url.path == "/"
+            else:
+                # Prefix match for other paths
+                is_excluded = request.url.path.startswith(exclude_path)
+            if is_excluded:
+                matching_path = exclude_path
+                break
+
+        if is_excluded:
+            print(f"DEBUG: Path {request.url.path} is excluded from authentication (matched: {matching_path})")
+            return await call_next(request)
+
+        print(f"DEBUG: Authenticating request to {request.url.path}")
+        print(f"DEBUG: Headers: {dict(request.headers)}")
 
         # Try JWT token authentication first
         auth_header = request.headers.get("Authorization")
         user_info = None
 
+        print(f"DEBUG: Authorization header: {auth_header}")
+
         if auth_header and auth_header.startswith("Bearer "):
             token = auth_header[7:]  # Remove "Bearer " prefix
+            print(f"DEBUG: Trying JWT token: {token[:20]}...")
             user_info = auth_service.get_current_user(token)
+            print(f"DEBUG: JWT result: {user_info}")
 
         # If JWT authentication failed or wasn't provided, try API key
         if not user_info:
             api_key = request.headers.get("X-API-Key")
+            print(f"DEBUG: API key from header: {api_key}")
+            print(f"DEBUG: Expected API key: {self.api_key}")
+            print(f"DEBUG: API key match: {api_key == self.api_key if api_key and self.api_key else 'N/A'}")
+
             if api_key and self.api_key and api_key == self.api_key:
                 # API key authentication successful
+                print("DEBUG: API key authentication successful")
                 user_info = {
                     "username": "api_key_user",
                     "role": "api_user",
@@ -159,6 +196,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
                 }
             elif api_key:
                 # API key provided but invalid
+                print("DEBUG: API key provided but invalid")
                 return JSONResponse(
                     status_code=403,
                     content={"error": "Invalid API key", "message": "The provided API key is not valid"}
@@ -166,6 +204,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
 
         # If neither authentication method worked
         if not user_info:
+            print("DEBUG: No authentication method worked")
             return JSONResponse(
                 status_code=401,
                 content={
@@ -179,6 +218,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         request.state.user_role = user_info["role"]
         request.state.auth_method = user_info.get("auth_method", "jwt")
 
+        print(f"DEBUG: Authentication successful for user: {user_info['username']}")
         return await call_next(request)
 
 class ErrorHandlingMiddleware(BaseHTTPMiddleware):

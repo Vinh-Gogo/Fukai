@@ -22,37 +22,63 @@ from ..constants import JWT_SECRET_KEY, JWT_ALGORITHM, JWT_EXPIRE_MINUTES
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Simple user storage (in production, this would be in a database)
+# Simple user storage loaded from environment variables
 # Format: {username: {"password_hash": hash, "role": role, "enabled": bool}}
-USERS_DB = {
-    "admin": {
-        "password_hash": None,  # Will be set by _init_password_hashes
-        "role": "admin",
-        "enabled": True,
-        "created_at": "2025-01-01T00:00:00Z"
-    },
-    "user": {
-        "password_hash": None,  # Will be set by _init_password_hashes
-        "role": "user",
-        "enabled": True,
-        "created_at": "2025-01-01T00:00:00Z"
-    }
-}
+USERS_DB = {}
 
-# Pre-compute password hashes to avoid bcrypt issues at startup
-def _init_password_hashes():
-    """Initialize password hashes at module load time."""
-    try:
-        USERS_DB["admin"]["password_hash"] = pwd_context.hash("admin123")
-        USERS_DB["user"]["password_hash"] = pwd_context.hash("user123")
-    except Exception as e:
-        # Fallback to simple hashing if bcrypt fails
-        import hashlib
-        USERS_DB["admin"]["password_hash"] = hashlib.sha256("admin123".encode()).hexdigest()
-        USERS_DB["user"]["password_hash"] = hashlib.sha256("user123".encode()).hexdigest()
+def _load_users_from_env():
+    """Load user configuration from environment variables."""
+    users = {}
 
-# Initialize password hashes
-_init_password_hashes()
+    # Get all environment variables that start with USER_
+    for key, value in os.environ.items():
+        if key.startswith("USER_") and key.endswith("_PASSWORD"):
+            # Extract username from key: USER_<USERNAME>_PASSWORD
+            username_part = key[5:-9]  # Remove "USER_" prefix and "_PASSWORD" suffix
+            username = username_part.lower()
+
+            # Get other user properties
+            role_key = f"USER_{username_part}_ROLE"
+            enabled_key = f"USER_{username_part}_ENABLED"
+
+            role = os.environ.get(role_key, "user")
+            enabled_str = os.environ.get(enabled_key, "true")
+
+            # Convert enabled string to boolean
+            enabled = enabled_str.lower() in ("true", "1", "yes", "on")
+
+            users[username] = {
+                "password": value,  # Plain text password from env
+                "role": role,
+                "enabled": enabled,
+                "created_at": utc_now_iso()
+            }
+
+    return users
+
+def _init_users_db():
+    """Initialize the users database from environment variables."""
+    global USERS_DB
+    users_config = _load_users_from_env()
+
+    for username, config in users_config.items():
+        try:
+            # Try bcrypt first
+            password_hash = pwd_context.hash(config["password"])
+        except Exception as e:
+            # Fallback to SHA256 if bcrypt fails
+            import hashlib
+            password_hash = hashlib.sha256(config["password"].encode()).hexdigest()
+
+        USERS_DB[username] = {
+            "password_hash": password_hash,
+            "role": config["role"],
+            "enabled": config["enabled"],
+            "created_at": config["created_at"]
+        }
+
+# Initialize users database from environment
+_init_users_db()
 
 class AuthService:
     """Service for handling authentication operations."""
