@@ -12,6 +12,87 @@ A comprehensive Retrieval-Augmented Generation (RAG) application for processing,
 - **Background Processing**: Asynchronous task management for long-running operations
 - **Docker Support**: Containerized deployment with docker-compose
 
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Python 3.8+
+- Node.js 18+
+- Docker & Docker Compose (optional)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd search_rag
+   ```
+
+2. **Install Python dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Install Node.js dependencies**
+   ```bash
+   pnpm install
+   ```
+
+4. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+### Running the Application
+
+#### Backend API Server
+
+Choose one of the following methods to run the FastAPI backend:
+
+**Method 1: Using the launcher script (Recommended)**
+```bash
+python run_server.py
+```
+
+**Method 2: Using Python module mode**
+```bash
+python -m src.rag_server.main
+```
+
+**Method 3: Using Uvicorn directly**
+```bash
+uvicorn src.rag_server.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+The API will be available at:
+- **API Server**: http://127.0.0.1:8000
+- **API Documentation**: http://127.0.0.1:8000/docs
+- **ReDoc**: http://127.0.0.1:8000/redoc
+- **OpenAPI Schema**: http://127.0.0.1:8000/openapi.json
+
+#### Frontend Development Server
+
+```bash
+pnpm dev
+```
+
+The frontend will be available at: http://localhost:3000
+
+#### Using Docker (Production)
+
+```bash
+docker-compose up -d
+```
+
+### API Authentication
+
+Most API endpoints require authentication. Include the API key in requests:
+
+```bash
+curl -H "X-API-Key: your-api-key" http://127.0.0.1:8000/api/v1/health
+```
+
 ## 🏗️ Architecture
 
 ### Project Structure
