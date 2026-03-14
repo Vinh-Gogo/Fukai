@@ -7,6 +7,8 @@ import { NavigationControls } from "./controls";
 import { AIAgentStatus } from "../ui";
 import { useNavigationContext } from "./NavigationContext";
 import { navigationItems, toolItems } from "@/config/navigation.config";
+import { useAuthStore } from "@/stores/auth";
+import { LogOut, User } from "lucide-react";
 
 export function Navigation({
   isVisible = true,
@@ -15,13 +17,20 @@ export function Navigation({
   isVisible?: boolean;
   onToggle?: () => void;
 }) {
-  const {
+    const {
     isMobile,
     sidebarOpen,
     setSidebarOpen,
     isCollapsed,
     toggleNavigation
   } = useNavigationContext();
+  const { user, isAuthenticated, logout } = useAuthStore();
+
+  const handleLogout = () => {
+    if (confirm('Are you sure you want to logout?')) {
+      logout();
+    }
+  };
 
   return (
     <>
@@ -81,9 +90,36 @@ export function Navigation({
             />
           </div>
 
-          {/* 3. AI Agent Status & Theme Toggle */}
+                    {/* 3. AI Agent Status & Theme Toggle */}
           <div className="flex-shrink-0 p-4 border-t border-white/20">
             <AIAgentStatus collapsed={isCollapsed} />
+          </div>
+
+          {/* 4. Authentication Section */}
+          <div className="flex-shrink-0 p-4 border-t border-white/20">
+            {isAuthenticated && user ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <User className="w-4 h-4 text-blue-300" />
+                  <span className="text-white/90 truncate">{user.full_name || user.email}</span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-lg text-white text-sm transition-all"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <a
+                href="/login"
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-white text-sm transition-all"
+              >
+                <User className="w-4 h-4" />
+                Sign In
+              </a>
+            )}
           </div>
         </div>
 

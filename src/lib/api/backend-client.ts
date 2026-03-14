@@ -288,6 +288,34 @@ export interface BackendAPIConfig {
   maxRetries: number;
 }
 
+// Authentication Interfaces
+export interface User {
+  id: string;
+  email: string;
+  full_name: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  full_name: string;
+}
+
+export interface RegisterResponse extends LoginResponse {}
+
 export class BackendAPIClient {
   private baseURL: string;
   private apiKey: string;
@@ -484,9 +512,48 @@ export class BackendAPIClient {
     });
   }
 
-  // API info
+    // API info
   async getAPIInfo() {
     return this.request('/api/v1/');
+  }
+
+  // Authentication endpoints
+  async login(credentials: LoginRequest): Promise<LoginResponse> {
+    const url = `${this.baseURL}/api/v1/auth/login`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': this.apiKey,
+      },
+      body: JSON.stringify(credentials),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Login failed: ${errorText}`);
+    }
+
+    return await response.json();
+  }
+
+  async register(data: RegisterRequest): Promise<RegisterResponse> {
+    const url = `${this.baseURL}/api/v1/auth/register`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': this.apiKey,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Registration failed: ${errorText}`);
+    }
+
+    return await response.json();
   }
 }
 
