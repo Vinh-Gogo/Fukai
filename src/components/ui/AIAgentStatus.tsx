@@ -84,16 +84,16 @@ export const AIAgentStatus = React.memo(({ collapsed }: AIAgentStatusProps) => {
           : `${QWEN_GRADIENTS.light} shadow-[0_4px_20px_rgba(0,45,30,0.25)]`,
       )}
     >
-      <div
+            <div
         className={cn(
           "flex items-center gap-3 p-2 rounded-lg transition-all duration-300 relative overflow-hidden",
           isDark
-            ? "bg-gray-900/70 backdrop-blur-sm"
-            : "bg-gray-50/80 backdrop-blur-sm",
+            ? "bg-gray-900/90 backdrop-blur-sm"
+            : "bg-gray-50/90 backdrop-blur-sm",
         )}
       >
         {/* Dynamic gradient overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-600/10 opacity-50"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-teal-600/20 opacity-60"></div>
 
         {/* Floating particles effect */}
         <FloatingParticles />
@@ -115,22 +115,15 @@ export const AIAgentStatus = React.memo(({ collapsed }: AIAgentStatusProps) => {
           </div>
 
           <div className="flex-1 min-w-0">
-            <div
+                                <div
               className={cn(
                 "text-sm font-semibold transition-colors duration-300",
-                isDark ? "text-emerald-300" : "text-emerald-800",
+                isDark ? "text-white" : "text-gray-900",
               )}
             >
               Vinh-GoGo
             </div>
-            <div
-              className={cn(
-                "text-xs font-medium transition-colors duration-300",
-                isDark ? "text-emerald-400/80" : "text-emerald-700/80",
-              )}
-            >
-              Engineer. 234th Themes Ultra.
-            </div>
+            
           </div>
         </div>
 

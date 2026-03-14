@@ -403,7 +403,7 @@ export default function PDFProcessing() {
                       discoveredUrls={realtimeStore.discoveredUrls.length}
                     />
                   </div>
-                  <p className="text-gray-600">
+                  <p className="text-gray-900 font-medium">
                     Manage PDF files and convert to markdown
                   </p>
                 </div>
